@@ -21,13 +21,13 @@
  *         ↓
  *   ✓ ALPHA TRANSLATE SELECTED
  *         ↓
- *   ⚡ HTTP 402 PAYMENT REQUIRED
+ *   HTTP 402 PAYMENT REQUIRED
  *         ↓
  *   ✓ PAYMENT-SIGNATURE CREATED
  *         ↓
  *   ✓ FACILITATOR VERIFIED
  *         ↓
- *   ⏳ BLOCKCHAIN SETTLEMENT
+ *   BLOCKCHAIN SETTLEMENT
  *         ↓
  *   ○ DELIVERY
  *         ↓
@@ -42,13 +42,13 @@
 const CurrentTransactionView = {
   initialized: false,
   isExecuting: false,
-  currentPrompt: "Translate this PDF to Hindi. Quality > 0.9. Max $5.",
+  currentPrompt: "Translate this legal contract to English. Quality > 0.9. Max $5.",
   status: "COMPLETED", // "RUNNING" | "COMPLETED"
   activeStep: 10,       // 1 to 10
   expandedStep: null,   // null = follow active, or manual step index (1-10)
   txHash: "0xda48b1c9f4d7159c8e192a6374028471b058c067e26830571092e093847228e9",
   deliveryHash: "sha256:7bd1674136f9868f25814fa668616297740ebc5bf6015c0868dff32f09761e20",
-  deliveredText: "यह कानूनी अनुबंध सुरक्षित और गोपनीय है। W3A-1 प्रोटोकॉल के तहत भुगतान का निपटान सीधे ब्लॉकचेन पर हुआ और SHA-256 सत्यापन पूर्ण हुआ।",
+  deliveredText: "This legal agreement is verified, secure, and confidential. Under the W3A-1 protocol, payment was settled directly on-chain and SHA-256 cryptographic verification succeeded.",
   elapsedSeconds: 0,
   timerInterval: null,
 
@@ -94,7 +94,7 @@ const CurrentTransactionView = {
     {
       id: 2,
       title: "AI UNDERSTOOD INTENT",
-      shortSummary: "Extracted constraints: PDF Translation to Hindi, Quality ≥ 0.90, Max $5.00",
+      shortSummary: "Extracted constraints: Legal Contract Translation to English, Quality ≥ 0.90, Max $5.00",
       renderDetails() {
         return `
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono text-center">
@@ -104,7 +104,7 @@ const CurrentTransactionView = {
             </div>
             <div class="p-2.5 rounded-lg bg-surface-lowest border border-outline-variant/30">
               <span class="text-[10px] text-outline uppercase font-bold block">Target</span>
-              <span class="text-secondary font-bold text-sm mt-0.5 block">Hindi (hi-IN)</span>
+              <span class="text-secondary font-bold text-sm mt-0.5 block">English (en-US)</span>
             </div>
             <div class="p-2.5 rounded-lg bg-surface-lowest border border-outline-variant/30">
               <span class="text-[10px] text-outline uppercase font-bold block">Quality Floor</span>
@@ -331,7 +331,7 @@ const CurrentTransactionView = {
   },
 
   async startLiveExecution(prompt) {
-    this.currentPrompt = prompt || (AppState && AppState.currentPrompt) || "Translate this PDF to Hindi. Quality > 0.9. Max $5.";
+    this.currentPrompt = prompt || (AppState && AppState.currentPrompt) || "Translate this legal contract to English. Quality > 0.9. Max $5.";
     this.status = "RUNNING";
     this.isExecuting = true;
     this.activeStep = 1;
@@ -402,7 +402,7 @@ const CurrentTransactionView = {
 
   render() {
     this.init();
-    const prompt = this.currentPrompt || (AppState && AppState.currentPrompt) || "Translate this PDF to Hindi. Quality > 0.9. Max $5.";
+    const prompt = this.currentPrompt || (AppState && AppState.currentPrompt) || "Translate this legal contract to English. Quality > 0.9. Max $5.";
     const isRunning = this.status === "RUNNING";
     const isCompleted = this.status === "COMPLETED";
 
@@ -499,7 +499,7 @@ const CurrentTransactionView = {
                   titleClass = "text-white font-bold";
                   cardBorder = "border-outline-variant/40 bg-surface-lowest";
                 } else if (state === "active") {
-                  iconHtml = '<span class="w-6 h-6 rounded-full bg-secondary/20 text-secondary border border-secondary/50 flex items-center justify-center text-xs font-bold font-mono glow-cyan animate-pulse">⚡</span>';
+                  iconHtml = '<span class="w-6 h-6 rounded-full bg-secondary/20 text-secondary border border-secondary/50 flex items-center justify-center text-xs font-bold font-mono glow-cyan"><span class="material-symbols-outlined text-xs animate-pulse">bolt</span></span>';
                   titleClass = "text-secondary font-extrabold";
                   cardBorder = "border-secondary/60 bg-secondary/[0.04] shadow-md";
                 }
@@ -591,7 +591,7 @@ const CurrentTransactionView = {
             <!-- Delivered Translation Preview -->
             <div class="p-4 rounded-xl bg-surface-lowest border border-outline-variant/30 space-y-2">
               <div class="flex items-center justify-between text-[11px] font-mono text-outline">
-                <span>Delivered Translation Output (Hindi):</span>
+                <span>Delivered Output (English):</span>
                 <span class="text-tertiary font-bold">100% Cryptographic Match</span>
               </div>
               <p class="text-sm font-sans text-white leading-relaxed p-3.5 bg-surface-high/30 rounded-lg border border-outline-variant/20 select-text">
@@ -622,14 +622,14 @@ const CurrentTransactionView = {
                 onclick="App.navigate('purchases')"
                 class="px-5 py-2.5 rounded-xl bg-surface-high hover:bg-surface-highest border border-outline-variant/40 text-xs font-mono font-bold text-white flex items-center gap-2 transition cursor-pointer active:scale-95"
               >
-                <span>📋</span>
+                <span class="material-symbols-outlined text-sm">receipt_long</span>
                 <span>View in Purchases Explorer &rarr;</span>
               </button>
               <button
                 onclick="App.navigate('buy')"
                 class="px-5 py-2.5 rounded-xl bg-secondary/20 hover:bg-secondary/30 border border-secondary/50 text-xs font-mono font-bold text-secondary hover:text-white flex items-center gap-2 transition shadow-sm glow-cyan cursor-pointer active:scale-95"
               >
-                <span>🤖</span>
+                <span class="material-symbols-outlined text-sm">smart_toy</span>
                 <span>Buy Another Service</span>
               </button>
             </div>

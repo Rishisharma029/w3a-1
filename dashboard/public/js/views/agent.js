@@ -12,7 +12,7 @@
 
 const AgentView = {
   initialized: false,
-  currentPrompt: "Translate this PDF to Hindi.\nHighest quality under $5.",
+  currentPrompt: "Translate this legal contract to English.\nHighest quality under $5.",
   activeResult: null,
   isExecuting: false,
 
@@ -312,7 +312,7 @@ const AgentView = {
     if (data && (data.success === false || trace.status === "REJECTED" || (data.error && !trace.txHash))) {
       const reason = (trace.reason || data.reason || data.error || "Overspend: Amount exceeds remaining authorized budget").toUpperCase();
       
-      // Update Stage 7 to ❌ REJECTED / BLOCKED
+      // Update Stage 7 to REJECTED / BLOCKED
       const stage7 = document.getElementById("stage-7");
       if (stage7) {
         stage7.className = "live-tx-step rounded-xl p-4 bg-error/15 border-2 border-error/70 shadow-lg glow-crimson space-y-2";
@@ -323,14 +323,14 @@ const AgentView = {
               <span>SMART CONTRACT DEFENSE</span>
             </div>
             <span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-error/20 text-error border border-error/50 glow-crimson">
-              ❌ TRANSACTION BLOCKED
+              TRANSACTION BLOCKED
             </span>
           </div>
           <div class="p-3 rounded-lg bg-surface-lowest border border-error/30 text-xs space-y-1">
             <div class="flex justify-between"><span class="text-outline">Violation Detected:</span> <strong class="text-error font-bold">${reason}</strong></div>
             <div class="flex justify-between"><span class="text-outline">Remaining Budget:</span> <strong class="text-white font-bold">$${currentRem} USDC</strong></div>
             <div class="text-[11px] text-error pt-1 border-t border-error/20 flex items-center gap-1.5">
-              <span>🛡️</span>
+              <span class="material-symbols-outlined text-sm">shield</span>
               <span>TokenBudgetEnforcer.sol physically blocked settlement. Zero ERC-20 tokens moved.</span>
             </div>
           </div>
@@ -394,7 +394,7 @@ const AgentView = {
 
     const txHash = trace.txHash || "0xda48b1c9f4d7159c8e192a6374028471b058c067e26830571092e093847228e9";
     const deliveryHash = trace.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
-    const rawContent = trace.deliveredContent || trace.content || "यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.";
+    const rawContent = trace.deliveredContent || trace.content || "This is the translated text - Autonomous AI legal translation delivered.";
     const deliveredText = typeof rawContent === "object" ? (rawContent.translatedText || JSON.stringify(rawContent)) : rawContent;
 
     await delay(300);
@@ -529,7 +529,7 @@ const AgentView = {
               ✓ PROVIDER DISCOVERED & SELECTED
             </span>
             <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-secondary/15 text-secondary border border-secondary/40">
-              ⚡ n8n ENGINE (cveIFBZn9aM1CNLF)
+              n8n ENGINE (cveIFBZn9aM1CNLF)
             </span>
             <span class="text-xs font-mono text-white font-bold">${winner.name}</span>
           </div>
@@ -726,7 +726,7 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
               </p>
             </div>
             <div class="text-xs font-mono text-outline bg-surface-lowest px-3 py-2 rounded-lg border border-outline-variant/30 max-w-sm">
-              <span class="text-white font-bold">⚡ Dynamic Market Search:</span>
+              <span class="text-white font-bold">Dynamic Market Search:</span>
               <span class="block text-on-surface-variant text-[11px] mt-0.5">The AI doesn't get a predefined provider. It queries and evaluates your live marketplace candidates.</span>
             </div>
           </div>
@@ -739,24 +739,24 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
                 rows="3"
                 oninput="AgentView.handlePromptChange(this.value)"
                 class="w-full bg-surface-lowest border-2 border-outline-variant/60 focus:border-secondary rounded-xl p-4 text-white font-mono text-sm leading-relaxed outline-none transition shadow-inner resize-none"
-                placeholder="e.g. Translate this PDF to Hindi. Highest quality under $5."
+                placeholder="e.g. Translate this legal contract to English. Highest quality under $5."
               >${this.currentPrompt}</textarea>
             </div>
 
             <!-- Quick Preset Chips -->
             <div class="flex flex-wrap items-center gap-2 text-xs font-mono">
               <span class="text-outline text-[11px]">Quick Prompts:</span>
-              <button onclick="AgentView.setPreset('Translate this PDF to Hindi.\\nHighest quality under $5.')" class="px-2.5 py-1 rounded-md bg-surface-container hover:bg-surface-high border border-outline-variant/40 text-on-surface hover:text-white transition cursor-pointer">
-                📄 PDF to Hindi (Quality &lt; $5)
+              <button onclick="AgentView.setPreset('Translate this legal contract to English.\\nHighest quality under $5.')" class="px-2.5 py-1 rounded-md bg-surface-container hover:bg-surface-high border border-outline-variant/40 text-on-surface hover:text-white transition cursor-pointer">
+                Legal Contract to English (< $5)
               </button>
               <button onclick="AgentView.setPreset('Process statistical datasets under $4.\\nFastest compute turnaround.')" class="px-2.5 py-1 rounded-md bg-surface-container hover:bg-surface-high border border-outline-variant/40 text-on-surface hover:text-white transition cursor-pointer">
-                ⚙️ Process Dataset (&lt; $4)
+                Process Dataset (< $4)
               </button>
               <button onclick="AgentView.setPreset('Fastest image object analysis under $3.\\nDetect bounding boxes.')" class="px-2.5 py-1 rounded-md bg-surface-container hover:bg-surface-high border border-outline-variant/40 text-on-surface hover:text-white transition cursor-pointer">
-                🖼️ Image Analysis (&lt; $3)
+                Image Analysis (< $3)
               </button>
               <button onclick="AgentView.setPreset('Cheapest text translation under $2.\\nBudget priority.')" class="px-2.5 py-1 rounded-md bg-surface-container hover:bg-surface-high border border-outline-variant/40 text-on-surface hover:text-white transition cursor-pointer">
-                💰 Budget Translate (&lt; $2)
+                Budget Translate (< $2)
               </button>
             </div>
 

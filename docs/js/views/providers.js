@@ -177,7 +177,7 @@ const ProvidersView = {
         name: "Translation API",
         providerId: "alpha-translate",
         providerName: "Alpha Translate",
-        description: "Translate documents to Hindi with nuance verification",
+        description: "Translate documents to English with nuance verification",
         quality: 0.92,
         latency: "200ms",
         price: "$4.00 USDC / request",
@@ -312,7 +312,7 @@ const ProvidersView = {
         whyItems: [
           { icon: "✓", text: "Within $5 budget ($3.00)", color: "text-slate-200" },
           { icon: "✘", text: "Quality 0.84 < 0.90 threshold", color: "text-amber-400" },
-          { icon: "⚠", text: "Discarded: lower quality score", color: "text-outline" },
+          { icon: "!", text: "Discarded: lower quality score", color: "text-outline" },
         ],
       },
       "gamma-translate": {
@@ -870,9 +870,9 @@ const ProvidersView = {
               <textarea
                 id="pubServiceDesc"
                 rows="2"
-                placeholder="e.g. Translate PDF documents to Hindi with layout preservation"
+                placeholder="e.g. Translate PDF documents to English with layout preservation"
                 class="w-full px-3 py-2 rounded-lg bg-surface-lowest border border-outline-variant/40 text-white placeholder-outline focus:outline-none focus:border-secondary transition font-sans text-xs"
-              >Translate PDF documents to Hindi with layout preservation</textarea>
+              >Translate PDF documents to English with layout preservation</textarea>
             </div>
 
             <!-- Price & Quality Grid -->

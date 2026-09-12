@@ -197,15 +197,15 @@ async function main() {
       }
     }
   } catch (err) {
-    console.log(chalk.yellow(`  ⚠ Note on initial seed: ${err.message}`));
+    console.log(chalk.yellow(`  [WARN] Note on initial seed: ${err.message}`));
   }
 
   // Final Banner
   console.log("\n" + chalk.cyan("═".repeat(76)));
   console.log(chalk.bold.green("  ✔  W3A-1 LOCALHOST ENVIRONMENT RUNNING & READY"));
   console.log(chalk.cyan("═".repeat(76)));
-  console.log(chalk.bold.white(`\n  👉 Open Owner Control Center:  ${chalk.underline.cyan(`http://localhost:${DASHBOARD_PORT}`)}`));
-  console.log(chalk.bold.white(`  👉 x402 Token Marketplace:     ${chalk.underline.cyan(`http://localhost:${MARKETPLACE_PORT}`)}`));
+  console.log(chalk.bold.white(`\n  > Open Owner Control Center:  ${chalk.underline.cyan(`http://localhost:${DASHBOARD_PORT}`)}`));
+  console.log(chalk.bold.white(`  > x402 Token Marketplace:     ${chalk.underline.cyan(`http://localhost:${MARKETPLACE_PORT}`)}`));
   console.log(chalk.gray("\n  • Live Network: Hardhat Local EVM (Chain ID: 31337)"));
   console.log(chalk.gray(`  • Token Contract (MockUSDC):      ${tokenAddress}`));
   console.log(chalk.gray(`  • Protocol Enforcer Contract:     ${enforcerAddress}`));

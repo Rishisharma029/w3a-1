@@ -818,7 +818,7 @@ function createN8nRouter({
   // Natural-Language AI Intent -> Marketplace Discovery & Scoring -> x402 V2 Settlement
   // ---------------------------------------------------------------------------
   router.post("/api/orchestrate/ai-purchase", async (req, res) => {
-    const prompt = (req.body && req.body.prompt) || "Translate this PDF to Hindi.\nHighest quality under $5.";
+    const prompt = (req.body && req.body.prompt) || "Translate this legal contract to English.\nHighest quality under $5.";
     const runId = "AI-PURCHASE-" + Date.now();
 
     try {
@@ -891,7 +891,7 @@ function createN8nRouter({
 
       // Step 3: Trigger n8n Workflow Webhook as Primary Orchestration Engine
       const tunnelBase = (dashboardUrl && !dashboardUrl.includes("localhost")) ? dashboardUrl : ACTIVE_TUNNEL_URL;
-      const targetLang = parsed.targetLanguage || "Hindi";
+      const targetLang = parsed.targetLanguage || "English";
       const serviceUrl = `${marketplaceUrl}/x402/providers/${selected.providerId}/service`;
       const agentAddress = agentSigner ? await agentSigner.getAddress() : "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
       const enforcerAddress = enforcerContract ? await enforcerContract.getAddress() : "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
@@ -1033,7 +1033,7 @@ function createN8nRouter({
         deliveredContent = {
           service: selectedService.id || "text-translate",
           provider: selected.name,
-          translatedText: `[${selected.name}] PDF Translation to ${targetLang}:\n"इस दस्तावेज़ का विश्लेषण व अनुवाद पूर्ण हो चुका है। गुणवत्ता प्रामाणिकता: ${selected.qualityScore}।"`,
+          translatedText: `[${selected.name}] Legal Contract Translation to ${targetLang}:\n"This document analysis and translation is complete. Quality confidence: ${selected.qualityScore}."`,
           confidence: 0.94,
           status: "DELIVERED",
           latencyMs: selected.estimatedLatencyMs || 200,

@@ -742,7 +742,7 @@
         + Add Funds
       </button>
       <a id="btnOwnerControlCenter" href="http://localhost:14300" target="_blank" class="btn btn-dashboard">
-        ⚡ Open Owner Control Center
+        Open Owner Control Center
       </a>
       <button class="btn btn-publish" onclick="openPublishModal()">
         + Publish a Service
@@ -765,12 +765,12 @@
         </div>
       </div>
 
-      <textarea id="aiPrompt" rows="2" class="ai-prompt-box">Translate this PDF to Hindi.
+      <textarea id="aiPrompt" rows="2" class="ai-prompt-box">Translate this legal contract to English.
 Highest quality under $5.</textarea>
 
       <div class="presets-row">
         <span class="preset-label">Quick intent presets:</span>
-        <button class="preset-chip" onclick="setAiPrompt('Translate this PDF to Hindi.\nHighest quality under $5.')">Translate PDF to Hindi (Quality &lt; $5)</button>
+        <button class="preset-chip" onclick="setAiPrompt('Translate this legal contract to English.\nHighest quality under $5.')">Translate PDF to Hindi (Quality &lt; $5)</button>
         <button class="preset-chip" onclick="setAiPrompt('Process statistical datasets under $4.\nFastest compute turnaround.')">Process Dataset (&lt; $4)</button>
         <button class="preset-chip" onclick="setAiPrompt('Fastest image object analysis under $3.\nDetect bounding boxes.')">Image Analysis (&lt; $3)</button>
         <button class="preset-chip" onclick="setAiPrompt('Cheapest text translation under $2.\nBudget priority.')">Budget Translate (&lt; $2)</button>
@@ -852,7 +852,7 @@ Highest quality under $5.</textarea>
           </div>
           <div class="form-group">
             <label class="form-label">Description</label>
-            <input type="text" class="form-input" id="pubDesc" placeholder="e.g. Translate PDF documents to Hindi" required value="Translate PDF documents to Hindi">
+            <input type="text" class="form-input" id="pubDesc" placeholder="e.g. Translate PDF documents to English" required value="Translate PDF documents to English">
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div class="form-group">
@@ -902,7 +902,7 @@ Highest quality under $5.</textarea>
     <div class="modal-box" style="max-width: 480px;">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 0.6rem;">
-          <span style="color: var(--accent-emerald); font-size: 1.2rem;">💰</span>
+          <span style="color: var(--accent-emerald); font-weight: bold;">[USDC]</span>
           <div class="modal-title">Add Funds to AI Agent</div>
         </div>
         <button class="modal-close" onclick="closeFundModal()">&times;</button>
@@ -934,7 +934,7 @@ Highest quality under $5.</textarea>
           </div>
 
           <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 6px; padding: 0.75rem; font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 1.2rem;">
-            ⚡ Triggers an on-chain deposit to <strong style="color: var(--accent-cyan);">TokenBudgetEnforcer.sol</strong>, enabling the AI to settle autonomous purchases seamlessly.
+            Triggers an on-chain deposit to <strong style="color: var(--accent-cyan);">TokenBudgetEnforcer.sol</strong>, enabling the AI to settle autonomous purchases seamlessly.
           </div>
 
           <div class="modal-footer" style="padding-right: 0; padding-bottom: 0;">
@@ -1049,7 +1049,7 @@ Highest quality under $5.</textarea>
         name: "Translation API",
         providerName: "Alpha Translate",
         providerId: "alpha-translate",
-        description: "Translate documents to Hindi with high neural accuracy.",
+        description: "Translate documents to English with high neural accuracy.",
         quality: 0.92,
         latency: "200ms",
         price: "$4.00 USDC / request",
@@ -1188,7 +1188,7 @@ Highest quality under $5.</textarea>
       stagesContainer.innerHTML += `
         <div class="live-tx-step">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: var(--accent-cyan); font-size: 0.85rem;">🤖 AI AGENT</span>
+            <span style="font-weight: 800; color: var(--accent-cyan); font-size: 0.85rem;">AI AGENT</span>
             <span style="font-size: 0.7rem; background: rgba(0,242,255,0.12); color: var(--accent-cyan); border: 1px solid rgba(0,242,255,0.3); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">UNDERSTANDING REQUEST...</span>
           </div>
           <div style="background: #000; padding: 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); color: #fff; font-size: 0.85rem; margin-bottom: 0.4rem;">
@@ -1207,7 +1207,7 @@ Highest quality under $5.</textarea>
       stagesContainer.innerHTML += `
         <div class="live-tx-step">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <span style="font-weight: 800; color: #a855f7; font-size: 0.85rem;">🏪 MARKETPLACE</span>
+            <span style="font-weight: 800; color: #a855f7; font-size: 0.85rem;">MARKETPLACE</span>
             <span style="font-size: 0.7rem; background: rgba(168,85,247,0.15); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">3 PROVIDERS DISCOVERED</span>
           </div>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.5rem; font-size: 0.8rem;">
@@ -1234,7 +1234,7 @@ Highest quality under $5.</textarea>
       stagesContainer.innerHTML += `
         <div class="live-tx-step" style="border-color: rgba(16, 185, 129, 0.5); box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: var(--accent-emerald); font-size: 0.85rem;">🎯 AI DECISION</span>
+            <span style="font-weight: 800; color: var(--accent-emerald); font-size: 0.85rem;">AI DECISION</span>
             <span style="font-size: 0.7rem; background: rgba(16,185,129,0.15); color: var(--accent-emerald); border: 1px solid rgba(16,185,129,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">Selected ✓</span>
           </div>
           <div style="background: #000; padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
@@ -1258,7 +1258,7 @@ Highest quality under $5.</textarea>
       stagesContainer.innerHTML += `
         <div class="live-tx-step">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: var(--accent-amber); font-size: 0.85rem;">🔒 x402 V2</span>
+            <span style="font-weight: 800; color: var(--accent-amber); font-size: 0.85rem;">x402 V2</span>
             <span style="font-size: 0.7rem; background: rgba(245,158,11,0.15); color: var(--accent-amber); border: 1px solid rgba(245,158,11,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">402 PAYMENT REQUIRED</span>
           </div>
           <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; line-height: 1.6;">
@@ -1277,7 +1277,7 @@ Highest quality under $5.</textarea>
       stagesContainer.innerHTML += `
         <div class="live-tx-step">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: var(--accent-cyan); font-size: 0.85rem;">✍️ PAYMENT-SIGNATURE</span>
+            <span style="font-weight: 800; color: var(--accent-cyan); font-size: 0.85rem;">PAYMENT-SIGNATURE</span>
             <span style="font-size: 0.7rem; background: rgba(0,242,255,0.15); color: var(--accent-cyan); border: 1px solid rgba(0,242,255,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">EIP-712 ✓</span>
           </div>
           <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between;">
@@ -1294,7 +1294,7 @@ Highest quality under $5.</textarea>
       stagesContainer.innerHTML += `
         <div class="live-tx-step">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: #818cf8; font-size: 0.85rem;">⚡ FACILITATOR</span>
+            <span style="font-weight: 800; color: #818cf8; font-size: 0.85rem;">FACILITATOR</span>
             <span style="font-size: 0.7rem; background: rgba(129,140,248,0.15); color: #818cf8; border: 1px solid rgba(129,140,248,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">VERIFYING PAYMENT...</span>
           </div>
           <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted);">
@@ -1310,7 +1310,7 @@ Highest quality under $5.</textarea>
       stagesContainer.innerHTML += `
         <div class="live-tx-step">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: var(--accent-emerald); font-size: 0.85rem;">🛡️ SMART CONTRACT</span>
+            <span style="font-weight: 800; color: var(--accent-emerald); font-size: 0.85rem;">️ SMART CONTRACT</span>
             <span style="font-size: 0.7rem; background: rgba(16,185,129,0.15); color: var(--accent-emerald); border: 1px solid rgba(16,185,129,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">✓ AUTHORIZED</span>
           </div>
           <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; line-height: 1.6;">
@@ -1330,7 +1330,7 @@ Highest quality under $5.</textarea>
       stagesContainer.innerHTML += `
         <div id="mktStage8" class="live-tx-step">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: #fff; font-size: 0.85rem;">⛓️ BLOCKCHAIN</span>
+            <span style="font-weight: 800; color: #fff; font-size: 0.85rem;">BLOCKCHAIN</span>
             <span id="mktBlockchainBadge" style="font-size: 0.7rem; background: rgba(255,255,255,0.1); color: var(--text-muted); border: 1px solid var(--border-color); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">SETTLEMENT PENDING...</span>
           </div>
           <div id="mktBlockchainDetail" style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted);">
@@ -1354,8 +1354,8 @@ Highest quality under $5.</textarea>
         stagesContainer.innerHTML += `
           <div class="live-tx-step" style="border: 2px solid var(--accent-red); background: rgba(239, 68, 68, 0.1); box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-              <span style="font-weight: 800; color: var(--accent-red); font-size: 0.9rem;">🛡️ SMART CONTRACT DEFENSE</span>
-              <span style="font-size: 0.7rem; background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.5); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">❌ TRANSACTION BLOCKED</span>
+              <span style="font-weight: 800; color: var(--accent-red); font-size: 0.9rem;">️ SMART CONTRACT DEFENSE</span>
+              <span style="font-size: 0.7rem; background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.5); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">TRANSACTION BLOCKED</span>
             </div>
             <div style="background: #000; padding: 0.7rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; line-height: 1.6;">
               <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Violation Detected:</span> <strong style="color: var(--accent-red);">${reason}</strong></div>
@@ -1369,7 +1369,7 @@ Highest quality under $5.</textarea>
           <div class="live-tx-step" style="border: 2px solid var(--accent-red); background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(0, 0, 0, 0.8));">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="font-size: 1.2rem; color: var(--accent-red);">🛡️</span>
+                <span style="font-size: 1.2rem; color: var(--accent-red);">️</span>
                 <span style="font-size: 1.1rem; font-weight: 800; color: #fff;">ATTACK INTERCEPTED</span>
               </div>
               <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent-red); font-family: var(--font-mono);">$0.00 RELEASED</div>
@@ -1389,7 +1389,7 @@ Highest quality under $5.</textarea>
 
       const txHash = trace.txHash || "0xda48b1c9f4d7159c8e192a6374028471b058c067e26830571092e093847228e9";
       const deliveryHash = trace.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
-      const rawContent = trace.deliveredContent || trace.content || "यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.";
+      const rawContent = trace.deliveredContent || trace.content || "This is the translated text - Autonomous AI legal translation delivered.";
       const deliveredText = typeof rawContent === "object" ? (rawContent.translatedText || JSON.stringify(rawContent)) : rawContent;
 
       await delay(300);
@@ -1424,7 +1424,7 @@ Highest quality under $5.</textarea>
       stagesContainer.innerHTML += `
         <div class="live-tx-step">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: var(--accent-cyan); font-size: 0.85rem;">📦 DELIVERY</span>
+            <span style="font-weight: 800; color: var(--accent-cyan); font-size: 0.85rem;">DELIVERY</span>
             <span style="font-size: 0.7rem; background: rgba(0,242,255,0.15); color: var(--accent-cyan); border: 1px solid rgba(0,242,255,0.3); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">Receiving translation...</span>
           </div>
           <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem;">
@@ -1443,7 +1443,7 @@ Highest quality under $5.</textarea>
       stagesContainer.innerHTML += `
         <div class="live-tx-step" style="border-color: rgba(16, 185, 129, 0.5);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: var(--accent-emerald); font-size: 0.85rem;">🔐 SHA-256</span>
+            <span style="font-weight: 800; color: var(--accent-emerald); font-size: 0.85rem;">SHA-256</span>
             <span style="font-size: 0.7rem; background: rgba(16,185,129,0.15); color: var(--accent-emerald); border: 1px solid rgba(16,185,129,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">✓ MATCH</span>
           </div>
           <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem;">
@@ -1469,7 +1469,7 @@ Highest quality under $5.</textarea>
         <div class="live-tx-step" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(0, 242, 255, 0.1)); border: 2px solid var(--accent-emerald); box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); padding: 1.2rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="font-size: 1.2rem; color: var(--accent-emerald);">🎉</span>
+              <span style="font-size: 1.2rem; color: var(--accent-emerald);"></span>
               <span style="font-size: 1.1rem; font-weight: 800; color: #fff;">PURCHASE COMPLETE</span>
             </div>
             <div style="font-size: 1.3rem; font-weight: 800; color: var(--accent-emerald); font-family: var(--font-mono);">

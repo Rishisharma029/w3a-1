@@ -43,7 +43,7 @@ function banner(title) {
 function ok(msg)    { console.log(chalk.green(`  ✔  ${msg}`)); }
 function fail(msg)  { console.log(chalk.red.bold(`  ✘  ${msg}`)); }
 function info(msg)  { console.log(chalk.white(`     ${msg}`)); }
-function warn(msg)  { console.log(chalk.yellow(`  ⚠  ${msg}`)); }
+function warn(msg)  { console.log(chalk.yellow(`  [WARN]  ${msg}`)); }
 function step(msg)  { console.log(chalk.magenta(`  ▶  ${msg}`)); }
 
 async function printBudget(agent) {

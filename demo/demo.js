@@ -40,7 +40,7 @@ function banner(title) {
 function ok(msg)   { console.log(chalk.green(`  ✔  ${msg}`)); }
 function fail(msg) { console.log(chalk.red(`  ✘  ${msg}`)); }
 function info(msg) { console.log(chalk.white(`     ${msg}`)); }
-function warn(msg) { console.log(chalk.yellow(`  ⚠  ${msg}`)); }
+function warn(msg) { console.log(chalk.yellow(`  [WARN]  ${msg}`)); }
 
 async function printBudget(agent) {
   const { maxBudget, totalSpent, remaining } = await agent.getBudgetState();

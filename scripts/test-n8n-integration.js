@@ -191,7 +191,7 @@ async function runTests() {
   console.log(`   ✔ /internal/x402/confirm returned settled: true with txHash: ${confirmRes.data.txHash}`);
 
   console.log("\n=================================================================");
-  console.log("🎉 ALL 10 n8n WORKFLOW INTEGRATION CHECKS PASSED PERFECTLY! 🎉");
+  console.log("ALL 10 n8n WORKFLOW INTEGRATION CHECKS PASSED PERFECTLY! ");
   console.log("=================================================================");
 
   process.exit(0);

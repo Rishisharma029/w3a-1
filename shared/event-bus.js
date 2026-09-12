@@ -195,7 +195,7 @@ class W3A1EventBus extends EventEmitter {
       case "DELIVERY_RECEIVED":
         return `Delivered content received from ${prov}`;
       case "HASH_VERIFIED":
-        return `Delivery content SHA-256 hash verified independently against on-chain proof ✔`;
+        return `Delivery content SHA-256 hash verified independently against on-chain proof (VERIFIED)`;
       case "OVERSPEND_BLOCKED":
         return `SPENDING CAP ENFORCED: Overspend attempt blocked physically by protocol (${payload.reason || 'Ceiling exceeded'})`;
       case "RETRY_DETECTED":

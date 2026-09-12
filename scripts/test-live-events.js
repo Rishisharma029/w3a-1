@@ -170,7 +170,7 @@ async function testLiveEventStream() {
     if (receivedTypes.includes(exp)) {
       console.log(`   ✔ Confirmed stream event: ${exp}`);
     } else {
-      console.warn(`   ⚠ Note: Event ${exp} not in this slice (might have completed earlier)`);
+      console.warn(`   [WARN] Note: Event ${exp} not in this slice (might have completed earlier)`);
     }
   }
 
@@ -218,6 +218,6 @@ async function testLiveEventStream() {
 }
 
 testLiveEventStream().catch(err => {
-  console.error('\n❌ Test failed:', err.message);
+  console.error('\n[REJECTED] Test failed:', err.message);
   process.exit(1);
 });

@@ -243,7 +243,7 @@ const ApiService = {
           priority: "quality",
           minQuality: 0.90,
           maxPrice: 5,
-          targetLanguage: "Hindi",
+          targetLanguage: "English",
         },
         selectedProvider: {
           providerId: "alpha-translate",
@@ -295,7 +295,7 @@ const ApiService = {
           blockNumber: 13,
           deliveryHash: "sha256:366cfc3da3d1160ea0519cacc7fd255f48b39114681212789c53d3ce2a12e16c",
           deliveredContent: {
-            translatedText: "[Alpha] PDF Translation → (translated to Hindi)",
+            translatedText: "[Alpha] PDF Translation → (translated to English)",
             confidence: 0.92,
           },
           verified: true,

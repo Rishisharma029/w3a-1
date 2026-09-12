@@ -75,8 +75,8 @@ const DeliveryView = {
 
     const content = tx.content || {
       sourceText: "The quick brown fox jumps over the lazy dog",
-      targetLanguage: "Hindi",
-      translatedText: "[Alpha] The quick brown fox jumps over the lazy dog → (translated to Hindi)",
+      targetLanguage: "English",
+      translatedText: "[Alpha] The quick brown fox jumps over the lazy dog → (translated to English)",
       qualityConfidence: tx.quality || 0.92,
       timestamp: tx.timestamp,
     };
@@ -128,7 +128,7 @@ const DeliveryView = {
             `
                 : `
               <span class="px-3 py-1.5 rounded-full text-xs font-mono font-bold bg-tertiary/15 text-tertiary border border-tertiary/40">
-                SHA-256 MATCHED ✔
+                SHA-256 MATCHED (VERIFIED)
               </span>
             `
             }

@@ -57,7 +57,7 @@ async function main() {
   console.log(chalk.bold.cyan("╚══════════════════════════════════════════════════════════════╝\n"));
 
   if (!rpcUrl || !enforcerAddress) {
-    console.log(chalk.yellow("  ⚠  SEPOLIA_RPC_URL and ENFORCER_ADDRESS env vars required."));
+    console.log(chalk.yellow("  [WARN]  SEPOLIA_RPC_URL and ENFORCER_ADDRESS env vars required."));
     console.log(chalk.white("     Set them in .env or export to shell before running.\n"));
     console.log(chalk.gray("  Example:"));
     console.log(chalk.gray("    SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR_KEY"));
@@ -110,7 +110,7 @@ async function main() {
     console.log(chalk.bold.white("  ── Contract State ─────────────────────────────────────────────────"));
     console.log(chalk.white(`     Owner Address:       ${owner}`));
     console.log(chalk.white(`     Agent Address:       ${agent}`));
-    console.log(chalk.white(`     Agent Frozen:        ${isFrozen ? chalk.red("YES ⚠") : chalk.green("NO ✔")}`));
+    console.log(chalk.white(`     Agent Frozen:        ${isFrozen ? chalk.red("YES [ALERT]") : chalk.green("NO [OK]")}`));
     console.log(chalk.white(`     Token Address:       ${onChainToken}`));
     console.log("");
     console.log(chalk.bold.white("  ── Budget State ───────────────────────────────────────────────────"));

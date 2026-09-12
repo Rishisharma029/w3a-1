@@ -31,7 +31,7 @@ async function run() {
   console.log(chalk.blue('[Step 1] Provider publishing service...'));
   const pubResp = await axios.post(`${DASHBOARD_URL}/api/services`, {
     name: 'Legal Document Translation',
-    description: 'Autonomous translation of legal contracts to Hindi with NDA compliance.',
+    description: 'Autonomous translation of legal contracts to English with NDA compliance.',
     price: 4.0,
     quality: 0.94,
     category: 'Translation',
@@ -51,7 +51,7 @@ async function run() {
   mark('Service appears in marketplace', `Catalog has ${mktServices.data.services.length} services`);
 
   // 3. Human asks AI to buy it
-  const prompt = 'Translate this legal contract to Hindi using Legal Document Translation by Alpha Translate. Highest quality under $5.';
+  const prompt = 'Translate this legal contract to English using Legal Document Translation by Alpha Translate. Highest quality under $5.';
   mark('Human asks AI to buy it', `Prompt: "${prompt}"`);
 
   // 4. AI discovers it & 5. AI selects it & 6. n8n orchestrates
