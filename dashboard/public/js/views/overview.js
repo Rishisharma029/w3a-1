@@ -774,7 +774,51 @@ const OverviewView = {
           </div>
         </section>
 
+        <!-- =========================================================================
+             ACETERNITY UI: LARGE SCROLL GENOVA TEXT-HOVER-EFFECT
+             ========================================================================= -->
+        <section class="mt-14 mb-8 p-6 md:p-12 rounded-3xl bg-surface-lowest/70 border border-outline-variant/30 backdrop-blur-2xl shadow-2xl relative overflow-hidden flex flex-col items-center justify-center">
+          
+          <!-- Top badge and description -->
+          <div class="flex flex-col items-center text-center space-y-2 mb-4 z-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-primary/15 text-primary border border-primary/30 uppercase tracking-widest">
+              <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+              <span>ACETERNITY UI &bull; TEXT HOVER EFFECT</span>
+            </div>
+            <h3 class="font-headline text-lg sm:text-xl font-bold text-white tracking-tight">
+              GENOVA Autonomous Protocol Core
+            </h3>
+            <p class="text-xs font-mono text-outline max-w-md">
+              Hover cursor across the large letters below to reveal the dynamic radial glow mask and gradient contours
+            </p>
+          </div>
+
+          <!-- Large GENOVA Text Hover Area (h-[20rem] to h-[32rem]) -->
+          <div class="w-full max-w-6xl h-[18rem] sm:h-[24rem] md:h-[30rem] flex items-center justify-center relative my-2">
+            ${(typeof window !== "undefined" && window.TextHoverEffect) ? window.TextHoverEffect.render("GENOVA", "genovaTextHoverContainer") : `
+              <div class="font-headline text-7xl md:text-9xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-secondary via-white to-tertiary tracking-widest select-none">
+                GENOVA
+              </div>
+            `}
+          </div>
+
+          <!-- Subtitle footer -->
+          <div class="flex items-center justify-between w-full pt-4 border-t border-outline-variant/20 text-xs font-mono text-outline">
+            <span class="flex items-center gap-1.5 text-secondary">
+              <span class="material-symbols-outlined text-sm">flare</span>
+              <span>Interactive SVG Radial Spotlight</span>
+            </span>
+            <span class="text-slate-400">@aceternity/text-hover-effect &bull; GENOVA</span>
+          </div>
+        </section>
+
       </div>
     `;
+    setTimeout(() => {
+      if (typeof window !== "undefined" && window.TextHoverEffect && typeof window.TextHoverEffect.attach === "function") {
+        window.TextHoverEffect.attach("genovaTextHoverContainer");
+      }
+    }, 60);
+    return htmlOutput;
   },
 };
