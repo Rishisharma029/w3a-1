@@ -59,91 +59,19 @@
 <body class="bg-background text-on-surface font-body antialiased min-h-screen flex select-none selection:bg-secondary selection:text-surface relative overflow-x-hidden">
 
   <!-- =========================================================================
-       SPLINE 3D INTRO OVERLAY (In front of everything until clicked)
+       SPLINE 3D INTRO OVERLAY (Pure 3D embedding in front of everything until clicked)
        ========================================================================= -->
-  <div id="splineIntroOverlay" class="fixed inset-0 z-[99999] bg-[#060913] flex flex-col justify-between overflow-hidden transition-all duration-700 ease-out select-none">
+  <div id="splineIntroOverlay" class="fixed inset-0 z-[99999] bg-[#060913] w-screen h-screen overflow-hidden transition-all duration-700 ease-out cursor-pointer select-none">
     
-    <!-- 3D Spline Canvas -->
-    <div class="absolute inset-0 z-0">
-      <spline-viewer 
-        id="splineViewerElem"
-        url="https://prod.spline.design/LY4wOOGszIMladBL/scene.splinecode" 
-        class="w-full h-full block">
-      </spline-viewer>
-    </div>
+    <!-- Pure 3D Spline Canvas -->
+    <spline-viewer 
+      id="splineViewerElem"
+      url="https://prod.spline.design/LY4wOOGszIMladBL/scene.splinecode" 
+      class="w-full h-full block">
+    </spline-viewer>
 
-    <!-- Top floating HUD bar -->
-    <header class="relative z-10 p-6 flex items-center justify-between pointer-events-none">
-      <div class="flex items-center gap-3 bg-surface-lowest/80 backdrop-blur-xl border border-outline-variant/40 px-4 py-2 rounded-2xl pointer-events-auto shadow-2xl">
-        <div class="w-8 h-8 rounded-xl bg-surface-high border border-secondary/40 flex items-center justify-center glow-cyan">
-          <span class="material-symbols-outlined text-secondary text-lg">shield</span>
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="font-headline font-bold text-white tracking-wider text-sm">W3A-1</span>
-            <span class="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-secondary/20 text-secondary border border-secondary/30">x402 V2 PROTOCOL</span>
-          </div>
-          <p class="text-[10px] font-mono text-on-surface-variant">Autonomous AI Safe-Spend System</p>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2.5">
-        <div class="hidden sm:flex items-center gap-2 bg-surface-lowest/80 backdrop-blur-xl border border-outline-variant/40 px-3.5 py-1.5 rounded-full pointer-events-auto shadow-lg">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider">3D INTERACTIVE SCENE</span>
-        </div>
-
-        <button 
-          onclick="dismissSplineIntro()" 
-          class="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-surface-high/80 hover:bg-surface-highest text-white border border-outline-variant/50 backdrop-blur-md transition-all pointer-events-auto flex items-center gap-1.5 cursor-pointer shadow-lg active:scale-95"
-          title="Skip intro to Control Center"
-        >
-          <span>SKIP TO APP</span>
-          <span class="material-symbols-outlined text-sm">arrow_forward</span>
-        </button>
-      </div>
-    </header>
-
-    <!-- Bottom floating hero call-to-action -->
-    <footer class="relative z-10 pb-10 pt-6 px-6 flex flex-col items-center justify-center text-center pointer-events-none">
-      <div class="space-y-4 max-w-xl pointer-events-auto bg-surface-lowest/85 backdrop-blur-2xl p-6 sm:p-8 rounded-3xl border border-white/10 shadow-[0_10px_50px_rgba(0,0,0,0.8)]">
-        <div>
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-secondary/15 text-secondary border border-secondary/40 uppercase tracking-widest mb-3">
-            <span class="material-symbols-outlined text-xs">bolt</span>
-            <span>LET AI AGENTS BUY SERVICES SAFELY</span>
-          </div>
-          <h1 class="font-headline text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            W3A-1 Safe-Spend Platform
-          </h1>
-          <p class="text-xs sm:text-sm font-body text-slate-300 mt-2 max-w-md mx-auto leading-relaxed">
-            Experience autonomous AI negotiation on x402 V2 wire with immutable EVM spending caps.
-          </p>
-        </div>
-
-        <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <button
-            id="btnEnterPlatform"
-            onclick="dismissSplineIntro()"
-            class="w-full sm:w-auto px-8 py-3.5 rounded-xl font-headline font-bold text-sm text-black bg-gradient-to-r from-secondary via-emerald-400 to-secondary hover:brightness-110 active:scale-95 transition-all shadow-[0_0_35px_rgba(93,230,255,0.6)] glow-cyan flex items-center justify-center gap-3 cursor-pointer group"
-          >
-            <span class="tracking-wider uppercase font-extrabold">ENTER CONTROL CENTER</span>
-            <span class="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">arrow_forward</span>
-          </button>
-          
-          <button
-            onclick="dismissSplineIntro(); if (window.App) App.navigate('providers');"
-            class="w-full sm:w-auto px-5 py-3.5 rounded-xl font-mono text-xs font-bold text-white bg-surface-high hover:bg-surface-highest border border-outline-variant/40 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span class="material-symbols-outlined text-sm text-tertiary">storefront</span>
-            <span>MARKETPLACE</span>
-          </button>
-        </div>
-
-        <p class="text-[11px] font-mono text-slate-400 tracking-wider">
-          Click anywhere or press Enter to launch the dashboard
-        </p>
-      </div>
-    </footer>
+    <!-- Watermark shield cover at bottom-right corner -->
+    <div id="splineWatermarkShield" class="absolute bottom-0 right-0 w-44 h-16 bg-[#060913] z-20 pointer-events-none"></div>
   </div>
 
   <!-- =========================================================================
@@ -565,11 +493,65 @@
   <script src="js/views/settings.js"></script>
   <script src="js/app.js"></script>
 
-  <!-- Spline 3D Intro Controller -->
+  <!-- Spline 3D Intro Controller & Watermark Purger -->
   <script>
     let isSplineDismissed = false;
     let splineMouseDownPos = { x: 0, y: 0 };
     let isSplineDragging = false;
+
+    // 1. Function to thoroughly remove and hide the "Built with Spline" watermark
+    function purgeSplineWatermark() {
+      const viewer = document.getElementById("splineViewerElem");
+      if (!viewer) return;
+
+      if (viewer.shadowRoot) {
+        try {
+          // Remove logo element directly if present
+          const logo = viewer.shadowRoot.querySelector("#logo") || 
+                       viewer.shadowRoot.querySelector('a[href*="spline.design"]') ||
+                       viewer.shadowRoot.querySelector('[id*="logo"]');
+          if (logo) {
+            logo.style.setProperty("display", "none", "important");
+            logo.style.setProperty("opacity", "0", "important");
+            logo.style.setProperty("visibility", "hidden", "important");
+            logo.style.setProperty("pointer-events", "none", "important");
+            logo.remove();
+          }
+
+          // Inject persistent style into shadowRoot
+          if (!viewer.shadowRoot.querySelector("#spline-hide-logo-style")) {
+            const style = document.createElement("style");
+            style.id = "spline-hide-logo-style";
+            style.textContent = `
+              #logo, a#logo, #logo-container, a[href*="spline.design"], .watermark,
+              [data-testid="watermark"], [class*="watermark"], [id*="watermark"],
+              #hint-drag, #preloader {
+                display: none !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
+                pointer-events: none !important;
+                width: 0 !important;
+                height: 0 !important;
+                overflow: hidden !important;
+                position: absolute !important;
+                left: -9999px !important;
+              }
+            `;
+            viewer.shadowRoot.appendChild(style);
+          }
+
+          // Set up MutationObserver to re-purge if reconstructed
+          if (!viewer._watermarkObserved) {
+            viewer._watermarkObserved = true;
+            const observer = new MutationObserver(() => {
+              const el = viewer.shadowRoot.querySelector("#logo") || viewer.shadowRoot.querySelector('a[href*="spline.design"]');
+              if (el) el.remove();
+            });
+            observer.observe(viewer.shadowRoot, { childList: true, subtree: true });
+          }
+        } catch (_) {}
+      }
+    }
 
     function dismissSplineIntro() {
       if (isSplineDismissed) return;
@@ -588,17 +570,61 @@
       const overlay = document.getElementById("splineIntroOverlay");
       if (!overlay) return;
       
-      overlay.style.display = "flex";
-      // Trigger reflow to restart transition
+      overlay.style.display = "block";
       void overlay.offsetWidth;
       overlay.classList.remove("opacity-0", "scale-105", "pointer-events-none");
+      purgeSplineWatermark();
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       const overlay = document.getElementById("splineIntroOverlay");
+      const viewer = document.getElementById("splineViewerElem");
+
+      // Repeatedly purge watermark during initial load
+      purgeSplineWatermark();
+      const watermarkInterval = setInterval(purgeSplineWatermark, 100);
+      setTimeout(() => clearInterval(watermarkInterval), 10000);
+
+      // 2. Connect direct entering link to the 3D "Get it for your business" button
+      if (viewer) {
+        viewer.addEventListener("load", () => {
+          purgeSplineWatermark();
+
+          // Connect Spline runtime events to 3D objects
+          const splineApp = viewer.spline || viewer._spline;
+          if (splineApp) {
+            // Check if splineApp supports event listener
+            const handleSpline3DEvent = (e) => {
+              const targetName = (e && e.target && e.target.name) ? String(e.target.name).toLowerCase() : "";
+              const targetId = (e && e.target && e.target.id) ? String(e.target.id).toLowerCase() : "";
+              
+              // Target "Get it for your business" button, Rectangle 3, Text 3, or any interactive business button
+              if (
+                targetName.includes("business") ||
+                targetName.includes("text 3") ||
+                targetName.includes("rectangle 3") ||
+                targetName.includes("rectangle 2") ||
+                targetName.includes("rectangle 4") ||
+                targetName.includes("button") ||
+                targetName.includes("get") ||
+                targetId.includes("517ef7ec") ||
+                targetId.includes("edb14036")
+              ) {
+                dismissSplineIntro();
+              }
+            };
+
+            if (typeof splineApp.addEventListener === "function") {
+              splineApp.addEventListener("mouseDown", handleSpline3DEvent);
+              splineApp.addEventListener("mouseUp", handleSpline3DEvent);
+            }
+          }
+        });
+      }
+
       if (!overlay) return;
 
-      // Mouse drag vs click detector: clicking anywhere dismisses, dragging to orbit does not
+      // Mouse drag vs click detector: genuine clicks dismiss, dragging to orbit does not
       overlay.addEventListener("mousedown", (e) => {
         splineMouseDownPos = { x: e.clientX, y: e.clientY };
         isSplineDragging = false;
@@ -607,19 +633,19 @@
       overlay.addEventListener("mousemove", (e) => {
         const dx = Math.abs(e.clientX - splineMouseDownPos.x);
         const dy = Math.abs(e.clientY - splineMouseDownPos.y);
-        if (dx > 10 || dy > 10) {
+        if (dx > 8 || dy > 8) {
           isSplineDragging = true;
         }
       });
 
       overlay.addEventListener("mouseup", (e) => {
-        // If it was a click and not a drag, dismiss to reveal app
+        // If it was a click on the scene/button and not a drag, enter the app
         if (!isSplineDragging) {
           dismissSplineIntro();
         }
       });
 
-      // Touch drag vs tap detector for mobile
+      // Touch handler for mobile devices
       let touchStartPos = { x: 0, y: 0 };
       let isTouching = false;
       overlay.addEventListener("touchstart", (e) => {
@@ -633,7 +659,7 @@
         if (e.touches && e.touches[0]) {
           const dx = Math.abs(e.touches[0].clientX - touchStartPos.x);
           const dy = Math.abs(e.touches[0].clientY - touchStartPos.y);
-          if (dx > 10 || dy > 10) isTouching = true;
+          if (dx > 8 || dy > 8) isTouching = true;
         }
       }, { passive: true });
 
@@ -643,7 +669,7 @@
         }
       });
 
-      // Keyboard shortcuts: Enter, Space, Escape to dismiss
+      // Keyboard shortcut to enter
       window.addEventListener("keydown", (e) => {
         if (!isSplineDismissed && (e.key === "Enter" || e.key === " " || e.key === "Escape")) {
           dismissSplineIntro();

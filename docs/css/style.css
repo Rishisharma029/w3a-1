@@ -199,3 +199,22 @@ input:focus, select:focus, textarea:focus { outline: none !important; border-col
 .op-pulse-dot { animation: pulse-ring 1.4s infinite ease-in-out; }
 .shader-card-glass { background: rgba(11,23,21,.82) !important; border: 1px solid var(--line-strong) !important; backdrop-filter: blur(22px) !important; }
 #w3aShaderBg canvas, #w3aMarketplaceShaderBg canvas { filter: saturate(.72) contrast(1.05) brightness(.85); }
+
+/* Spline 3D Viewer & Watermark Suppression */
+spline-viewer {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+}
+
+spline-viewer::part(watermark) {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+#splineIntroOverlay {
+  background: #060913 !important;
+}
+
