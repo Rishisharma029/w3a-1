@@ -61,17 +61,27 @@
   <!-- =========================================================================
        SPLINE 3D INTRO OVERLAY (Pure 3D embedding in front of everything until clicked)
        ========================================================================= -->
-  <div id="splineIntroOverlay" class="fixed inset-0 z-[99999] bg-[#060913] w-screen h-screen overflow-hidden transition-all duration-700 ease-out cursor-pointer select-none">
+  <div id="splineIntroOverlay" class="fixed inset-0 z-[99999] bg-white w-screen h-screen overflow-hidden transition-all duration-700 ease-out select-none">
     
-    <!-- Pure 3D Spline Canvas -->
+    <!-- Pure 3D Spline Canvas with local 'Get in' scene -->
     <spline-viewer 
       id="splineViewerElem"
-      url="https://prod.spline.design/LY4wOOGszIMladBL/scene.splinecode" 
+      url="scene.splinecode" 
       class="w-full h-full block">
     </spline-viewer>
 
-    <!-- Watermark shield cover at bottom-right corner -->
-    <div id="splineWatermarkShield" class="absolute bottom-0 right-0 w-44 h-16 bg-[#060913] z-20 pointer-events-none"></div>
+    <!-- Dedicated clickable target directly aligned over the 3D 'Get in' button -->
+    <button 
+      id="btnGetInOverlay"
+      type="button"
+      aria-label="Get in"
+      class="absolute cursor-pointer z-30 opacity-0 bg-transparent border-0 outline-none"
+      style="left: 14%; top: 59%; width: 22%; max-width: 230px; min-width: 140px; height: 54px;"
+      onclick="dismissSplineIntro()">
+    </button>
+
+    <!-- Watermark shield cover at bottom-right corner (Seamless White) -->
+    <div id="splineWatermarkShield" class="absolute bottom-0 right-0 w-48 h-16 bg-white z-20 pointer-events-none"></div>
   </div>
 
   <!-- =========================================================================
@@ -586,7 +596,54 @@
       const watermarkInterval = setInterval(purgeSplineWatermark, 100);
       setTimeout(() => clearInterval(watermarkInterval), 10000);
 
-      // 2. Connect direct entering link to the 3D "Get it for your business" button
+      // Helper to check if a screen (clientX, clientY) position is clicking the "Get in" button
+      function isClickOnGetInButton(clientX, clientY) {
+        // 1. Check projected 3D coordinates if Spline camera & object are available
+        try {
+          const splineApp = viewer?.spline || viewer?._spline;
+          if (splineApp) {
+            const camera = splineApp._camera || splineApp.camera;
+            const obj = splineApp.findObjectByName?.("Rectangle 3") || 
+                        splineApp.findObjectByName?.("Text 3") ||
+                        splineApp.findObjectById?.("c3756221-d98d-49a8-b23c-c9d0d7e1e194") ||
+                        splineApp.findObjectById?.("517ef7ec-b248-481d-8cd6-9ff7155f0761");
+            if (camera && obj) {
+              const v = obj.position?.clone ? obj.position.clone() : { x: obj.position.x, y: obj.position.y, z: obj.position.z };
+              if (typeof obj.getWorldPosition === "function") {
+                obj.getWorldPosition(v);
+              }
+              if (typeof v.project === "function") {
+                v.project(camera);
+                const sx = (v.x * 0.5 + 0.5) * window.innerWidth;
+                const sy = (-v.y * 0.5 + 0.5) * window.innerHeight;
+                if (Math.abs(clientX - sx) < 120 && Math.abs(clientY - sy) < 36) {
+                  return true;
+                }
+              }
+            }
+          }
+        } catch (_) {}
+
+        // 2. Check DOM button bounding rect if element exists
+        const btnElem = document.getElementById("btnGetInOverlay");
+        if (btnElem) {
+          const r = btnElem.getBoundingClientRect();
+          if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+            return true;
+          }
+        }
+
+        // 3. Normalized fallback viewport percentage matching button pill in the 3D scene
+        const pctX = (clientX / window.innerWidth) * 100;
+        const pctY = (clientY / window.innerHeight) * 100;
+        if (pctX >= 13.0 && pctX <= 36.5 && pctY >= 58.0 && pctY <= 68.5) {
+          return true;
+        }
+
+        return false;
+      }
+
+      // Connect direct entering strictly to the 3D "Get in" button
       if (viewer) {
         viewer.addEventListener("load", () => {
           purgeSplineWatermark();
@@ -594,22 +651,20 @@
           // Connect Spline runtime events to 3D objects
           const splineApp = viewer.spline || viewer._spline;
           if (splineApp) {
-            // Check if splineApp supports event listener
             const handleSpline3DEvent = (e) => {
               const targetName = (e && e.target && e.target.name) ? String(e.target.name).toLowerCase() : "";
               const targetId = (e && e.target && e.target.id) ? String(e.target.id).toLowerCase() : "";
               
-              // Target "Get it for your business" button, Rectangle 3, Text 3, or any interactive business button
+              // Target strictly "Get in" button, Rectangle 3, Text 3, or UUIDs
               if (
-                targetName.includes("business") ||
+                targetName.includes("get in") ||
                 targetName.includes("text 3") ||
                 targetName.includes("rectangle 3") ||
-                targetName.includes("rectangle 2") ||
-                targetName.includes("rectangle 4") ||
-                targetName.includes("button") ||
-                targetName.includes("get") ||
+                targetName.includes("business") ||
+                targetId.includes("c3756221") ||
                 targetId.includes("517ef7ec") ||
-                targetId.includes("edb14036")
+                targetId.includes("db40c3c7") ||
+                targetId.includes("4f27fd01")
               ) {
                 dismissSplineIntro();
               }
@@ -625,47 +680,26 @@
 
       if (!overlay) return;
 
-      // Mouse drag vs click detector: genuine clicks dismiss, dragging to orbit does not
-      overlay.addEventListener("mousedown", (e) => {
-        splineMouseDownPos = { x: e.clientX, y: e.clientY };
-        isSplineDragging = false;
-      });
-
+      // Mouse move: change cursor to pointer ONLY when hovering over "Get in"
       overlay.addEventListener("mousemove", (e) => {
-        const dx = Math.abs(e.clientX - splineMouseDownPos.x);
-        const dy = Math.abs(e.clientY - splineMouseDownPos.y);
-        if (dx > 8 || dy > 8) {
-          isSplineDragging = true;
+        if (isClickOnGetInButton(e.clientX, e.clientY)) {
+          overlay.style.cursor = "pointer";
+        } else {
+          overlay.style.cursor = "default";
         }
       });
 
-      overlay.addEventListener("mouseup", (e) => {
-        // If it was a click on the scene/button and not a drag, enter the app
-        if (!isSplineDragging) {
+      // Mouse click: strictly enter ONLY if clicked on the "Get in" button
+      overlay.addEventListener("click", (e) => {
+        if (isClickOnGetInButton(e.clientX, e.clientY)) {
           dismissSplineIntro();
         }
       });
 
-      // Touch handler for mobile devices
-      let touchStartPos = { x: 0, y: 0 };
-      let isTouching = false;
-      overlay.addEventListener("touchstart", (e) => {
-        if (e.touches && e.touches[0]) {
-          touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-          isTouching = false;
-        }
-      }, { passive: true });
-
-      overlay.addEventListener("touchmove", (e) => {
-        if (e.touches && e.touches[0]) {
-          const dx = Math.abs(e.touches[0].clientX - touchStartPos.x);
-          const dy = Math.abs(e.touches[0].clientY - touchStartPos.y);
-          if (dx > 8 || dy > 8) isTouching = true;
-        }
-      }, { passive: true });
-
-      overlay.addEventListener("touchend", () => {
-        if (!isTouching) {
+      // Touch handler: strictly enter ONLY if touched on the "Get in" button
+      overlay.addEventListener("touchend", (e) => {
+        const touch = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]);
+        if (touch && isClickOnGetInButton(touch.clientX, touch.clientY)) {
           dismissSplineIntro();
         }
       });

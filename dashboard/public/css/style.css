@@ -215,6 +215,10 @@ spline-viewer::part(watermark) {
 }
 
 #splineIntroOverlay {
-  background: #060913 !important;
+  background: #ffffff !important;
+}
+
+#splineWatermarkShield {
+  background: #ffffff !important;
 }
 
