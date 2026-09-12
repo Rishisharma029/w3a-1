@@ -8,7 +8,8 @@
  */
 
 const AppState = {
-  currentView: "overview",
+  currentView: "marketplace",
+  currentPrompt: "Find me a translation service for this PDF. Hindi. Quality > 0.9. Max $5.",
   environment: "local",      // "local" | "sepolia"
   isMockMode: false,         // true when user toggles or backend is offline
   isBackendReachable: false, // live backend status
@@ -223,8 +224,19 @@ const AppState = {
   },
 
   setView(viewName) {
-    this.currentView = viewName;
-    this.notify("view_changed", viewName);
+    let resolved = viewName;
+    if (viewName === "providers") resolved = "marketplace";
+    if (viewName === "agent") resolved = "buy";
+    if (viewName === "current") resolved = "execution";
+    if (viewName === "transactions") resolved = "purchases";
+    if (viewName === "overview") resolved = "control";
+    this.currentView = resolved;
+    this.notify("view_changed", resolved);
+  },
+
+  setPrompt(prompt) {
+    this.currentPrompt = prompt;
+    this.notify("prompt_changed", prompt);
   },
 
   setEnvironment(env) {

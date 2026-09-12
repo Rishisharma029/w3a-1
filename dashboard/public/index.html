@@ -80,75 +80,50 @@
         </div>
       </div>
 
-      <!-- Navigation Menu: 3 Core Pillars -->
-      <nav class="space-y-4">
-        <!-- 1. MARKETPLACE -->
-        <div>
-          <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-outline font-bold flex items-center justify-between">
-            <span>PILLAR 1</span>
-            <span class="text-tertiary">CATALOG</span>
-          </div>
-          <div class="nav-item" data-view="providers" onclick="App.navigate('providers')">
-            <span class="material-symbols-outlined text-base text-tertiary" data-icon="storefront">storefront</span>
-            <span class="font-bold text-white">Marketplace</span>
-          </div>
+      <!-- Navigation Menu: 1 Core Story -->
+      <nav class="space-y-1 font-mono text-xs">
+        <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-outline font-bold">
+          Core Journey
         </div>
 
-        <!-- 2. AI PURCHASE -->
-        <div>
-          <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-outline font-bold flex items-center justify-between">
-            <span>PILLAR 2</span>
-            <span class="text-secondary">x402 V2 WIRE</span>
-          </div>
-          <div class="nav-item" data-view="agent" onclick="App.navigate('agent')">
-            <span class="material-symbols-outlined text-base text-secondary" data-icon="smart_toy">smart_toy</span>
-            <span class="flex items-center gap-1.5 font-bold text-white">
-              <span>AI Purchase</span>
-              <span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-secondary/15 text-secondary border border-secondary/30">AI</span>
-            </span>
-          </div>
+        <div class="nav-item active" data-view="marketplace" onclick="App.navigate('marketplace')">
+          <span class="text-base">🛒</span>
+          <span class="font-bold text-white text-sm font-sans">Marketplace</span>
         </div>
 
-        <!-- 3. OWNER CONTROL CENTER -->
-        <div>
-          <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-outline font-bold flex items-center justify-between">
-            <span>PILLAR 3</span>
-            <span class="text-primary">GOVERNANCE</span>
-          </div>
-          <div class="space-y-0.5">
-            <div class="nav-item active" data-view="overview" onclick="App.navigate('overview')">
-              <span class="material-symbols-outlined text-base" data-icon="dashboard">dashboard</span>
-              <span>Owner Center</span>
-            </div>
+        <div class="nav-item" data-view="buy" onclick="App.navigate('buy')">
+          <span class="text-base">🤖</span>
+          <span class="font-bold text-white text-sm font-sans flex items-center justify-between w-full">
+            <span>Buy with AI</span>
+            <span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-secondary/15 text-secondary border border-secondary/30 font-bold">AI</span>
+          </span>
+        </div>
 
-            <div class="nav-item" data-view="current" onclick="App.navigate('current')">
-              <span class="material-symbols-outlined text-base text-secondary" data-icon="bolt">bolt</span>
-              <span class="flex items-center gap-1.5">
-                <span>Live Stream</span>
-                <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse glow-cyan"></span>
-              </span>
-            </div>
+        <div class="nav-item" data-view="execution" onclick="App.navigate('execution')">
+          <span class="text-base">⚡</span>
+          <span class="font-bold text-white text-sm font-sans flex items-center gap-1.5">
+            <span>Live Execution</span>
+            <span class="w-2 h-2 rounded-full bg-secondary animate-pulse glow-cyan"></span>
+          </span>
+        </div>
 
-            <div class="nav-item" data-view="transactions" onclick="App.navigate('transactions')">
-              <span class="material-symbols-outlined text-base" data-icon="receipt_long">receipt_long</span>
-              <span>Transactions</span>
-            </div>
+        <div class="pt-4 px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-outline font-bold">
+          Supporting Explorer
+        </div>
 
-            <div class="nav-item" data-view="security" onclick="App.navigate('security')">
-              <span class="material-symbols-outlined text-base text-error" data-icon="gavel">gavel</span>
-              <span>Security Defense</span>
-            </div>
+        <div class="nav-item" data-view="purchases" onclick="App.navigate('purchases')">
+          <span class="text-base">📋</span>
+          <span class="font-sans text-sm">Purchases</span>
+        </div>
 
-            <div class="nav-item" data-view="delivery" onclick="App.navigate('delivery')">
-              <span class="material-symbols-outlined text-base" data-icon="verified">verified</span>
-              <span>Delivery Proof</span>
-            </div>
+        <div class="nav-item" data-view="security" onclick="App.navigate('security')">
+          <span class="text-base">🛡</span>
+          <span class="font-sans text-sm">Security</span>
+        </div>
 
-            <div class="nav-item" data-view="settings" onclick="App.navigate('settings')">
-              <span class="material-symbols-outlined text-base" data-icon="settings">settings</span>
-              <span>Settings</span>
-            </div>
-          </div>
+        <div class="nav-item" data-view="control" onclick="App.navigate('control')">
+          <span class="text-base">⚙</span>
+          <span class="font-sans text-sm">Control</span>
         </div>
       </nav>
     </div>
@@ -217,31 +192,33 @@
         </div>
       </div>
 
-      <!-- 3-Pillar Architecture Switcher -->
+      <!-- Core Story Pipeline Stepper -->
       <div class="hidden xl:flex items-center p-1 rounded-xl bg-surface-low border border-outline-variant/40 font-mono text-xs font-bold gap-1 shadow-inner">
         <button
-          onclick="App.navigate('providers')"
+          onclick="App.navigate('marketplace')"
           id="btnPillarMarketplace"
           class="px-3 py-1.5 rounded-lg transition-all text-on-surface hover:text-white flex items-center gap-1.5 cursor-pointer"
         >
-          <span class="material-symbols-outlined text-sm text-tertiary">storefront</span>
-          <span>MARKETPLACE</span>
+          <span>🛒</span>
+          <span>1. MARKETPLACE</span>
         </button>
+        <span class="text-outline text-xs">→</span>
         <button
-          onclick="App.navigate('agent')"
+          onclick="App.navigate('buy')"
           id="btnPillarAiPurchase"
           class="px-3 py-1.5 rounded-lg transition-all text-on-surface hover:text-white flex items-center gap-1.5 cursor-pointer"
         >
-          <span class="material-symbols-outlined text-sm text-secondary">smart_toy</span>
-          <span>AI PURCHASE</span>
+          <span>🤖</span>
+          <span>2. BUY WITH AI</span>
         </button>
+        <span class="text-outline text-xs">→</span>
         <button
-          onclick="App.navigate('overview')"
-          id="btnPillarOwnerCenter"
+          onclick="App.navigate('execution')"
+          id="btnPillarExecution"
           class="px-3 py-1.5 rounded-lg transition-all text-on-surface hover:text-white flex items-center gap-1.5 cursor-pointer"
         >
-          <span class="material-symbols-outlined text-sm text-primary">dashboard</span>
-          <span>OWNER CENTER</span>
+          <span>⚡</span>
+          <span>3. LIVE EXECUTION</span>
         </button>
       </div>
 

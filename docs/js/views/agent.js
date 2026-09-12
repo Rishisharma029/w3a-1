@@ -39,22 +39,24 @@ const AgentView = {
 
   async triggerBuyWithAi() {
     const input = document.getElementById("aiPurchasePromptInput");
-    const prompt = input ? input.value.trim() : this.currentPrompt;
+    const prompt = input ? input.value.trim() : (this.currentPrompt || "Find me a translation service for this PDF. Hindi. Quality > 0.9. Max $5.");
     if (!prompt) return;
     this.currentPrompt = prompt;
-    this.isExecuting = true;
 
-    const btn = document.getElementById("btnBuyWithAi");
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-base">progress_activity</span><span>LIVE TRANSACTION IN PROGRESS...</span>`;
-      btn.classList.add("opacity-75", "cursor-wait");
+    if (typeof AppState !== "undefined" && typeof AppState.setPrompt === "function") {
+      AppState.setPrompt(prompt);
     }
 
-    const container = document.getElementById("aiEvaluationContainer");
-    if (!container) return;
-    container.classList.remove("hidden");
+    // Immediately trigger Live Execution and switch screen
+    if (typeof CurrentTransactionView !== "undefined" && typeof CurrentTransactionView.startLiveExecution === "function") {
+      CurrentTransactionView.startLiveExecution(prompt);
+    } else if (typeof App !== "undefined" && typeof App.navigate === "function") {
+      App.navigate("execution");
+    }
+  },
 
+  async simulateInlineLegacy(prompt, btn, container) {
+    if (!container) return;
     // Initialize the Live Transaction Frame
     container.innerHTML = `
       <div id="liveTransactionFeed" class="p-6 md:p-8 rounded-2xl bg-surface-lowest border-2 border-secondary/60 shadow-2xl space-y-5 animate-fade-in">
@@ -761,8 +763,8 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
             <!-- Submit Action Row with Balance Badge -->
             <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
               <div class="flex items-center gap-2 font-mono text-xs text-outline bg-surface-lowest/70 px-3 py-2 rounded-xl border border-outline-variant/30">
-                <span>Available Escrow:</span>
-                <span class="text-tertiary font-bold">${normBudget.formattedRemaining}</span>
+                <span>Budget available:</span>
+                <span class="text-tertiary font-bold">$${normBudget.remaining || '26.00'} USDC</span>
                 <button
                   type="button"
                   onclick="App.openFundModal()"
@@ -780,7 +782,7 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
                 class="w-full sm:w-auto px-8 py-3.5 rounded-xl font-headline font-bold text-sm text-black bg-gradient-to-r from-secondary via-emerald-400 to-secondary hover:brightness-110 active:scale-[0.98] transition shadow-lg glow-cyan flex items-center justify-center gap-3 cursor-pointer"
               >
                 <span class="material-symbols-outlined text-base font-bold">bolt</span>
-                <span class="tracking-wider uppercase font-extrabold">[ BUY WITH AI &rarr; ]</span>
+                <span class="tracking-wider uppercase font-extrabold">[ RUN PURCHASE &rarr; ]</span>
               </button>
             </div>
           </div>

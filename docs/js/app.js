@@ -9,12 +9,18 @@
 
 const App = {
   views: {
+    marketplace: ProvidersView,
+    buy: AgentView,
+    execution: CurrentTransactionView,
+    purchases: TransactionsView,
+    security: SecurityView,
+    control: OverviewView,
+    // Aliases
     overview: OverviewView,
     current: CurrentTransactionView,
     agent: AgentView,
     transactions: TransactionsView,
     providers: ProvidersView,
-    security: SecurityView,
     delivery: DeliveryView,
     settings: SettingsView,
   },
@@ -78,23 +84,30 @@ const App = {
   },
 
   navigate(viewName) {
-    if (this.views[viewName]) {
-      AppState.setView(viewName);
+    let resolved = viewName;
+    if (viewName === "providers") resolved = "marketplace";
+    if (viewName === "agent") resolved = "buy";
+    if (viewName === "current") resolved = "execution";
+    if (viewName === "transactions") resolved = "purchases";
+    if (viewName === "overview") resolved = "control";
+
+    if (this.views[resolved] || this.views[viewName]) {
+      AppState.setView(resolved);
       window.scrollTo({ top: 0, behavior: "smooth" });
 
       // Dynamically morph 3D shader gradient mood based on view context
       if (this.bgShader) {
-        if (viewName === "agent") {
-          // AI Purchase (Pillar 2): Electric Cyan & Royal Indigo
+        if (resolved === "buy" || resolved === "execution") {
+          // AI Purchase & Live Execution: Electric Cyan & Royal Indigo
           this.bgShader.setColors("#00f2ff", "#38bdf8", "#818cf8");
-        } else if (viewName === "providers") {
-          // Marketplace (Pillar 1): Emerald Catalog & Cyan
+        } else if (resolved === "marketplace") {
+          // Marketplace: Emerald Catalog & Cyan
           this.bgShader.setColors("#10b981", "#06b6d4", "#6366f1");
-        } else if (viewName === "security") {
+        } else if (resolved === "security") {
           // Security Defense: Guard Amber & Crimson
           this.bgShader.setColors("#f59e0b", "#ef4444", "#6366f1");
         } else {
-          // Default Owner Center: Cyber Cyan, Safe Emerald, Indigo
+          // Purchases & Control: Cyber Cyan, Safe Emerald, Indigo
           this.bgShader.setColors("#00f2ff", "#10b981", "#6366f1");
         }
       }
@@ -103,7 +116,8 @@ const App = {
 
   render() {
     const mainContainer = document.getElementById("mainContent");
-    const activeView = this.views[AppState.currentView] || OverviewView;
+    const cur = AppState.currentView;
+    const activeView = this.views[cur] || this.views.marketplace || OverviewView;
     if (mainContainer) {
       mainContainer.innerHTML = activeView.render();
     }
@@ -112,23 +126,31 @@ const App = {
 
   updateSidebarState() {
     const navItems = document.querySelectorAll(".nav-item");
+    const cur = AppState.currentView;
     navItems.forEach((item) => {
       const view = item.getAttribute("data-view");
-      if (view === AppState.currentView) {
+      const isMatch =
+        view === cur ||
+        (view === "marketplace" && cur === "providers") ||
+        (view === "buy" && cur === "agent") ||
+        (view === "execution" && cur === "current") ||
+        (view === "purchases" && cur === "transactions") ||
+        (view === "control" && cur === "overview");
+
+      if (isMatch) {
         item.classList.add("active");
       } else {
         item.classList.remove("active");
       }
     });
 
-    // 3-Pillar Architecture Switcher Highlighting
+    // Core Story Stepper Highlighting
     const btnMkt = document.getElementById("btnPillarMarketplace");
     const btnAi = document.getElementById("btnPillarAiPurchase");
-    const btnOwner = document.getElementById("btnPillarOwnerCenter");
-    const cur = AppState.currentView;
+    const btnExec = document.getElementById("btnPillarExecution");
 
     if (btnMkt) {
-      const active = cur === "providers";
+      const active = cur === "marketplace" || cur === "providers";
       btnMkt.className = `px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
         active
           ? "bg-tertiary/20 text-tertiary border border-tertiary/40 shadow-sm font-extrabold"
@@ -136,18 +158,18 @@ const App = {
       }`;
     }
     if (btnAi) {
-      const active = cur === "agent";
+      const active = cur === "buy" || cur === "agent";
       btnAi.className = `px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
         active
           ? "bg-secondary/20 text-secondary border border-secondary/40 shadow-sm font-extrabold"
           : "text-on-surface hover:text-white"
       }`;
     }
-    if (btnOwner) {
-      const active = ["overview", "current", "transactions", "security", "delivery", "settings"].includes(cur);
-      btnOwner.className = `px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+    if (btnExec) {
+      const active = cur === "execution" || cur === "current";
+      btnExec.className = `px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
         active
-          ? "bg-primary/20 text-primary border border-primary/40 shadow-sm font-extrabold"
+          ? "bg-primary/20 text-primary-light border border-primary/40 shadow-sm font-extrabold"
           : "text-on-surface hover:text-white"
       }`;
     }
