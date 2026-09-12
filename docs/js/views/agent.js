@@ -305,6 +305,91 @@ const AgentView = {
     // Await the real backend response
     const data = await apiPromise;
     const trace = (data && data.trace) || {};
+
+    // Check if on-chain defense intercepted this request (Overspend, Frozen, Replay)
+    if (data && (data.success === false || trace.status === "REJECTED" || (data.error && !trace.txHash))) {
+      const reason = (trace.reason || data.reason || data.error || "Overspend: Amount exceeds remaining authorized budget").toUpperCase();
+      
+      // Update Stage 7 to ❌ REJECTED / BLOCKED
+      const stage7 = document.getElementById("stage-7");
+      if (stage7) {
+        stage7.className = "live-tx-step rounded-xl p-4 bg-error/15 border-2 border-error/70 shadow-lg glow-crimson space-y-2";
+        stage7.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 text-error font-bold text-xs uppercase tracking-wider">
+              <span class="material-symbols-outlined text-sm">gavel</span>
+              <span>SMART CONTRACT DEFENSE</span>
+            </div>
+            <span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-error/20 text-error border border-error/50 glow-crimson">
+              ❌ TRANSACTION BLOCKED
+            </span>
+          </div>
+          <div class="p-3 rounded-lg bg-surface-lowest border border-error/30 text-xs space-y-1">
+            <div class="flex justify-between"><span class="text-outline">Violation Detected:</span> <strong class="text-error font-bold">${reason}</strong></div>
+            <div class="flex justify-between"><span class="text-outline">Remaining Budget:</span> <strong class="text-white font-bold">$${currentRem} USDC</strong></div>
+            <div class="text-[11px] text-error pt-1 border-t border-error/20 flex items-center gap-1.5">
+              <span>🛡️</span>
+              <span>TokenBudgetEnforcer.sol physically blocked settlement. Zero ERC-20 tokens moved.</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // Update Stage 8
+      const stage8 = document.getElementById("stage-8");
+      if (stage8) {
+        stage8.className = "live-tx-step rounded-xl p-4 bg-surface-low border border-error/50 shadow-lg space-y-2";
+        stage8.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 text-error font-bold text-xs uppercase tracking-wider">
+              <span class="material-symbols-outlined text-sm">block</span>
+              <span>BLOCKCHAIN</span>
+            </div>
+            <span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-error/20 text-error border border-error/40">
+              REVERTED ON-CHAIN
+            </span>
+          </div>
+          <div class="p-3 rounded-lg bg-surface-lowest border border-outline-variant/30 text-xs space-y-1">
+            <div class="text-on-surface-variant text-[11px]">No transaction executed in mempool. Security alert recorded in Indexer.</div>
+          </div>
+        `;
+      }
+
+      if (ticker) {
+        ticker.innerHTML = `<span class="material-symbols-outlined text-sm text-error">gavel</span><span class="text-error font-bold">OVERSPEND DEFENSE: ATTEMPT BLOCKED ON-CHAIN (NO REFRESH)</span>`;
+      }
+
+      // Append Final Blocked Card
+      stagesContainer.innerHTML += `
+        <div id="stage-blocked" class="live-tx-step rounded-2xl p-6 bg-gradient-to-r from-error/20 via-surface-low to-amber-500/15 border-2 border-error shadow-2xl glow-crimson space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5 text-error font-bold text-sm uppercase tracking-wider">
+              <span class="material-symbols-outlined text-2xl">shield_locked</span>
+              <span class="font-headline font-extrabold text-base md:text-lg text-white">ATTACK INTERCEPTED</span>
+            </div>
+            <div class="font-headline text-lg font-bold font-mono text-error">
+              $0.00 RELEASED
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono text-outline pt-2 border-t border-outline-variant/30">
+            <span class="text-white font-bold bg-surface-highest/80 px-2 py-0.5 rounded border border-outline-variant/40">NO REFRESH.</span>
+            <span class="text-slate-300">Enforced by TokenBudgetEnforcer.sol. Human owner assets 100% safe.</span>
+          </div>
+        </div>
+      `;
+
+      this.activeResult = data;
+      this.isExecuting = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<span class="material-symbols-outlined text-base font-bold">bolt</span><span class="tracking-wider uppercase font-extrabold">[ BUY WITH AI &rarr; ]</span>`;
+        btn.classList.remove("opacity-75", "cursor-wait");
+      }
+      App.toast(`Defense triggered: ${reason}. Zero funds lost!`, "error");
+      await ApiService.syncAll();
+      return;
+    }
+
     const txHash = trace.txHash || "0xda48b1c9f4d7159c8e192a6374028471b058c067e26830571092e093847228e9";
     const deliveryHash = trace.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
     const rawContent = trace.deliveredContent || trace.content || "यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.";

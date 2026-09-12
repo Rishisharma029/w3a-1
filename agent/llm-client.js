@@ -213,7 +213,15 @@ function keywordParseIntent(text) {
   const langMatch = text.match(/\b(Hindi|Spanish|French|German|Japanese|Arabic|Chinese|Italian|Portuguese)\b/i);
   if (langMatch) targetLanguage = langMatch[1];
 
-  return { serviceType, priority, minQuality, maxPrice, targetLanguage, payload: targetLanguage ? { targetLanguage } : null };
+  // preferredProvider or preferredService
+  let preferredProvider = null;
+  if (/alpha/i.test(lower)) preferredProvider = "alpha-translate";
+  else if (/beta/i.test(lower)) preferredProvider = "beta-translate";
+  else if (/gamma/i.test(lower)) preferredProvider = "gamma-translate";
+  else if (/delta/i.test(lower)) preferredProvider = "delta-compute";
+  else if (/epsilon/i.test(lower)) preferredProvider = "epsilon-vision";
+
+  return { serviceType, priority, minQuality, maxPrice, targetLanguage, preferredProvider, payload: targetLanguage ? { targetLanguage } : null };
 }
 
 /**
@@ -252,7 +260,10 @@ function deterministicSelect(providers, requirements) {
     const price  = getServicePrice(p);
     const priceScore   = 1 - (price - minPrice)  / (maxPrice - minPrice  + EPS);
     const qualityScore = (p.qualityScore - minQ) / (maxQ    - minQ      + EPS);
-    const score        = w.price * priceScore + w.quality * qualityScore;
+    let score        = w.price * priceScore + w.quality * qualityScore;
+    if (requirements.preferredProvider && p.providerId === requirements.preferredProvider) {
+      score += 2.0;
+    }
     return {
       providerId: p.providerId,
       score:      Math.round(score * 1000) / 1000,
@@ -263,11 +274,14 @@ function deterministicSelect(providers, requirements) {
   }).sort((a, b) => b.score - a.score);
 
   const best = ranked[0];
+  const isPreferred = requirements.preferredProvider && best && best.providerId === requirements.preferredProvider;
   return {
-    selectedProviderId: best.providerId,
-    reason: `Deterministic scoring (priority=${priority}): ` +
-            `priceWeight=${w.price} qualityWeight=${w.quality}. ` +
-            `${best.providerId} scored ${best.score}.`,
+    selectedProviderId: best ? best.providerId : null,
+    reason: isPreferred
+      ? `Explicit user request: selected ${best.providerId} matching requested service provider.`
+      : `Deterministic scoring (priority=${priority}): ` +
+        `priceWeight=${w.price} qualityWeight=${w.quality}. ` +
+        `${best ? best.providerId : "None"} scored ${best ? best.score : 0}.`,
     filteredOut: [],
     ranking:     ranked,
   };

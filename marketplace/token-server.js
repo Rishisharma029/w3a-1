@@ -159,6 +159,20 @@ function createTokenMarketplace({
   app.post(["/api/services", "/registry/services"], (req, res) => {
     try {
       const result = publishService(req.body);
+      try {
+        const { globalEventBus } = require("../shared/event-bus");
+        if (globalEventBus) {
+          globalEventBus.emitEvent("service_published", {
+            service: result,
+            providerId: result.providerId,
+            serviceId: result.serviceId,
+            name: result.name,
+            price: result.price,
+            quality: result.quality,
+            endpoint: result.endpoint,
+          });
+        }
+      } catch (_) {}
       res.json(result);
     } catch (err) {
       res.status(400).json({ error: err.message });

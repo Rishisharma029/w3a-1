@@ -314,6 +314,23 @@ const AppState = {
     this.notify("live_event_received", evt);
   },
 
+  handleStreamEvent(evt) {
+    this.addLiveEvent(evt);
+
+    if (evt && (evt.type === "service_published" || evt.type === "SERVICE_PUBLISHED")) {
+      const svc = evt.data && evt.data.service ? evt.data.service : evt.data;
+      if (svc && svc.name) {
+        this.addService(svc);
+      }
+    }
+
+    if (evt && (evt.type === "SETTLEMENT_CONFIRMED" || evt.type === "settlement_confirmed" || evt.type === "BUDGET_FUNDED")) {
+      if (typeof ApiService !== "undefined") {
+        ApiService.syncAll();
+      }
+    }
+  },
+
   clearLiveEvents() {
     this.liveEvents = [];
     this.notify("live_events_cleared", []);

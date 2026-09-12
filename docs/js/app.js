@@ -83,6 +83,37 @@ const App = {
       }
     });
 
+    // 3-Pillar Architecture Switcher Highlighting
+    const btnMkt = document.getElementById("btnPillarMarketplace");
+    const btnAi = document.getElementById("btnPillarAiPurchase");
+    const btnOwner = document.getElementById("btnPillarOwnerCenter");
+    const cur = AppState.currentView;
+
+    if (btnMkt) {
+      const active = cur === "providers";
+      btnMkt.className = `px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+        active
+          ? "bg-tertiary/20 text-tertiary border border-tertiary/40 shadow-sm font-extrabold"
+          : "text-on-surface hover:text-white"
+      }`;
+    }
+    if (btnAi) {
+      const active = cur === "agent";
+      btnAi.className = `px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+        active
+          ? "bg-secondary/20 text-secondary border border-secondary/40 shadow-sm font-extrabold"
+          : "text-on-surface hover:text-white"
+      }`;
+    }
+    if (btnOwner) {
+      const active = ["overview", "current", "transactions", "security", "delivery", "settings"].includes(cur);
+      btnOwner.className = `px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+        active
+          ? "bg-primary/20 text-primary border border-primary/40 shadow-sm font-extrabold"
+          : "text-on-surface hover:text-white"
+      }`;
+    }
+
     // Sidebar bottom badges
     const agentBadge = document.getElementById("sidebarAgentStatus");
     if (agentBadge) {

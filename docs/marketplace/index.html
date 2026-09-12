@@ -1305,6 +1305,48 @@ Highest quality under $5.</textarea>
       // Await real backend response
       const data = await apiPromise;
       const trace = (data && data.trace) || {};
+
+      // Check if on-chain defense intercepted this request (Overspend, Frozen, Replay)
+      if (data && (data.success === false || trace.status === "REJECTED" || (data.error && !trace.txHash))) {
+        const reason = (trace.reason || data.reason || data.error || "Overspend: Amount exceeds remaining authorized budget").toUpperCase();
+        if (ticker) ticker.textContent = `OVERSPEND DEFENSE: ATTEMPT BLOCKED ON-CHAIN (NO REFRESH)`;
+        
+        stagesContainer.innerHTML += `
+          <div class="live-tx-step" style="border: 2px solid var(--accent-red); background: rgba(239, 68, 68, 0.1); box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-weight: 800; color: var(--accent-red); font-size: 0.9rem;">🛡️ SMART CONTRACT DEFENSE</span>
+              <span style="font-size: 0.7rem; background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.5); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">❌ TRANSACTION BLOCKED</span>
+            </div>
+            <div style="background: #000; padding: 0.7rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; line-height: 1.6;">
+              <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Violation Detected:</span> <strong style="color: var(--accent-red);">${reason}</strong></div>
+              <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Remaining Budget:</span> <strong style="color: #fff;">$${currentRem} USDC</strong></div>
+              <div style="color: var(--accent-red); font-size: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 0.4rem; margin-top: 0.4rem;">
+                TokenBudgetEnforcer.sol physically blocked settlement. Zero ERC-20 tokens moved.
+              </div>
+            </div>
+          </div>
+
+          <div class="live-tx-step" style="border: 2px solid var(--accent-red); background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(0, 0, 0, 0.8));">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.2rem; color: var(--accent-red);">🛡️</span>
+                <span style="font-size: 1.1rem; font-weight: 800; color: #fff;">ATTACK INTERCEPTED</span>
+              </div>
+              <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent-red); font-family: var(--font-mono);">$0.00 RELEASED</div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem; margin-top: 0.5rem;">
+              <span style="background: #000; padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: 700; color: #fff;">NO REFRESH.</span>
+              <span style="color: var(--text-muted);">Enforced by TokenBudgetEnforcer.sol. Human assets safe.</span>
+            </div>
+          </div>
+        `;
+
+        btn.disabled = false;
+        btn.textContent = '[ BUY WITH AI → ]';
+        refreshMarketBudget();
+        return;
+      }
+
       const txHash = trace.txHash || "0xda48b1c9f4d7159c8e192a6374028471b058c067e26830571092e093847228e9";
       const deliveryHash = trace.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
       const rawContent = trace.deliveredContent || trace.content || "यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.";

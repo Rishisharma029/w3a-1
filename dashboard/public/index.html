@@ -75,52 +75,75 @@
         </div>
       </div>
 
-      <!-- Navigation Menu -->
-      <nav class="space-y-1">
-        <div class="nav-item active" data-view="overview" onclick="App.navigate('overview')">
-          <span class="material-symbols-outlined text-base" data-icon="dashboard">dashboard</span>
-          <span>Overview</span>
+      <!-- Navigation Menu: 3 Core Pillars -->
+      <nav class="space-y-4">
+        <!-- 1. MARKETPLACE -->
+        <div>
+          <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-outline font-bold flex items-center justify-between">
+            <span>PILLAR 1</span>
+            <span class="text-tertiary">CATALOG</span>
+          </div>
+          <div class="nav-item" data-view="providers" onclick="App.navigate('providers')">
+            <span class="material-symbols-outlined text-base text-tertiary" data-icon="storefront">storefront</span>
+            <span class="font-bold text-white">Marketplace</span>
+          </div>
         </div>
 
-        <div class="nav-item" data-view="current" onclick="App.navigate('current')">
-          <span class="material-symbols-outlined text-base text-secondary" data-icon="bolt">bolt</span>
-          <span class="flex items-center gap-1.5 font-bold">
-            <span>Live Purchase</span>
-            <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse glow-cyan"></span>
-          </span>
+        <!-- 2. AI PURCHASE -->
+        <div>
+          <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-outline font-bold flex items-center justify-between">
+            <span>PILLAR 2</span>
+            <span class="text-secondary">x402 V2 WIRE</span>
+          </div>
+          <div class="nav-item" data-view="agent" onclick="App.navigate('agent')">
+            <span class="material-symbols-outlined text-base text-secondary" data-icon="smart_toy">smart_toy</span>
+            <span class="flex items-center gap-1.5 font-bold text-white">
+              <span>AI Purchase</span>
+              <span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-secondary/15 text-secondary border border-secondary/30">AI</span>
+            </span>
+          </div>
         </div>
 
-        <div class="nav-item" data-view="agent" onclick="App.navigate('agent')">
-          <span class="material-symbols-outlined text-base text-secondary" data-icon="smart_toy">smart_toy</span>
-          <span class="flex items-center gap-1.5 font-bold">
-            <span>AI Purchase</span>
-            <span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-secondary/15 text-secondary border border-secondary/30">AI</span>
-          </span>
-        </div>
+        <!-- 3. OWNER CONTROL CENTER -->
+        <div>
+          <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-outline font-bold flex items-center justify-between">
+            <span>PILLAR 3</span>
+            <span class="text-primary">GOVERNANCE</span>
+          </div>
+          <div class="space-y-0.5">
+            <div class="nav-item active" data-view="overview" onclick="App.navigate('overview')">
+              <span class="material-symbols-outlined text-base" data-icon="dashboard">dashboard</span>
+              <span>Owner Center</span>
+            </div>
 
-        <div class="nav-item" data-view="transactions" onclick="App.navigate('transactions')">
-          <span class="material-symbols-outlined text-base" data-icon="receipt_long">receipt_long</span>
-          <span>Transactions</span>
-        </div>
+            <div class="nav-item" data-view="current" onclick="App.navigate('current')">
+              <span class="material-symbols-outlined text-base text-secondary" data-icon="bolt">bolt</span>
+              <span class="flex items-center gap-1.5">
+                <span>Live Stream</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse glow-cyan"></span>
+              </span>
+            </div>
 
-        <div class="nav-item" data-view="providers" onclick="App.navigate('providers')">
-          <span class="material-symbols-outlined text-base" data-icon="storefront">storefront</span>
-          <span>Marketplace</span>
-        </div>
+            <div class="nav-item" data-view="transactions" onclick="App.navigate('transactions')">
+              <span class="material-symbols-outlined text-base" data-icon="receipt_long">receipt_long</span>
+              <span>Transactions</span>
+            </div>
 
-        <div class="nav-item" data-view="security" onclick="App.navigate('security')">
-          <span class="material-symbols-outlined text-base" data-icon="gavel">gavel</span>
-          <span>Security</span>
-        </div>
+            <div class="nav-item" data-view="security" onclick="App.navigate('security')">
+              <span class="material-symbols-outlined text-base text-error" data-icon="gavel">gavel</span>
+              <span>Security Defense</span>
+            </div>
 
-        <div class="nav-item" data-view="delivery" onclick="App.navigate('delivery')">
-          <span class="material-symbols-outlined text-base" data-icon="verified">verified</span>
-          <span>Delivery Proof</span>
-        </div>
+            <div class="nav-item" data-view="delivery" onclick="App.navigate('delivery')">
+              <span class="material-symbols-outlined text-base" data-icon="verified">verified</span>
+              <span>Delivery Proof</span>
+            </div>
 
-        <div class="nav-item" data-view="settings" onclick="App.navigate('settings')">
-          <span class="material-symbols-outlined text-base" data-icon="settings">settings</span>
-          <span>Settings</span>
+            <div class="nav-item" data-view="settings" onclick="App.navigate('settings')">
+              <span class="material-symbols-outlined text-base" data-icon="settings">settings</span>
+              <span>Settings</span>
+            </div>
+          </div>
         </div>
       </nav>
     </div>
@@ -187,6 +210,34 @@
             12ms
           </span>
         </div>
+      </div>
+
+      <!-- 3-Pillar Architecture Switcher -->
+      <div class="hidden xl:flex items-center p-1 rounded-xl bg-surface-low border border-outline-variant/40 font-mono text-xs font-bold gap-1 shadow-inner">
+        <button
+          onclick="App.navigate('providers')"
+          id="btnPillarMarketplace"
+          class="px-3 py-1.5 rounded-lg transition-all text-on-surface hover:text-white flex items-center gap-1.5 cursor-pointer"
+        >
+          <span class="material-symbols-outlined text-sm text-tertiary">storefront</span>
+          <span>MARKETPLACE</span>
+        </button>
+        <button
+          onclick="App.navigate('agent')"
+          id="btnPillarAiPurchase"
+          class="px-3 py-1.5 rounded-lg transition-all text-on-surface hover:text-white flex items-center gap-1.5 cursor-pointer"
+        >
+          <span class="material-symbols-outlined text-sm text-secondary">smart_toy</span>
+          <span>AI PURCHASE</span>
+        </button>
+        <button
+          onclick="App.navigate('overview')"
+          id="btnPillarOwnerCenter"
+          class="px-3 py-1.5 rounded-lg transition-all text-on-surface hover:text-white flex items-center gap-1.5 cursor-pointer"
+        >
+          <span class="material-symbols-outlined text-sm text-primary">dashboard</span>
+          <span>OWNER CENTER</span>
+        </button>
       </div>
 
       <!-- Right Controls -->
