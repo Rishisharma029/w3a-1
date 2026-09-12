@@ -76,6 +76,26 @@ const UIFormatter = {
   },
 
   /**
+   * Format relative time: "5s ago", "2m ago", "1h ago"
+   */
+  formatRelativeTime(isoString) {
+    if (!isoString) return "just now";
+    try {
+      const d = new Date(isoString);
+      const diffMs = Date.now() - d.getTime();
+      const diffSec = Math.max(0, Math.floor(diffMs / 1000));
+      if (diffSec < 60) return `${diffSec}s ago`;
+      const diffMin = Math.floor(diffSec / 60);
+      if (diffMin < 60) return `${diffMin}m ago`;
+      const diffHr = Math.floor(diffMin / 60);
+      if (diffHr < 24) return `${diffHr}h ago`;
+      return d.toLocaleDateString();
+    } catch (_) {
+      return "just now";
+    }
+  },
+
+  /**
    * Format ISO date string into short date + time
    */
   formatDateTime(isoString) {

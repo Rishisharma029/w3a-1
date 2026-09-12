@@ -68,8 +68,22 @@ const App = {
 
   navigate(viewName) {
     if (this.views[viewName]) {
-      AppState.setView(viewName);
+      AppState.currentView = viewName;
+      if (typeof AppState.setView === "function") {
+        AppState.setView(viewName);
+      }
+      this.render();
+      this.updateSidebarState();
+      this.updateTopBarState();
       window.scrollTo({ top: 0, behavior: "smooth" });
+
+      // Synchronize floating dock instances if active
+      if (window._globalFloatingDock && typeof window._globalFloatingDock.setActiveView === "function") {
+        window._globalFloatingDock.setActiveView(viewName);
+      }
+      if (window._headerFloatingDock && typeof window._headerFloatingDock.setActiveView === "function") {
+        window._headerFloatingDock.setActiveView(viewName);
+      }
 
       // Dynamically morph 3D shader gradient mood based on view context
       if (this.bgShader) {
@@ -93,9 +107,14 @@ const App = {
   render() {
     const mainContainer = document.getElementById("mainContent");
     const activeView = this.views[AppState.currentView] || OverviewView;
-    if (mainContainer) {
-      mainContainer.innerHTML = activeView.render();
+    if (mainContainer && activeView && typeof activeView.render === "function") {
+      try {
+        mainContainer.innerHTML = activeView.render();
+      } catch (err) {
+        console.error(`[App] Error rendering view "${AppState.currentView}":`, err);
+      }
     }
+    this.updateSidebarState();
     this.updateTopBarState();
   },
 
@@ -881,6 +900,10 @@ ${JSON.stringify(
     }, 3500);
   },
 };
+
+if (typeof window !== "undefined") {
+  window.App = App;
+}
 
 // Initialize app when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {

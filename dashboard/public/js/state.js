@@ -925,3 +925,8 @@ const AppState = {
 
 // Auto-seed mock data on script load
 AppState.loadMockSeed();
+
+if (typeof window !== "undefined") {
+  window.AppState = AppState;
+  window.State = AppState;
+}

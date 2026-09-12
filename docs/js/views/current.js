@@ -58,6 +58,14 @@ const CurrentTransactionView = {
     this.reRenderIfMounted();
   },
 
+  init() {
+    if (this.initialized) return;
+    this.initialized = true;
+    if (typeof AppState !== "undefined" && typeof AppState.subscribe === "function") {
+      AppState.subscribe((event, data) => this.onStateChange(event, data));
+    }
+  },
+
   stepStates: {
     1: "confirmed",
     2: "confirmed",
@@ -374,6 +382,7 @@ const CurrentTransactionView = {
         `;
       },
     },
+  ],
 
   onStateChange(event, data) {
     if (

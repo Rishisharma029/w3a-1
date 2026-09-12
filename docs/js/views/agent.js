@@ -1121,3 +1121,7 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
     `;
   },
 };
+
+if (typeof window !== "undefined") {
+  window.AgentView = AgentView;
+}

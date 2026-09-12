@@ -321,3 +321,7 @@ const ApiService = {
     return data;
   },
 };
+
+if (typeof window !== "undefined") {
+  window.ApiService = ApiService;
+}

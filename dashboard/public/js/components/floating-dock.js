@@ -273,11 +273,20 @@
           }
 
           el.addEventListener("click", (e) => {
-            if (typeof item.action === "function") {
-              item.action();
-            }
             if (item.view) {
+              if (window.App && typeof window.App.navigate === "function") {
+                window.App.navigate(item.view);
+              } else if (typeof App !== "undefined" && typeof App.navigate === "function") {
+                App.navigate(item.view);
+              }
               this.setActiveView(item.view);
+            }
+            if (typeof item.action === "function") {
+              try {
+                item.action();
+              } catch (err) {
+                console.warn("[FloatingDock] Action error:", err);
+              }
             }
           });
         });
@@ -306,8 +315,17 @@
           const mItem = document.getElementById(`${this.containerId}_m_item_${idx}`);
           if (mItem) {
             mItem.addEventListener("click", () => {
-              if (typeof item.action === "function") item.action();
-              if (item.view) this.setActiveView(item.view);
+              if (item.view) {
+                if (window.App && typeof window.App.navigate === "function") {
+                  window.App.navigate(item.view);
+                } else if (typeof App !== "undefined" && typeof App.navigate === "function") {
+                  App.navigate(item.view);
+                }
+                this.setActiveView(item.view);
+              }
+              if (typeof item.action === "function") {
+                try { item.action(); } catch (_) {}
+              }
               this.isMobileOpen = false;
               mobileDrawer.classList.remove("opacity-100", "translate-y-0", "pointer-events-auto");
               mobileDrawer.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
@@ -376,10 +394,17 @@
     setActiveView(view) {
       this.currentView = view;
       this.syncActiveView();
+      if (this.isHeader && window._globalFloatingDock && window._globalFloatingDock.currentView !== view) {
+        window._globalFloatingDock.currentView = view;
+        window._globalFloatingDock.syncActiveView();
+      } else if (!this.isHeader && window._headerFloatingDock && window._headerFloatingDock.currentView !== view) {
+        window._headerFloatingDock.currentView = view;
+        window._headerFloatingDock.syncActiveView();
+      }
     }
 
     syncActiveView() {
-      const active = this.currentView || window.State?.activeView || "overview";
+      const active = this.currentView || (window.AppState && window.AppState.currentView) || (typeof AppState !== "undefined" && AppState.currentView) || "overview";
       this.elements.forEach((el) => {
         const itemV = el.getAttribute("data-view");
         const dot = el.querySelector(".w3a-dock-active-dot");
