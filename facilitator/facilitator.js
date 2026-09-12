@@ -1,0 +1,347 @@
+/**
+ * facilitator/facilitator.js
+ *
+ * x402 Payment Facilitator Abstraction
+ * =====================================
+ * Encapsulates on-chain settlement, EIP-712 signature verification, and
+ * payment status checking. Providers and agents interact with this facilitator
+ * so service logic remains completely independent of EVM transaction details.
+ */
+
+"use strict";
+
+const { ethers } = require("ethers");
+const { validatePaymentPayload, validatePaymentRequirements } = require("@x402/core/schemas");
+
+// EIP-712 Domain & Types for TokenBudgetEnforcer
+const EIP712_DOMAIN_NAME = "TokenBudgetEnforcer";
+const EIP712_DOMAIN_VERSION = "1";
+
+const EIP712_TYPES = {
+  PaymentAuthorization: [
+    { name: "reqId", type: "bytes32" },
+    { name: "provider", type: "address" },
+    { name: "amount", type: "uint256" },
+    { name: "validBefore", type: "uint256" },
+  ],
+};
+
+class PaymentFacilitator {
+  /**
+   * @param {object} opts
+   * @param {string} opts.enforcerAddress   - TokenBudgetEnforcer contract address
+   * @param {ethers.Contract} opts.enforcerContract - Contract instance
+   * @param {ethers.Signer} [opts.settlerSigner]    - Signer paying gas for settlement txs
+   * @param {number} [opts.chainId=31337]          - EVM chainId
+   * @param {string} [opts.tokenAddress]           - MockUSDC address
+   */
+  constructor({ enforcerAddress, enforcerContract, settlerSigner, chainId = 31337, tokenAddress }) {
+    this.enforcerAddress = enforcerAddress;
+    this.enforcerContract = enforcerContract;
+    this.settlerSigner = settlerSigner;
+    this.chainId = chainId;
+    this.tokenAddress = tokenAddress;
+  }
+
+  /**
+   * Return the EIP-712 domain object for signing authorizations.
+   */
+  getDomain() {
+    return {
+      name: EIP712_DOMAIN_NAME,
+      version: EIP712_DOMAIN_VERSION,
+      chainId: this.chainId,
+      verifyingContract: this.enforcerAddress,
+    };
+  }
+
+  /**
+   * Return the EIP-712 types definition.
+   */
+  getTypes() {
+    return EIP712_TYPES;
+  }
+
+  /**
+   * Verify an x402 payment payload against the provider's payment requirements.
+   *
+   * @param {object} paymentPayload
+   * @param {string} paymentPayload.reqId
+   * @param {string} paymentPayload.provider
+   * @param {number|string} paymentPayload.amount
+   * @param {number} paymentPayload.validBefore
+   * @param {string} [paymentPayload.signature]
+   * @param {object} paymentRequirements
+   * @returns {Promise<{ valid: boolean, reason?: string }>}
+   */
+  async verify(paymentPayload, paymentRequirements) {
+    if (!paymentPayload || !paymentRequirements) {
+      return { valid: false, reason: "Missing payment payload or requirements" };
+    }
+
+    // 1. Basic field checks
+    if (paymentPayload.reqId !== paymentRequirements.reqId) {
+      return { valid: false, reason: `reqId mismatch: expected ${paymentRequirements.reqId}, got ${paymentPayload.reqId}` };
+    }
+
+    if (paymentPayload.provider.toLowerCase() !== paymentRequirements.recipient.toLowerCase()) {
+      return { valid: false, reason: `Provider address mismatch: expected ${paymentRequirements.recipient}, got ${paymentPayload.provider}` };
+    }
+
+    if (BigInt(paymentPayload.amount) !== BigInt(paymentRequirements.amount)) {
+      return { valid: false, reason: `Amount mismatch: expected ${paymentRequirements.amount}, got ${paymentPayload.amount}` };
+    }
+
+    const nowSec = Math.floor(Date.now() / 1000);
+    if (paymentPayload.validBefore < nowSec) {
+      return { valid: false, reason: `Payment authorization expired at ${paymentPayload.validBefore}` };
+    }
+
+    // 2. On-chain contract checks
+    try {
+      const isFrozen = await this.enforcerContract.isFrozen();
+      if (isFrozen) {
+        return { valid: false, reason: "Agent spending is frozen by contract owner" };
+      }
+
+      const isUsed = await this.enforcerContract.isRequestUsed(paymentPayload.reqId);
+      if (isUsed) {
+        return { valid: false, reason: "Request ID has already been used on-chain (replay protection)" };
+      }
+
+      const remaining = await this.enforcerContract.remainingBudget();
+      if (BigInt(paymentPayload.amount) > remaining) {
+        return { valid: false, reason: `Amount ${paymentPayload.amount} exceeds remaining budget ${remaining}` };
+      }
+
+      // 3. If signed EIP-712 authorization, verify signature resolves to authorized agent
+      if (paymentPayload.signature) {
+        const domain = this.getDomain();
+        const value = {
+          reqId: paymentPayload.reqId,
+          provider: paymentPayload.provider,
+          amount: paymentPayload.amount,
+          validBefore: paymentPayload.validBefore,
+        };
+        const recovered = ethers.verifyTypedData(domain, EIP712_TYPES, value, paymentPayload.signature);
+        const agentAddress = await this.enforcerContract.agent();
+        if (recovered.toLowerCase() !== agentAddress.toLowerCase()) {
+          return { valid: false, reason: `Signature recovered ${recovered}, does not match agent ${agentAddress}` };
+        }
+      }
+
+      return { valid: true };
+    } catch (err) {
+      return { valid: false, reason: `Contract verification error: ${err.message}` };
+    }
+  }
+
+  /**
+   * Settle payment on-chain releasing real ERC-20 tokens to the provider.
+   * Links the delivery hash directly to the settlement transaction.
+   *
+   * @param {object} paymentPayload
+   * @param {string} deliveryHash - SHA-256 content hash of delivered resource
+   * @returns {Promise<{ settled: boolean, txHash?: string, blockNumber?: number, error?: string }>}
+   */
+  async settle(paymentPayload, deliveryHash) {
+    try {
+      const deliveryBytes32 = deliveryHash.startsWith("0x")
+        ? deliveryHash
+        : ethers.keccak256(ethers.toUtf8Bytes(deliveryHash));
+
+      let tx;
+      if (paymentPayload.signature) {
+        // Settle atomically via EIP-712 signed authorization
+        const contractWithSigner = this.settlerSigner
+          ? this.enforcerContract.connect(this.settlerSigner)
+          : this.enforcerContract;
+
+        tx = await contractWithSigner.settleWithSignature(
+          paymentPayload.reqId,
+          paymentPayload.provider,
+          BigInt(paymentPayload.amount),
+          paymentPayload.validBefore,
+          deliveryBytes32,
+          paymentPayload.signature
+        );
+      } else {
+        // Settle previously authorized payment
+        const contractWithSigner = this.settlerSigner
+          ? this.enforcerContract.connect(this.settlerSigner)
+          : this.enforcerContract;
+
+        tx = await contractWithSigner.settlePayment(paymentPayload.reqId, deliveryBytes32);
+      }
+
+      const receipt = await tx.wait();
+      return {
+        settled: true,
+        txHash: receipt.hash,
+        blockNumber: receipt.blockNumber,
+        deliveryHash: deliveryBytes32,
+      };
+    } catch (err) {
+      return {
+        settled: false,
+        error: err.reason || err.message,
+      };
+    }
+  }
+
+  /**
+   * Verify an official x402 V2 PaymentPayload against expected PaymentRequirements.
+   * Performs schema validation with @x402/core, requirement matching, and delegates to
+   * the on-chain TokenBudgetEnforcer budget/freeze/replay and EIP-712 signature checks.
+   *
+   * @param {object} paymentPayload - Official x402 V2 PaymentPayload
+   * @param {object} expectedRequirements - Expected PaymentRequirements
+   * @returns {Promise<{ valid: boolean, reason?: string }>}
+   */
+  async verifyX402(paymentPayload, expectedRequirements) {
+    if (!paymentPayload || !expectedRequirements) {
+      return { valid: false, reason: "Missing x402 payment payload or requirements" };
+    }
+
+    // 1. Official schema validation using @x402/core Zod schemas
+    let validatedPayload;
+    try {
+      validatedPayload = validatePaymentPayload(paymentPayload);
+    } catch (err) {
+      return { valid: false, reason: `Invalid x402 PaymentPayload schema: ${err.message || err}` };
+    }
+
+    // 2. Validate accepted requirements against expected
+    const { accepted, payload: innerPayload } = validatedPayload;
+    if (accepted.scheme !== expectedRequirements.scheme) {
+      return { valid: false, reason: `Scheme mismatch: expected ${expectedRequirements.scheme}, got ${accepted.scheme}` };
+    }
+    if (accepted.network !== expectedRequirements.network) {
+      return { valid: false, reason: `Network mismatch: expected ${expectedRequirements.network}, got ${accepted.network}` };
+    }
+    if (accepted.asset.toLowerCase() !== expectedRequirements.asset.toLowerCase()) {
+      return { valid: false, reason: `Asset mismatch: expected ${expectedRequirements.asset}, got ${accepted.asset}` };
+    }
+    if (accepted.payTo.toLowerCase() !== expectedRequirements.payTo.toLowerCase()) {
+      return { valid: false, reason: `PayTo mismatch: expected ${expectedRequirements.payTo}, got ${accepted.payTo}` };
+    }
+    if (BigInt(accepted.amount) !== BigInt(expectedRequirements.amount)) {
+      return { valid: false, reason: `Amount mismatch: expected ${expectedRequirements.amount}, got ${accepted.amount}` };
+    }
+
+    // 3. Validate inner EVM exact scheme payload
+    if (!innerPayload || typeof innerPayload !== "object") {
+      return { valid: false, reason: "Missing inner scheme payload in x402 PaymentPayload" };
+    }
+
+    const { reqId, provider, amount, validBefore, signature } = innerPayload;
+    if (!reqId || !provider || !amount || !validBefore || !signature) {
+      return { valid: false, reason: "Inner scheme payload missing required EIP-712 fields" };
+    }
+
+    if (provider.toLowerCase() !== accepted.payTo.toLowerCase()) {
+      return { valid: false, reason: `Inner payload provider ${provider} does not match accepted payTo ${accepted.payTo}` };
+    }
+    if (BigInt(amount) !== BigInt(accepted.amount)) {
+      return { valid: false, reason: `Inner payload amount ${amount} does not match accepted amount ${accepted.amount}` };
+    }
+
+    if (expectedRequirements.extra && expectedRequirements.extra.reqId && expectedRequirements.extra.reqId !== reqId) {
+      return { valid: false, reason: `reqId mismatch: expected ${expectedRequirements.extra.reqId}, got ${reqId}` };
+    }
+
+    // 4. Delegate to existing on-chain verification (budget, freeze, replay, EIP-712 signature)
+    return this.verify(
+      { reqId, provider, amount: amount.toString(), validBefore: Number(validBefore), signature },
+      { reqId, recipient: accepted.payTo, amount: accepted.amount }
+    );
+  }
+
+  /**
+   * Settle an official x402 V2 payment on-chain and return an official x402 SettlementResponse.
+   *
+   * @param {object} paymentPayload - Official x402 V2 PaymentPayload
+   * @param {string} deliveryHash - SHA-256 content hash of delivered resource
+   * @returns {Promise<{ settled: boolean, settlementResponse?: object, txHash?: string, blockNumber?: number, error?: string }>}
+   */
+  async settleX402(paymentPayload, deliveryHash) {
+    const inner = (paymentPayload && paymentPayload.payload) ? paymentPayload.payload : paymentPayload;
+    const accepted = (paymentPayload && paymentPayload.accepted) ? paymentPayload.accepted : null;
+
+    const settlementResult = await this.settle(inner, deliveryHash);
+    if (!settlementResult.settled) {
+      return settlementResult;
+    }
+
+    const agentAddress = await this.enforcerContract.agent();
+    const network = accepted ? accepted.network : `eip155:${this.chainId}`;
+
+    // Official x402 V2 SettlementResponse structure
+    const settlementResponse = {
+      success: true,
+      transaction: settlementResult.txHash,
+      network,
+      payer: agentAddress,
+      extra: {
+        reqId: inner.reqId,
+        deliveryHash: deliveryHash,
+        amount: inner.amount ? inner.amount.toString() : undefined,
+        blockNumber: settlementResult.blockNumber,
+      },
+    };
+
+    return {
+      settled: true,
+      txHash: settlementResult.txHash,
+      blockNumber: settlementResult.blockNumber,
+      settlementResponse,
+    };
+  }
+
+  /**
+   * Retrieve on-chain settlement status for an existing reqId.
+   */
+  async getSettlementStatus(reqId) {
+    const isUsed = await this.enforcerContract.isRequestUsed(reqId);
+    if (!isUsed) {
+      return { settled: false, status: "NOT_FOUND" };
+    }
+
+    const auth = await this.enforcerContract.getAuthorization(reqId);
+    return {
+      settled: auth.settled,
+      provider: auth.provider,
+      amount: auth.amount.toString(),
+      validBefore: Number(auth.validBefore),
+      deliveryHash: auth.deliveryHash,
+      status: auth.settled ? "SETTLED" : "AUTHORIZED",
+    };
+  }
+
+  /**
+   * Get total budget, spend, and unspent escrow from contract.
+   */
+  async getContractBudgetState() {
+    const [totalFunded, authorizedBudget, settledSpend, remaining, unspent, isFrozen, agent] = await Promise.all([
+      this.enforcerContract.totalFunded(),
+      this.enforcerContract.authorizedBudget(),
+      this.enforcerContract.settledSpend(),
+      this.enforcerContract.remainingBudget(),
+      this.enforcerContract.unspentEscrow(),
+      this.enforcerContract.isFrozen(),
+      this.enforcerContract.agent(),
+    ]);
+
+    return {
+      totalFunded: totalFunded.toString(),
+      authorizedBudget: authorizedBudget.toString(),
+      settledSpend: settledSpend.toString(),
+      remaining: remaining.toString(),
+      unspentEscrow: unspent.toString(),
+      isFrozen,
+      agent,
+    };
+  }
+}
+
+module.exports = { PaymentFacilitator, EIP712_DOMAIN_NAME, EIP712_DOMAIN_VERSION, EIP712_TYPES };

@@ -1,0 +1,232 @@
+/**
+ * marketplace/token-server.js
+ *
+ * Multi-Provider Token Settlement Marketplace Server
+ * ==================================================
+ * Hosts x402 token-settlement endpoints for all 5 providers, integrated with
+ * PaymentFacilitator, MockUSDC, and TokenBudgetEnforcer.
+ */
+
+"use strict";
+
+const express = require("express");
+const path = require("path");
+const axios = require("axios");
+const { PROVIDERS, listProviders, providerToDiscovery, listAllServices, publishService, getProvider } = require("./providers");
+const { createTokenProviderRouter } = require("./token-provider-router");
+const { createX402ProviderRouter } = require("./x402-provider-router");
+const { createReceiptStore } = require("../provider/receipt-store");
+const { createQuoteStore } = require("./quote-store");
+const { createN8nRouter } = require("../orchestrator/n8n-connector");
+
+function createTokenMarketplace({
+  port = 14202,
+  facilitator,
+  tokenAddress,
+  providerWalletAddress,
+  auditLog = [],
+  agentSigner,
+  enforcerContract,
+  indexer,
+} = {}) {
+  const app = express();
+  app.use(express.json());
+
+  // Serve static files and standalone Marketplace portal
+  app.use(express.static(path.join(__dirname, "public")));
+  app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  });
+
+  // Mount n8n Orchestrator & x402 Internal Endpoints
+  const n8nRouter = createN8nRouter({
+    enforcerContract: enforcerContract || (facilitator ? facilitator.enforcerContract : null),
+    tokenContract: null,
+    agentSigner,
+    indexer,
+    facilitator,
+    marketplaceUrl: `http://localhost:${port}`,
+  });
+  app.use(n8nRouter);
+
+  // Forward funding and budget endpoints to Dashboard server (port 14300)
+  app.post("/api/fund", async (req, res) => {
+    try {
+      const resp = await axios.post("http://localhost:14300/api/fund", req.body);
+      res.status(resp.status).json(resp.data);
+    } catch (err) {
+      res.status((err.response && err.response.status) || 500).json(
+        (err.response && err.response.data) || { error: err.message }
+      );
+    }
+  });
+
+  app.get("/api/budget", async (req, res) => {
+    try {
+      const resp = await axios.get("http://localhost:14300/api/budget");
+      res.status(resp.status).json(resp.data);
+    } catch (err) {
+      res.status((err.response && err.response.status) || 500).json(
+        (err.response && err.response.data) || { error: err.message }
+      );
+    }
+  });
+
+  const providerState = {};
+  for (const p of PROVIDERS) {
+    providerState[p.providerId] = {
+      receiptStore: createReceiptStore(),
+      quoteStore: createQuoteStore(),
+      tamperNext: { value: false },
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Service Discovery Registry
+  // ---------------------------------------------------------------------------
+  app.get("/registry/discover", (req, res) => {
+    const { serviceType, minQuality, maxPrice } = req.query;
+
+    const candidates = listProviders({
+      serviceType: serviceType || undefined,
+      minQuality: minQuality ? parseFloat(minQuality) : undefined,
+      maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+    });
+
+    res.json({
+      count: candidates.length,
+      protocol: "x402-token-settlement",
+      token: tokenAddress,
+      providers: candidates.map((p) => {
+        const disc = providerToDiscovery(p);
+        disc.services = disc.services.map((s) => ({
+          ...s,
+          currency: "MockUSDC",
+          amountUnits: (BigInt(s.price) * 1_000_000n).toString(),
+        }));
+        return disc;
+      }),
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Mount Provider Routers
+  // ---------------------------------------------------------------------------
+  for (const providerConfig of PROVIDERS) {
+    const { providerId } = providerConfig;
+    const state = providerState[providerId];
+
+    const router = createTokenProviderRouter({
+      providerConfig,
+      facilitator,
+      receiptStore: state.receiptStore,
+      quoteStore: state.quoteStore,
+      providerWalletAddress,
+      tokenAddress,
+      sharedAuditLog: auditLog,
+      tamperNext: state.tamperNext,
+    });
+
+    app.use(`/providers/${providerId}`, router);
+
+    const x402Router = createX402ProviderRouter({
+      providerConfig,
+      facilitator,
+      receiptStore: state.receiptStore,
+      quoteStore: state.quoteStore,
+      providerWalletAddress,
+      tokenAddress,
+      chainId: facilitator.chainId || 31337,
+      sharedAuditLog: auditLog,
+      tamperNext: state.tamperNext,
+    });
+
+    app.use(`/x402/providers/${providerId}`, x402Router);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Service Marketplace Endpoints
+  // ---------------------------------------------------------------------------
+  app.get(["/api/services", "/registry/services"], (req, res) => {
+    try {
+      const services = listAllServices();
+      res.json({ services, count: services.length });
+    } catch (err) {
+      res.status(500).json({ error: err.message, services: [] });
+    }
+  });
+
+  app.post(["/api/services", "/registry/services"], (req, res) => {
+    try {
+      const result = publishService(req.body);
+      res.json(result);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  // Dynamic fallback for any newly published provider router
+  app.use("/x402/providers/:providerId", (req, res, next) => {
+    const providerConfig = getProvider(req.params.providerId);
+    if (!providerConfig) return next();
+    if (!providerState[req.params.providerId]) {
+      providerState[req.params.providerId] = {
+        receiptStore: createReceiptStore(),
+        quoteStore: createQuoteStore(),
+        tamperNext: { value: false },
+      };
+    }
+    const state = providerState[req.params.providerId];
+    const dynRouter = createX402ProviderRouter({
+      providerConfig,
+      facilitator,
+      receiptStore: state.receiptStore,
+      quoteStore: state.quoteStore,
+      providerWalletAddress,
+      tokenAddress,
+      chainId: (facilitator && facilitator.chainId) || 31337,
+      sharedAuditLog: auditLog,
+      tamperNext: state.tamperNext,
+    });
+    return dynRouter(req, res, next);
+  });
+
+  app.get("/health", (req, res) => {
+    res.json({
+      status: "ok",
+      protocol: "x402",
+      tokenAddress,
+      providerCount: PROVIDERS.length,
+    });
+  });
+
+  const server = app.listen(port, () => {
+    console.log(`[TokenMarketplace] Live on port ${port} with MockUSDC token settlement`);
+  });
+
+  function tamperNextFor(providerId) {
+    if (!providerState[providerId]) throw new Error(`Unknown provider: ${providerId}`);
+    providerState[providerId].tamperNext.value = true;
+  }
+
+  function setProviderAvailability(providerId, value) {
+    const p = PROVIDERS.find((x) => x.providerId === providerId);
+    if (p) p.availability = value;
+  }
+
+  function clearAll() {
+    for (const id of Object.keys(providerState)) {
+      providerState[id].receiptStore.clear();
+      providerState[id].quoteStore.clear();
+      providerState[id].tamperNext.value = false;
+    }
+  }
+
+  function stop() {
+    return new Promise((resolve) => server.close(resolve));
+  }
+
+  return { app, server, stop, tamperNextFor, setProviderAvailability, clearAll };
+}
+
+module.exports = { createTokenMarketplace };

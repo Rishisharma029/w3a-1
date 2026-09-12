@@ -1,0 +1,51 @@
+{
+  "name": "w3a-1",
+  "version": "4.0.0",
+  "description": "W3A-1: Let AI Agents Buy Services Safely — Phase 4 Security Hardening & Judge Readiness",
+  "private": true,
+  "scripts": {
+    "env": "node scripts/make-env.js",
+    "env:force": "node scripts/make-env.js --force",
+    "compile": "hardhat compile",
+    "test:contract": "hardhat test test/contract/BudgetEnforcer.test.js",
+    "test:integration": "hardhat test test/integration/flow.test.js",
+    "test:phase2": "hardhat test test/phase2/discovery.test.js test/phase2/selection.test.js test/phase2/flow.test.js test/phase2/adversarial.test.js",
+    "test:phase3": "hardhat test test/phase3/token-budget.test.js test/phase3/eip712-authorization.test.js test/phase3/settlement.test.js test/phase3/x402-flow.test.js",
+    "test:phase4": "hardhat test test/phase4/x402-protocol.test.js test/phase4/malicious-agent.test.js test/phase4/malicious-provider.test.js test/phase4/invariants.test.js",
+    "test:x402": "hardhat test test/phase5/x402-real.test.js",
+    "test:all": "hardhat test test/contract/BudgetEnforcer.test.js test/integration/flow.test.js test/phase2/discovery.test.js test/phase2/selection.test.js test/phase2/flow.test.js test/phase2/adversarial.test.js test/phase3/token-budget.test.js test/phase3/eip712-authorization.test.js test/phase3/settlement.test.js test/phase3/x402-flow.test.js test/phase4/x402-protocol.test.js test/phase4/malicious-agent.test.js test/phase4/malicious-provider.test.js test/phase4/invariants.test.js test/phase5/x402-real.test.js",
+    "demo": "hardhat run demo/demo.js",
+    "demo2": "hardhat run demo/demo2.js",
+    "demo3": "hardhat run demo/demo3.js",
+    "demo4": "hardhat run demo/demo4.js",
+    "demo:x402": "hardhat run demo/demo-x402-real.js",
+    "gas-report": "hardhat run scripts/gas-report.js",
+    "verify-sepolia": "node scripts/verify-sepolia.js",
+    "deploy:local": "hardhat run scripts/deploy-phase3.js --network localhost",
+    "deploy:sepolia": "hardhat run scripts/deploy-phase3.js --network sepolia",
+    "provider": "node provider/server.js",
+    "marketplace": "node marketplace/server.js",
+    "token-marketplace": "node marketplace/token-server.js",
+    "dashboard": "node dashboard/server.js",
+    "start": "hardhat run scripts/start-localhost.js",
+    "start:local": "hardhat run scripts/start-localhost.js",
+    "node": "hardhat node"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.22.0"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@openzeppelin/contracts": "^5.0.2",
+    "@x402/core": "^2.25.0",
+    "@x402/evm": "^2.25.0",
+    "axios": "^1.7.2",
+    "chalk": "^4.1.2",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.1",
+    "express": "^4.19.2",
+    "jest": "^29.7.0",
+    "uuid": "^10.0.0"
+  }
+}

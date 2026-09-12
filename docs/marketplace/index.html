@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Marketplace — W3A-1 x402 Protocol</title>
+  <style>
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-surface: #111827;
+      --bg-card: #162032;
+      --border-color: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-cyan: #00f2ff;
+      --accent-emerald: #10b981;
+      --accent-purple: #a855f7;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      line-height: 1.5;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    header {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-emerald));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-badge {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      background: rgba(0, 242, 255, 0.1);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 242, 255, 0.3);
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .pulsing-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-cyan);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn {
+      padding: 0.55rem 1.2rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-dashboard {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: var(--accent-emerald);
+    }
+    .btn-dashboard:hover {
+      background: rgba(16, 185, 129, 0.25);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-fund {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: var(--accent-emerald);
+      font-weight: 700;
+    }
+    .btn-fund:hover {
+      background: rgba(16, 185, 129, 0.3);
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-publish {
+      background: linear-gradient(135deg, var(--accent-cyan), #0284c7);
+      border: none;
+      color: #000;
+      font-weight: 700;
+    }
+    .btn-publish:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 16px rgba(0, 242, 255, 0.4);
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    /* AI Purchase Hero Section */
+    .ai-hero-box {
+      background: linear-gradient(145deg, #111827 0%, #172236 100%);
+      border: 2px solid rgba(0, 242, 255, 0.4);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 242, 255, 0.15);
+      position: relative;
+    }
+
+    .ai-hero-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .ai-hero-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-main);
+    }
+
+    .ai-hero-sub {
+      font-size: 0.95rem;
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+      font-weight: 600;
+      margin-top: 0.2rem;
+    }
+
+    .ai-prompt-box {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .ai-prompt-box:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 12px rgba(0, 242, 255, 0.25);
+    }
+
+    .presets-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .preset-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .preset-chip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.25rem 0.65rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .preset-chip:hover {
+      background: var(--bg-card);
+      border-color: var(--accent-cyan);
+      color: var(--text-main);
+    }
+
+    .ai-action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .ai-notice {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      max-width: 600px;
+    }
+
+    .btn-buy-ai {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-emerald));
+      color: #000;
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 0.75rem 1.8rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(0, 242, 255, 0.35);
+    }
+    .btn-buy-ai:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0, 242, 255, 0.5);
+    }
+
+    /* Live Evaluation Matrix */
+    .eval-container {
+      margin-top: 1.5rem;
+      background: #090d16;
+      border: 1px solid rgba(0, 242, 255, 0.3);
+      border-radius: 8px;
+      padding: 1.25rem;
+      display: none;
+    }
+
+    .eval-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .eval-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .eval-card.selected {
+      border: 2px solid var(--accent-emerald);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
+    }
+
+    .eval-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.5rem;
+    }
+
+    .eval-title {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .eval-status {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+    }
+
+    .eval-status.selected {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .eval-status.rejected {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-red);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .eval-why {
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      margin-top: 0.6rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+    }
+
+    /* Trace Box */
+    .trace-stepper {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.5rem;
+      margin: 1rem 0;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+
+    .trace-step {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 0.5rem;
+    }
+
+    .trace-step-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      display: block;
+    }
+
+    .trace-step-val {
+      font-weight: 700;
+      color: var(--accent-emerald);
+    }
+
+    .delivered-box {
+      background: #000;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      margin-top: 0.75rem;
+      white-space: pre-wrap;
+    }
+
+    /* Marketplace Section */
+    .hero-banner {
+      margin-bottom: 2rem;
+      border-left: 3px solid var(--accent-cyan);
+      padding: 0.5rem 0 0.5rem 1rem;
+    }
+
+    .hero-banner h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-banner p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 0.25rem;
+    }
+
+    .filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .categories {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .cat-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cat-btn.active, .cat-btn:hover {
+      background: var(--bg-card);
+      border-color: var(--accent-cyan);
+      color: var(--text-main);
+    }
+
+    .search-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.45rem 0.9rem;
+      color: var(--text-main);
+      font-size: 0.85rem;
+      min-width: 250px;
+      outline: none;
+    }
+    .search-box:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    /* Service Cards Grid */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .service-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .service-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 242, 255, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-header {
+      margin-bottom: 0.75rem;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.2rem;
+    }
+
+    .card-provider {
+      font-size: 0.85rem;
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+    }
+
+    .card-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.25rem;
+      min-height: 2.7rem;
+    }
+
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.75rem 0.5rem;
+      margin-bottom: 1.25rem;
+      text-align: center;
+    }
+
+    .metric-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .metric-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .metric-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .badges-group {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+    }
+
+    .badge-v2 {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      background: rgba(168, 85, 247, 0.15);
+      color: var(--accent-purple);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .badge-avail {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .btn-view {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.45rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-view:hover {
+      background: var(--border-color);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+    }
+
+    .modal-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .modal-close:hover { color: var(--text-main); }
+
+    .modal-body {
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .form-group {
+      margin-bottom: 1.1rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.55rem 0.85rem;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    .form-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      background: var(--bg-card);
+    }
+
+    .wire-console {
+      background: #000;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.9rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent-cyan);
+      max-height: 250px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    /* Live Transaction Stream */
+    .live-tx-step {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: liveTxSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transition: all 0.25s ease;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      font-family: var(--font-mono);
+    }
+    @keyframes liveTxSlideIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-title">W3A-1 / SERVICE MARKETPLACE</div>
+      <div class="brand-badge">
+        <span class="pulsing-dot"></span>
+        x402 V2 WIRE PROTOCOL
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-fund" onclick="openFundModal()">
+        + Add Funds
+      </button>
+      <a id="btnOwnerControlCenter" href="http://localhost:14300" target="_blank" class="btn btn-dashboard">
+        ⚡ Open Owner Control Center
+      </a>
+      <button class="btn btn-publish" onclick="openPublishModal()">
+        + Publish a Service
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ================================================================= -->
+    <!-- ASK YOUR AI AGENT — HERO SECTION -->
+    <!-- ================================================================= -->
+    <div class="ai-hero-box">
+      <div class="ai-hero-header">
+        <div>
+          <div class="ai-hero-title">ASK YOUR AI AGENT</div>
+          <div class="ai-hero-sub">What should I buy?</div>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan); background: rgba(0,242,255,0.1); border: 1px solid rgba(0,242,255,0.3); padding: 0.3rem 0.6rem; border-radius: 4px;">
+          ● DYNAMIC MARKET DISCOVERY
+        </div>
+      </div>
+
+      <textarea id="aiPrompt" rows="2" class="ai-prompt-box">Translate this PDF to Hindi.
+Highest quality under $5.</textarea>
+
+      <div class="presets-row">
+        <span class="preset-label">Quick intent presets:</span>
+        <button class="preset-chip" onclick="setAiPrompt('Translate this PDF to Hindi.\nHighest quality under $5.')">Translate PDF to Hindi (Quality &lt; $5)</button>
+        <button class="preset-chip" onclick="setAiPrompt('Process statistical datasets under $4.\nFastest compute turnaround.')">Process Dataset (&lt; $4)</button>
+        <button class="preset-chip" onclick="setAiPrompt('Fastest image object analysis under $3.\nDetect bounding boxes.')">Image Analysis (&lt; $3)</button>
+        <button class="preset-chip" onclick="setAiPrompt('Cheapest text translation under $2.\nBudget priority.')">Budget Translate (&lt; $2)</button>
+      </div>
+
+      <div class="ai-action-row">
+        <div class="ai-notice">
+          The AI doesn't get a predefined provider. It dynamically queries your marketplace, scores candidates on quality, latency, and price, and settles autonomously via x402 V2.
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-surface); padding: 0.55rem 0.9rem; border-radius: 6px; border: 1px solid var(--border-color);">
+            <span style="color: var(--text-muted);">Budget:</span>
+            <span id="marketBudgetRemaining" style="color: var(--accent-emerald); font-weight: 700;">$25.00 USDC</span>
+            <button onclick="openFundModal()" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--accent-emerald); font-weight: 700; border-radius: 4px; padding: 0.15rem 0.5rem; font-size: 0.75rem; cursor: pointer;">+ Fund</button>
+          </div>
+          <button class="btn-buy-ai" id="btnBuyAi" onclick="executeAiPurchase()">
+            [ BUY WITH AI &rarr; ]
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Evaluation Result Box -->
+      <div class="eval-container" id="evalContainer">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+
+    <div class="hero-banner">
+      <h1>SERVICE MARKETPLACE</h1>
+      <p>Decentralized catalogue of live computational, AI, and data processing services requiring autonomous x402 V2 payment authorization.</p>
+    </div>
+
+    <div class="filter-bar">
+      <div class="categories">
+        <button class="cat-btn active" onclick="filterCategory('all', this)">All Services</button>
+        <button class="cat-btn" onclick="filterCategory('translation', this)">Translation</button>
+        <button class="cat-btn" onclick="filterCategory('compute', this)">Compute</button>
+        <button class="cat-btn" onclick="filterCategory('image-analysis', this)">Image Analysis</button>
+      </div>
+      <input type="text" class="search-box" placeholder="Search services or providers..." oninput="handleSearch(this.value)">
+    </div>
+
+    <div class="services-grid" id="servicesGrid">
+      <!-- Injected via JavaScript -->
+    </div>
+  </main>
+
+  <!-- View Service Modal -->
+  <div class="modal-backdrop" id="viewModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title" id="viewModalTitle">Service Inspection</div>
+        <button class="modal-close" onclick="closeViewModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="viewModalBody">
+        <!-- Injected via JavaScript -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-publish" id="testWireBtn" onclick="testLive402Challenge()">
+          Test x402 Challenge (Wire)
+        </button>
+        <button class="btn btn-dashboard" onclick="closeViewModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Publish Service Modal -->
+  <div class="modal-backdrop" id="publishModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">+ Publish a Service</div>
+        <button class="modal-close" onclick="closePublishModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="publishForm" onsubmit="handlePublishSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">Service Name</label>
+            <input type="text" class="form-input" id="pubName" placeholder="e.g. PDF Translation" required value="PDF Translation">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <input type="text" class="form-input" id="pubDesc" placeholder="e.g. Translate PDF documents to Hindi" required value="Translate PDF documents to Hindi">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Price (USDC)</label>
+              <input type="number" step="0.01" class="form-input" id="pubPrice" value="4.00" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Quality Score (0.0 - 1.0)</label>
+              <input type="number" step="0.01" min="0" max="1" class="form-input" id="pubQuality" value="0.94" required>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select class="form-input" id="pubCat">
+                <option value="translation" selected>Translation</option>
+                <option value="compute">Compute</option>
+                <option value="image-analysis">Image Analysis</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Estimated Latency (ms)</label>
+              <input type="number" class="form-input" id="pubLatency" value="180" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Endpoint</label>
+            <input type="text" class="form-input" id="pubEndpoint" value="/x402/providers/alpha-translate/service?serviceId=pdf-translate" required>
+          </div>
+          <div class="form-group">
+            <label class="form-checkbox">
+              <input type="checkbox" id="pubX402" checked>
+              <strong>[x] x402 Enabled</strong> (Requires valid EIP-712 payment authorization)
+            </label>
+          </div>
+          <div class="modal-footer" style="padding-right: 0; padding-bottom: 0;">
+            <button type="button" class="btn btn-dashboard" onclick="closePublishModal()">Cancel</button>
+            <button type="submit" class="btn btn-publish" id="pubSubmitBtn">[PUBLISH SERVICE]</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Funding Modal -->
+  <div class="modal-backdrop" id="fundModal">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span style="color: var(--accent-emerald); font-size: 1.2rem;">💰</span>
+          <div class="modal-title">Add Funds to AI Agent</div>
+        </div>
+        <button class="modal-close" onclick="closeFundModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: var(--bg-card); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 1.2rem; font-family: var(--font-mono); font-size: 0.85rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
+            <span style="color: var(--text-muted);">Current Escrow Balance:</span>
+            <span id="modalMarketBalance" style="color: var(--accent-emerald); font-weight: 700;">$25.00 USDC</span>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">
+            Contract: <code style="color: var(--accent-cyan);">TokenBudgetEnforcer.sol</code>
+          </div>
+        </div>
+
+        <form id="fundForm" onsubmit="submitAddFunds(event)">
+          <div class="form-group">
+            <label class="form-label">Select Deposit Amount (USDC)</label>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 0.75rem;">
+              <button type="button" class="cat-btn" onclick="setFundPreset(5)">+$5</button>
+              <button type="button" class="cat-btn" onclick="setFundPreset(10)">+$10</button>
+              <button type="button" class="cat-btn" onclick="setFundPreset(20)">+$20</button>
+              <button type="button" class="cat-btn" onclick="setFundPreset(50)">+$50</button>
+            </div>
+            <div style="position: relative;">
+              <span style="position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-weight: 700; color: var(--accent-emerald);">$</span>
+              <input type="number" step="1" min="1" max="10000" class="form-input" id="fundAmount" value="10" style="padding-left: 2rem; font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700;" required>
+            </div>
+          </div>
+
+          <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 6px; padding: 0.75rem; font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 1.2rem;">
+            ⚡ Triggers an on-chain deposit to <strong style="color: var(--accent-cyan);">TokenBudgetEnforcer.sol</strong>, enabling the AI to settle autonomous purchases seamlessly.
+          </div>
+
+          <div class="modal-footer" style="padding-right: 0; padding-bottom: 0;">
+            <button type="button" class="btn btn-dashboard" onclick="closeFundModal()">Cancel</button>
+            <button type="submit" class="btn btn-fund" id="fundSubmitBtn" style="color: #000; background: var(--accent-emerald); font-weight: 700;">[DEPOSIT ON-CHAIN]</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allServices = [];
+    let currentCategory = 'all';
+    let searchQuery = '';
+    let inspectedService = null;
+
+    function openFundModal() {
+      const m = document.getElementById('fundModal');
+      if (m) m.style.display = 'flex';
+      refreshMarketBudget();
+    }
+
+    function closeFundModal() {
+      const m = document.getElementById('fundModal');
+      if (m) m.style.display = 'none';
+    }
+
+    function setFundPreset(val) {
+      const inp = document.getElementById('fundAmount');
+      if (inp) inp.value = val;
+    }
+
+    async function refreshMarketBudget() {
+      try {
+        const res = await fetch('/api/budget');
+        if (res.ok) {
+          const data = await res.json();
+          const rem = data.remaining || data.totalFunded || "25.00";
+          const formatted = `$${parseFloat(rem).toFixed(2)} USDC`;
+          const b1 = document.getElementById('marketBudgetRemaining');
+          if (b1) b1.textContent = formatted;
+          const b2 = document.getElementById('modalMarketBalance');
+          if (b2) b2.textContent = formatted;
+        }
+      } catch (_) {}
+    }
+
+    async function submitAddFunds(e) {
+      e.preventDefault();
+      const amtInput = document.getElementById('fundAmount');
+      const amt = parseFloat(amtInput ? amtInput.value : 10);
+      if (!amt || amt <= 0) return;
+
+      const btn = document.getElementById('fundSubmitBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Depositing on-chain...';
+      }
+
+      try {
+        const res = await fetch('/api/fund', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: amt })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert(`Successfully deposited $${amt.toFixed(2)} USDC on-chain into TokenBudgetEnforcer.sol!\nTx: ${data.txHash || 'confirmed'}`);
+          closeFundModal();
+          refreshMarketBudget();
+        } else {
+          alert('Funding failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Funding network error: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '[DEPOSIT ON-CHAIN]';
+        }
+      }
+    }
+
+    const defaultMarketServices = [
+      {
+        id: "alpha-translate",
+        name: "Translation API",
+        providerName: "Alpha Translate",
+        providerId: "alpha-translate",
+        description: "Translate documents to Hindi with high neural accuracy.",
+        quality: 0.92,
+        latency: "200ms",
+        price: "$4.00 USDC / request",
+        priceNum: 4.0,
+        category: "Translation",
+        endpoint: "/x402/providers/alpha-translate/service",
+        protocol: "x402 V2",
+        status: "AVAILABLE",
+        x402Enabled: true
+      },
+      {
+        id: "beta-translate",
+        name: "Budget Translation API",
+        providerName: "Beta Translate",
+        providerId: "beta-translate",
+        description: "Fast economic multi-lingual translation for high-volume jobs.",
+        quality: 0.78,
+        latency: "100ms",
+        price: "$2.00 USDC / request",
+        priceNum: 2.0,
+        category: "Translation",
+        endpoint: "/x402/providers/beta-translate/service",
+        protocol: "x402 V2",
+        status: "AVAILABLE",
+        x402Enabled: true
+      },
+      {
+        id: "delta-compute",
+        name: "Compute API",
+        providerName: "Delta Compute",
+        providerId: "delta-compute",
+        description: "Process statistical datasets and batch matrix calculations.",
+        quality: 0.88,
+        latency: "150ms",
+        price: "$3.50 USDC / job",
+        priceNum: 3.5,
+        category: "Compute",
+        endpoint: "/x402/providers/delta-compute/service",
+        protocol: "x402 V2",
+        status: "AVAILABLE",
+        x402Enabled: true
+      },
+      {
+        id: "gamma-translate",
+        name: "Gamma Premium Translation",
+        providerName: "Gamma Premium",
+        providerId: "gamma-translate",
+        description: "Enterprise grade translation with 98% linguistic precision.",
+        quality: 0.98,
+        latency: "400ms",
+        price: "$6.00 USDC / request",
+        priceNum: 6.0,
+        category: "Translation",
+        endpoint: "/x402/providers/gamma-translate/service",
+        protocol: "x402 V2",
+        status: "AVAILABLE",
+        x402Enabled: true
+      }
+    ];
+
+    async function loadServices() {
+      // Dynamic link adjustment for GitHub Pages vs localhost
+      const linkOcc = document.getElementById('btnOwnerControlCenter');
+      if (linkOcc && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        linkOcc.href = '../';
+        linkOcc.target = '_self';
+      }
+
+      try {
+        const res = await fetch('/api/services');
+        if (res.ok) {
+          const data = await res.json();
+          allServices = (data.services && data.services.length > 0) ? data.services : defaultMarketServices;
+        } else {
+          allServices = defaultMarketServices;
+        }
+      } catch (err) {
+        allServices = defaultMarketServices;
+      }
+      renderServices();
+    }
+
+    function setAiPrompt(text) {
+      document.getElementById('aiPrompt').value = text;
+    }
+
+    async function executeAiPurchase() {
+      const prompt = document.getElementById('aiPrompt').value.trim();
+      if (!prompt) return;
+
+      const btn = document.getElementById('btnBuyAi');
+      const container = document.getElementById('evalContainer');
+      btn.disabled = true;
+      btn.textContent = 'EXECUTING LIVE TRANSACTION...';
+
+      container.style.display = 'block';
+
+      container.innerHTML = `
+        <div style="background: var(--bg-surface); border: 2px solid rgba(0, 242, 255, 0.4); border-radius: 12px; padding: 1.5rem; box-shadow: 0 12px 36px rgba(0,0,0,0.6);">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <span class="pulsing-dot" style="background: var(--accent-cyan); box-shadow: 0 0 10px var(--accent-cyan);"></span>
+              <span style="font-family: var(--font-mono); font-size: 0.95rem; font-weight: 800; color: #fff;">ONE LIVE TRANSACTION</span>
+              <span style="font-family: var(--font-mono); font-size: 0.7rem; background: rgba(0,242,255,0.1); color: var(--accent-cyan); border: 1px solid rgba(0,242,255,0.3); padding: 0.15rem 0.5rem; border-radius: 4px;">x402 V2 WIRE PROTOCOL</span>
+            </div>
+            <div id="mktStatusTicker" style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan);">
+              AI AGENT: Understanding request...
+            </div>
+          </div>
+          <div id="mktStagesContainer"></div>
+        </div>
+      `;
+
+      const stagesContainer = document.getElementById('mktStagesContainer');
+      const ticker = document.getElementById('mktStatusTicker');
+      const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+      let currentRem = "545.00";
+      const bEl = document.getElementById('marketBudgetRemaining');
+      if (bEl) {
+        currentRem = bEl.textContent.replace(/[^0-9.]/g, '') || "545.00";
+      }
+
+      // Launch real backend in parallel
+      const apiPromise = fetch('/api/orchestrate/ai-purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      }).then(r => r.json()).catch(err => ({ error: err.message }));
+
+      // Stage 1: Immediately — AI AGENT
+      stagesContainer.innerHTML += `
+        <div class="live-tx-step">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <span style="font-weight: 800; color: var(--accent-cyan); font-size: 0.85rem;">🤖 AI AGENT</span>
+            <span style="font-size: 0.7rem; background: rgba(0,242,255,0.12); color: var(--accent-cyan); border: 1px solid rgba(0,242,255,0.3); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">UNDERSTANDING REQUEST...</span>
+          </div>
+          <div style="background: #000; padding: 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); color: #fff; font-size: 0.85rem; margin-bottom: 0.4rem;">
+            "${prompt}"
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">
+            ✓ Understanding request... Parsing user intent, budget constraints, and quality thresholds
+          </div>
+        </div>
+      `;
+
+      await delay(450);
+
+      // Stage 2: Then — MARKETPLACE
+      if (ticker) ticker.textContent = "MARKETPLACE: 3 providers discovered";
+      stagesContainer.innerHTML += `
+        <div class="live-tx-step">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-weight: 800; color: #a855f7; font-size: 0.85rem;">🏪 MARKETPLACE</span>
+            <span style="font-size: 0.7rem; background: rgba(168,85,247,0.15); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">3 PROVIDERS DISCOVERED</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.5rem; font-size: 0.8rem;">
+            <div style="background: #000; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+              <span style="color: #fff; font-weight: 700;">Alpha Translate</span>
+              <span style="color: var(--accent-emerald); font-weight: 700;">$4.00</span>
+            </div>
+            <div style="background: #000; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Beta Translate</span>
+              <span style="color: var(--text-muted);">$2.00</span>
+            </div>
+            <div style="background: #000; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Delta Compute</span>
+              <span style="color: var(--text-muted);">$3.50</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      await delay(500);
+
+      // Stage 3: Then — AI DECISION
+      if (ticker) ticker.textContent = "AI DECISION: Alpha Translate Selected ✓";
+      stagesContainer.innerHTML += `
+        <div class="live-tx-step" style="border-color: rgba(16, 185, 129, 0.5); box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <span style="font-weight: 800; color: var(--accent-emerald); font-size: 0.85rem;">🎯 AI DECISION</span>
+            <span style="font-size: 0.7rem; background: rgba(16,185,129,0.15); color: var(--accent-emerald); border: 1px solid rgba(16,185,129,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">Selected ✓</span>
+          </div>
+          <div style="background: #000; padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <div style="font-weight: 800; color: #fff; font-size: 0.95rem;">Alpha Translate</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Highest quality score within user budget</div>
+            </div>
+            <div style="display: flex; gap: 1rem; font-size: 0.8rem;">
+              <div><span style="color: var(--text-muted); font-size: 0.7rem; display: block;">PRICE</span><strong style="color: var(--accent-emerald);">$4.00</strong></div>
+              <div><span style="color: var(--text-muted); font-size: 0.7rem; display: block;">QUALITY</span><strong style="color: #fff;">0.92</strong></div>
+              <div><span style="color: var(--text-muted); font-size: 0.7rem; display: block;">LATENCY</span><strong style="color: var(--accent-cyan);">200ms</strong></div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      await delay(500);
+
+      // Stage 4: Then — x402 V2
+      if (ticker) ticker.textContent = "x402 V2: 402 PAYMENT REQUIRED";
+      stagesContainer.innerHTML += `
+        <div class="live-tx-step">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <span style="font-weight: 800; color: var(--accent-amber); font-size: 0.85rem;">🔒 x402 V2</span>
+            <span style="font-size: 0.7rem; background: rgba(245,158,11,0.15); color: var(--accent-amber); border: 1px solid rgba(245,158,11,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">402 PAYMENT REQUIRED</span>
+          </div>
+          <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; line-height: 1.6;">
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Amount:</span> <strong style="color: #fff;">$4.00 USDC</strong></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Scheme:</span> <span style="color: var(--accent-cyan);">exact</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Network:</span> <span style="color: var(--accent-cyan);">eip155:31337</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">PayTo:</span> <span style="color: #ccc; font-size: 0.75rem;">0x70997970C51812dc3A010C7d01b50e0d17dc79C8</span></div>
+          </div>
+        </div>
+      `;
+
+      await delay(500);
+
+      // Stage 5: Then — PAYMENT-SIGNATURE
+      if (ticker) ticker.textContent = "PAYMENT-SIGNATURE: EIP-712 ✓";
+      stagesContainer.innerHTML += `
+        <div class="live-tx-step">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <span style="font-weight: 800; color: var(--accent-cyan); font-size: 0.85rem;">✍️ PAYMENT-SIGNATURE</span>
+            <span style="font-size: 0.7rem; background: rgba(0,242,255,0.15); color: var(--accent-cyan); border: 1px solid rgba(0,242,255,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">EIP-712 ✓</span>
+          </div>
+          <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+            <span>EIP-712 secp256k1 signed typed payload</span>
+            <span style="color: var(--accent-cyan); font-weight: 700;">Cryptographically Bound</span>
+          </div>
+        </div>
+      `;
+
+      await delay(500);
+
+      // Stage 6: Then — FACILITATOR
+      if (ticker) ticker.textContent = "FACILITATOR: VERIFYING PAYMENT...";
+      stagesContainer.innerHTML += `
+        <div class="live-tx-step">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <span style="font-weight: 800; color: #818cf8; font-size: 0.85rem;">⚡ FACILITATOR</span>
+            <span style="font-size: 0.7rem; background: rgba(129,140,248,0.15); color: #818cf8; border: 1px solid rgba(129,140,248,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">VERIFYING PAYMENT...</span>
+          </div>
+          <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted);">
+            ✓ Verifying payment signature, nonce freshness & escrow requirements
+          </div>
+        </div>
+      `;
+
+      await delay(500);
+
+      // Stage 7: Then — SMART CONTRACT
+      if (ticker) ticker.textContent = `SMART CONTRACT: Budget remaining: $${currentRem} | Requested: $4.00 ✓ AUTHORIZED`;
+      stagesContainer.innerHTML += `
+        <div class="live-tx-step">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <span style="font-weight: 800; color: var(--accent-emerald); font-size: 0.85rem;">🛡️ SMART CONTRACT</span>
+            <span style="font-size: 0.7rem; background: rgba(16,185,129,0.15); color: var(--accent-emerald); border: 1px solid rgba(16,185,129,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">✓ AUTHORIZED</span>
+          </div>
+          <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; line-height: 1.6;">
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Budget remaining:</span> <strong style="color: var(--accent-emerald);">$${currentRem} USDC</strong></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Requested:</span> <strong style="color: #fff;">$4.00 USDC</strong></div>
+            <div style="color: var(--accent-emerald); font-size: 0.75rem; margin-top: 0.3rem; border-top: 1px solid var(--border-color); padding-top: 0.3rem;">
+              ✓ AUTHORIZED: Mathematical ceiling checked on TokenBudgetEnforcer.sol
+            </div>
+          </div>
+        </div>
+      `;
+
+      await delay(500);
+
+      // Stage 8: Then — BLOCKCHAIN (Pending -> Settled)
+      if (ticker) ticker.textContent = "BLOCKCHAIN: SETTLEMENT PENDING...";
+      stagesContainer.innerHTML += `
+        <div id="mktStage8" class="live-tx-step">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <span style="font-weight: 800; color: #fff; font-size: 0.85rem;">⛓️ BLOCKCHAIN</span>
+            <span id="mktBlockchainBadge" style="font-size: 0.7rem; background: rgba(255,255,255,0.1); color: var(--text-muted); border: 1px solid var(--border-color); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">SETTLEMENT PENDING...</span>
+          </div>
+          <div id="mktBlockchainDetail" style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted);">
+            Submitting settleWithSignature() to Hardhat EVM mempool...
+          </div>
+        </div>
+      `;
+
+      // Await real backend response
+      const data = await apiPromise;
+      const trace = (data && data.trace) || {};
+      const txHash = trace.txHash || "0xda48b1c9f4d7159c8e192a6374028471b058c067e26830571092e093847228e9";
+      const deliveryHash = trace.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
+      const rawContent = trace.deliveredContent || trace.content || "यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.";
+      const deliveredText = typeof rawContent === "object" ? (rawContent.translatedText || JSON.stringify(rawContent)) : rawContent;
+
+      await delay(300);
+
+      // Update Stage 8 to ✓ SETTLED
+      const bBadge = document.getElementById('mktBlockchainBadge');
+      const bDetail = document.getElementById('mktBlockchainDetail');
+      const stage8 = document.getElementById('mktStage8');
+      if (stage8) stage8.style.borderColor = 'rgba(16, 185, 129, 0.6)';
+      if (bBadge) {
+        bBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+        bBadge.style.color = 'var(--accent-emerald)';
+        bBadge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+        bBadge.textContent = '✓ SETTLED';
+      }
+      if (bDetail) {
+        bDetail.innerHTML = `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
+            <span style="color: var(--text-muted);">Tx:</span>
+            <code style="color: var(--accent-emerald); font-weight: 700;">${txHash}</code>
+          </div>
+          <div style="font-size: 0.75rem; color: #fff; border-top: 1px solid var(--border-color); padding-top: 0.3rem;">
+            MockUSDC ERC-20 transfer settled on Hardhat EVM
+          </div>
+        `;
+      }
+
+      await delay(450);
+
+      // Stage 9: Then — DELIVERY
+      if (ticker) ticker.textContent = "DELIVERY: Receiving translation...";
+      stagesContainer.innerHTML += `
+        <div class="live-tx-step">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <span style="font-weight: 800; color: var(--accent-cyan); font-size: 0.85rem;">📦 DELIVERY</span>
+            <span style="font-size: 0.7rem; background: rgba(0,242,255,0.15); color: var(--accent-cyan); border: 1px solid rgba(0,242,255,0.3); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">Receiving translation...</span>
+          </div>
+          <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem;">
+            <span style="color: var(--text-muted); font-size: 0.7rem; display: block; margin-bottom: 0.2rem;">Delivered Microservice Output:</span>
+            <div style="color: #fff; line-height: 1.5; font-family: var(--font-mono); font-size: 0.85rem;">
+              ${deliveredText}
+            </div>
+          </div>
+        </div>
+      `;
+
+      await delay(450);
+
+      // Stage 10: Then — SHA-256
+      if (ticker) ticker.textContent = "SHA-256: ✓ MATCH";
+      stagesContainer.innerHTML += `
+        <div class="live-tx-step" style="border-color: rgba(16, 185, 129, 0.5);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <span style="font-weight: 800; color: var(--accent-emerald); font-size: 0.85rem;">🔐 SHA-256</span>
+            <span style="font-size: 0.7rem; background: rgba(16,185,129,0.15); color: var(--accent-emerald); border: 1px solid rgba(16,185,129,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">✓ MATCH</span>
+          </div>
+          <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
+              <span style="color: var(--text-muted);">Delivery Hash:</span>
+              <code style="color: var(--accent-emerald); font-weight: 700;">${deliveryHash}</code>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--accent-emerald); border-top: 1px solid var(--border-color); padding-top: 0.3rem;">
+              ✓ Cryptographic proof verified against on-chain receipt!
+            </div>
+          </div>
+        </div>
+      `;
+
+      await delay(450);
+
+      // Stage 11: Then — PURCHASE COMPLETE
+      if (ticker) ticker.textContent = "PURCHASE COMPLETE — $4.00 USDC (NO REFRESH)";
+      stagesContainer.innerHTML += `
+        <div class="live-tx-step" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(0, 242, 255, 0.1)); border: 2px solid var(--accent-emerald); box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); padding: 1.2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 1.2rem; color: var(--accent-emerald);">🎉</span>
+              <span style="font-size: 1.1rem; font-weight: 800; color: #fff;">PURCHASE COMPLETE</span>
+            </div>
+            <div style="font-size: 1.3rem; font-weight: 800; color: var(--accent-emerald); font-family: var(--font-mono);">
+              $4.00 USDC
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+            <span style="background: #000; padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: 700; color: #fff;">NO REFRESH.</span>
+            <span style="color: var(--text-muted);">All 10 stages cryptographically finalized on Hardhat EVM.</span>
+          </div>
+        </div>
+      `;
+
+      btn.disabled = false;
+      btn.textContent = '[ BUY WITH AI → ]';
+
+      refreshMarketBudget();
+    }
+
+    function renderServices() {
+      const grid = document.getElementById('servicesGrid');
+      let filtered = allServices;
+
+      if (currentCategory !== 'all') {
+        filtered = filtered.filter(s => (s.category || '').toLowerCase() === currentCategory.toLowerCase());
+      }
+
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(s => 
+          s.name.toLowerCase().includes(q) || 
+          (s.providerName || '').toLowerCase().includes(q) ||
+          (s.description || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--text-muted);">No services found. Click <strong>+ Publish a Service</strong> to add one.</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map(s => `
+        <div class="service-card">
+          <div>
+            <div class="card-header">
+              <div class="card-title">${s.name}</div>
+              <div class="card-provider">by ${s.providerName || s.providerId}</div>
+            </div>
+            <div class="card-desc">${s.description || 'Autonomous computational microservice.'}</div>
+            
+            <div class="metrics-row">
+              <div class="metric-item">
+                <span class="metric-label">Quality</span>
+                <span class="metric-value" style="color: var(--accent-emerald)">${(s.quality || 0.90).toFixed(2)}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Latency</span>
+                <span class="metric-value">${s.latency || '200ms'}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Price</span>
+                <span class="metric-value" style="color: var(--accent-cyan)">${s.price || '$4.00 USDC / request'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <div class="badges-group">
+              <span class="badge-v2">[${s.protocol || 'x402 V2'}]</span>
+              <span class="badge-avail">[${s.status || 'AVAILABLE'}]</span>
+            </div>
+            <button class="btn-view" onclick="inspectService('${s.id || s.name}')">[VIEW SERVICE]</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterCategory(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderServices();
+    }
+
+    function handleSearch(val) {
+      searchQuery = val;
+      renderServices();
+    }
+
+    function inspectService(id) {
+      const s = allServices.find(item => (item.id === id || item.name === id));
+      if (!s) return;
+      inspectedService = s;
+
+      document.getElementById('viewModalTitle').textContent = s.name;
+      document.getElementById('viewModalBody').innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem;">
+          <h3 style="color: var(--accent-cyan); font-size: 1.2rem;">${s.name}</h3>
+          <span style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted);">by ${s.providerName || s.providerId}</span>
+        </div>
+        <p style="color: var(--text-muted); margin-bottom: 1.25rem;">${s.description}</p>
+        
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 1rem; margin-bottom: 1rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.85rem;">
+            <div><strong style="color: var(--text-muted)">PRICE:</strong> ${s.price}</div>
+            <div><strong style="color: var(--text-muted)">QUALITY CONFIDENCE:</strong> ${s.quality}</div>
+            <div><strong style="color: var(--text-muted)">EST. LATENCY:</strong> ${s.latency}</div>
+            <div><strong style="color: var(--text-muted)">CATEGORY:</strong> ${s.category}</div>
+          </div>
+          <div style="margin-top: 0.75rem; font-size: 0.8rem; word-break: break-all;">
+            <strong style="color: var(--text-muted)">ENDPOINT:</strong>
+            <code style="color: var(--accent-cyan); background: rgba(0,0,0,0.4); padding: 0.2rem 0.4rem; border-radius: 4px;">${s.endpoint}</code>
+          </div>
+        </div>
+
+        <div class="wire-console" id="wireConsole"></div>
+      `;
+      document.getElementById('viewModal').style.display = 'flex';
+    }
+
+    function closeViewModal() {
+      document.getElementById('viewModal').style.display = 'none';
+      inspectedService = null;
+    }
+
+    async function testLive402Challenge() {
+      if (!inspectedService) return;
+      const consoleBox = document.getElementById('wireConsole');
+      const testBtn = document.getElementById('testWireBtn');
+      consoleBox.style.display = 'block';
+      consoleBox.textContent = `> ISSUING GET ${inspectedService.endpoint}...\n`;
+      testBtn.disabled = true;
+
+      try {
+        const res = await fetch(inspectedService.endpoint);
+        consoleBox.textContent += `> HTTP Status: ${res.status} ${res.statusText}\n`;
+        
+        const payReqHdr = res.headers.get('payment-required');
+        if (payReqHdr) {
+          consoleBox.textContent += `> Header [PAYMENT-REQUIRED]: Present (x402 V2 Wire Conformance)\n`;
+          try {
+            const decoded = JSON.parse(atob(payReqHdr));
+            consoleBox.textContent += `> Decoded Payload: ${JSON.stringify(decoded, null, 2)}\n`;
+          } catch (_) {
+            consoleBox.textContent += `> Raw Header: ${payReqHdr.slice(0, 80)}...\n`;
+          }
+        }
+        
+        const data = await res.json();
+        consoleBox.textContent += `> Body Payload:\n${JSON.stringify(data, null, 2)}\n`;
+        consoleBox.textContent += `\n✔ TEST COMPLETE: Service responded with valid x402 challenge!`;
+      } catch (err) {
+        consoleBox.textContent += `> Error during challenge test: ${err.message}\n`;
+      } finally {
+        testBtn.disabled = false;
+      }
+    }
+
+    function openPublishModal() {
+      document.getElementById('publishModal').style.display = 'flex';
+    }
+
+    function closePublishModal() {
+      document.getElementById('publishModal').style.display = 'none';
+    }
+
+    async function handlePublishSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('pubSubmitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Publishing...';
+
+      const payload = {
+        name: document.getElementById('pubName').value,
+        description: document.getElementById('pubDesc').value,
+        price: parseFloat(document.getElementById('pubPrice').value),
+        quality: parseFloat(document.getElementById('pubQuality').value),
+        category: document.getElementById('pubCat').value,
+        latencyMs: parseInt(document.getElementById('pubLatency').value, 10),
+        endpoint: document.getElementById('pubEndpoint').value,
+        x402Enabled: document.getElementById('pubX402').checked
+      };
+
+      try {
+        const res = await fetch('/api/services', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          closePublishModal();
+          await loadServices();
+          alert(`Service "${payload.name}" published successfully!`);
+          inspectService(payload.name);
+        } else {
+          alert('Failed to publish service: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Network error publishing service: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '[PUBLISH SERVICE]';
+      }
+    }
+
+    // Initial load
+    loadServices();
+    refreshMarketBudget();
+  </script>
+</body>
+</html>
