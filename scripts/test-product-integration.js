@@ -1,4 +1,4 @@
-﻿/**
+/**
  * scripts/test-product-integration.js
  *
  * Automated verification of the 17-point Product Integration Phase:
@@ -21,6 +21,11 @@ async function run() {
     passedCount++;
     console.log(chalk.green(`  [✓] ${name}`) + (detail ? chalk.gray(` — ${detail}`) : ''));
   }
+
+  // 0. Ensure escrow budget has funds
+  try {
+    await axios.post(`${DASHBOARD_URL}/api/fund`, { amount: 20 });
+  } catch (_) {}
 
   // 1. Provider publishes service
   console.log(chalk.blue('[Step 1] Provider publishing service...'));

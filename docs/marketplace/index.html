@@ -146,16 +146,20 @@
       max-width: 1200px;
       margin: 2rem auto;
       padding: 0 1.5rem;
+      position: relative;
+      z-index: 5;
     }
 
-    /* AI Purchase Hero Section */
+    /* AI Purchase Hero Section with Cyber Glassmorphic Depth */
     .ai-hero-box {
-      background: linear-gradient(145deg, #111827 0%, #172236 100%);
-      border: 2px solid rgba(0, 242, 255, 0.4);
-      border-radius: 12px;
-      padding: 2rem;
+      background: rgba(17, 24, 39, 0.82);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(0, 242, 255, 0.45);
+      border-radius: 16px;
+      padding: 2.2rem;
       margin-bottom: 2.5rem;
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 242, 255, 0.15);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 32px rgba(0, 242, 255, 0.18);
       position: relative;
     }
 
@@ -720,6 +724,11 @@
 </head>
 <body>
 
+  <!-- =========================================================================
+       SHADERGRADIENT (ruucm/shadergradient) 3D LIQUID AMBIENT CANVAS
+       ========================================================================= -->
+  <div id="w3aMarketplaceShaderBg" style="position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.52; overflow: hidden;"></div>
+
   <header>
     <div class="brand">
       <div class="brand-title">W3A-1 / SERVICE MARKETPLACE</div>
@@ -937,7 +946,31 @@ Highest quality under $5.</textarea>
     </div>
   </div>
 
+  <!-- ShaderGradient WebGL 3D Dependencies (ruucm/shadergradient) -->
+  <script src="js/vendor/three.min.js"></script>
+  <script src="js/components/shader-gradient.js"></script>
+
   <script>
+    let marketplaceShader = null;
+    try {
+      if (window.ShaderGradient) {
+        marketplaceShader = window.ShaderGradient.create('#w3aMarketplaceShaderBg', {
+          color1: '#00f2ff',
+          color2: '#10b981',
+          color3: '#6366f1',
+          bgColor: '#0a0e17',
+          speed: 0.25,
+          density: 1.18,
+          strength: 2.2,
+          grain: 0.36,
+          opacity: 0.5,
+          interactive: true
+        });
+      }
+    } catch (e) {
+      console.warn('[Marketplace] Shader init skipped:', e);
+    }
+
     let allServices = [];
     let currentCategory = 'all';
     let searchQuery = '';
@@ -1141,6 +1174,10 @@ Highest quality under $5.</textarea>
       }
 
       // Launch real backend in parallel
+      if (marketplaceShader) {
+        marketplaceShader.setColors('#00f2ff', '#38bdf8', '#818cf8');
+      }
+
       const apiPromise = fetch('/api/orchestrate/ai-purchase', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1308,6 +1345,9 @@ Highest quality under $5.</textarea>
 
       // Check if on-chain defense intercepted this request (Overspend, Frozen, Replay)
       if (data && (data.success === false || trace.status === "REJECTED" || (data.error && !trace.txHash))) {
+        if (marketplaceShader) {
+          marketplaceShader.setColors('#f59e0b', '#ef4444', '#6366f1');
+        }
         const reason = (trace.reason || data.reason || data.error || "Overspend: Amount exceeds remaining authorized budget").toUpperCase();
         if (ticker) ticker.textContent = `OVERSPEND DEFENSE: ATTEMPT BLOCKED ON-CHAIN (NO REFRESH)`;
         
@@ -1421,6 +1461,9 @@ Highest quality under $5.</textarea>
       await delay(450);
 
       // Stage 11: Then — PURCHASE COMPLETE
+      if (marketplaceShader) {
+        marketplaceShader.setColors('#10b981', '#059669', '#00f2ff');
+      }
       if (ticker) ticker.textContent = "PURCHASE COMPLETE — $4.00 USDC (NO REFRESH)";
       stagesContainer.innerHTML += `
         <div class="live-tx-step" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(0, 242, 255, 0.1)); border: 2px solid var(--accent-emerald); box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); padding: 1.2rem;">

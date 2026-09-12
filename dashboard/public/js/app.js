@@ -20,8 +20,29 @@ const App = {
   },
 
   pollTimer: null,
+  bgShader: null,
  
   async init() {
+    // 0. Initialize ShaderGradient 3D animated mesh canvas
+    if (window.ShaderGradient) {
+      try {
+        this.bgShader = window.ShaderGradient.create('#w3aShaderBg', {
+          color1: '#00f2ff',
+          color2: '#10b981',
+          color3: '#6366f1',
+          bgColor: '#090e1b',
+          speed: 0.25,
+          density: 1.15,
+          strength: 2.2,
+          grain: 0.35,
+          opacity: 0.55,
+          interactive: true
+        });
+      } catch (err) {
+        console.warn('[App] ShaderGradient init skipped:', err);
+      }
+    }
+
     // 1. Initialize all view subscribers
     Object.values(this.views).forEach((v) => {
       if (v && typeof v.init === "function") {
@@ -60,6 +81,23 @@ const App = {
     if (this.views[viewName]) {
       AppState.setView(viewName);
       window.scrollTo({ top: 0, behavior: "smooth" });
+
+      // Dynamically morph 3D shader gradient mood based on view context
+      if (this.bgShader) {
+        if (viewName === "agent") {
+          // AI Purchase (Pillar 2): Electric Cyan & Royal Indigo
+          this.bgShader.setColors("#00f2ff", "#38bdf8", "#818cf8");
+        } else if (viewName === "providers") {
+          // Marketplace (Pillar 1): Emerald Catalog & Cyan
+          this.bgShader.setColors("#10b981", "#06b6d4", "#6366f1");
+        } else if (viewName === "security") {
+          // Security Defense: Guard Amber & Crimson
+          this.bgShader.setColors("#f59e0b", "#ef4444", "#6366f1");
+        } else {
+          // Default Owner Center: Cyber Cyan, Safe Emerald, Indigo
+          this.bgShader.setColors("#00f2ff", "#10b981", "#6366f1");
+        }
+      }
     }
   },
 
