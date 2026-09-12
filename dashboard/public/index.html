@@ -59,29 +59,511 @@
 <body class="bg-background text-on-surface font-body antialiased min-h-screen flex select-none selection:bg-secondary selection:text-surface relative overflow-x-hidden">
 
   <!-- =========================================================================
-       SPLINE 3D INTRO OVERLAY (Pure 3D embedding in front of everything until clicked)
+       SPLINE 3D INTRO OVERLAY & GENOVA DEEP LANDING EXPERIENCE
        ========================================================================= -->
-  <div id="splineIntroOverlay" class="fixed inset-0 z-[99999] bg-white w-screen h-screen overflow-hidden transition-all duration-700 ease-out select-none">
+  <div id="splineIntroOverlay" class="fixed inset-0 z-[99999] bg-[#060913] w-screen h-screen overflow-y-auto overflow-x-hidden scroll-smooth select-none transition-all duration-700 ease-out">
     
-    <!-- Pure 3D Spline Canvas with local 'Get in' scene -->
-    <spline-viewer 
-      id="splineViewerElem"
-      url="scene.splinecode" 
-      class="w-full h-full block">
-    </spline-viewer>
+    <!-- Top Sticky Navigation Bar -->
+    <header class="sticky top-0 z-40 w-full px-6 py-3.5 bg-slate-950/80 backdrop-blur-xl border-b border-white/10 flex items-center justify-between transition-all duration-300">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="scrollLandingToTop()">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <span class="material-symbols-outlined text-white text-lg" data-icon="shield">shield</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-headline font-bold text-white text-sm tracking-wider">GENOVA</span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">W3A-1 v4.2</span>
+          </div>
+          <span class="text-[9px] font-mono text-slate-400 block tracking-wider uppercase">Autonomous Spending Protocol</span>
+        </div>
+      </div>
 
-    <!-- Dedicated clickable target directly aligned over the 3D 'Get in' button -->
-    <button 
-      id="btnGetInOverlay"
-      type="button"
-      aria-label="Get in"
-      class="absolute cursor-pointer z-30 opacity-0 bg-transparent border-0 outline-none"
-      style="left: 14%; top: 59%; width: 22%; max-width: 230px; min-width: 140px; height: 54px;"
-      onclick="dismissSplineIntro()">
-    </button>
+      <!-- Quick Nav Jump Links -->
+      <nav class="hidden md:flex items-center gap-6 text-xs font-mono text-slate-300">
+        <button type="button" onclick="scrollLandingToTop()" class="hover:text-cyan-400 transition-colors cursor-pointer bg-transparent border-0">3D Showcase</button>
+        <button type="button" onclick="document.getElementById('landingGenovaSection').scrollIntoView({behavior:'smooth'})" class="hover:text-cyan-400 transition-colors cursor-pointer bg-transparent border-0">GENOVA Engine</button>
+        <button type="button" onclick="document.getElementById('landingPillarsSection').scrollIntoView({behavior:'smooth'})" class="hover:text-cyan-400 transition-colors cursor-pointer bg-transparent border-0">Protocol Pillars</button>
+        <button type="button" onclick="document.getElementById('landingSpecsSection').scrollIntoView({behavior:'smooth'})" class="hover:text-cyan-400 transition-colors cursor-pointer bg-transparent border-0">Architecture</button>
+      </nav>
 
-    <!-- Watermark shield cover at bottom-right corner (Seamless White) -->
-    <div id="splineWatermarkShield" class="absolute bottom-0 right-0 w-48 h-16 bg-white z-20 pointer-events-none"></div>
+      <!-- Enter App CTA -->
+      <div class="flex items-center gap-3">
+        <button 
+          type="button"
+          onclick="dismissSplineIntro()" 
+          class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-mono font-bold tracking-wider shadow-lg shadow-cyan-500/25 transition-all hover:scale-105 active:scale-95 cursor-pointer border-0">
+          <span>ENTER PROTOCOL</span>
+          <span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- =========================================================================
+         SECTION 1: HERO - Pure 3D Spline Interactive Canvas (100vh)
+         ========================================================================= -->
+    <section id="splineHeroSection" class="relative w-full h-screen min-h-[700px] overflow-hidden bg-white">
+      <!-- Pure 3D Spline Canvas with local 'Get in' scene -->
+      <spline-viewer 
+        id="splineViewerElem"
+        url="scene.splinecode" 
+        class="w-full h-full block">
+      </spline-viewer>
+
+      <!-- Dedicated clickable target directly aligned over the 3D 'Get in' button -->
+      <button 
+        id="btnGetInOverlay"
+        type="button"
+        aria-label="Get in"
+        class="absolute cursor-pointer z-30 opacity-0 bg-transparent border-0 outline-none"
+        style="left: 14%; top: 59%; width: 22%; max-width: 230px; min-width: 140px; height: 54px;"
+        onclick="dismissSplineIntro()">
+      </button>
+
+      <!-- Watermark shield cover at bottom-right corner (Seamless White) -->
+      <div id="splineWatermarkShield" class="absolute bottom-0 right-0 w-48 h-16 bg-white z-20 pointer-events-none"></div>
+
+      <!-- Animated Scroll Down Indicator over the Spline down chevron -->
+      <div 
+        id="btnScrollDownToContent"
+        class="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 cursor-pointer flex flex-col items-center gap-1 group py-2 px-5 rounded-full bg-white/75 hover:bg-white backdrop-blur-md border border-slate-200 shadow-xl transition-all hover:scale-105"
+        onclick="scrollLandingDown()"
+        title="Scroll down to explore GENOVA Engine">
+        <span class="text-[10px] font-mono font-bold tracking-widest text-slate-700 uppercase group-hover:text-blue-600">SCROLL DOWN</span>
+        <span class="material-symbols-outlined text-slate-700 group-hover:text-blue-600 text-lg animate-bounce">expand_more</span>
+      </div>
+    </section>
+
+    <!-- Seamless Transition Gradient from White Spline Canvas into Cybernetic Dark Space -->
+    <div class="h-32 w-full bg-gradient-to-b from-white via-[#0a0f1d] to-[#060913] relative z-10 pointer-events-none"></div>
+
+    <!-- =========================================================================
+         SECTION 2: ACETERNITY UI LARGE GENOVA TEXT-HOVER-EFFECT (h-[40rem])
+         ========================================================================= -->
+    <section id="landingGenovaSection" class="relative py-20 px-6 max-w-7xl mx-auto flex flex-col items-center justify-center">
+      <!-- Glow ambient backdrop -->
+      <div class="absolute w-[800px] h-[350px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none"></div>
+      <div class="absolute w-[500px] h-[250px] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+      <div class="text-center space-y-4 max-w-3xl mb-8 relative z-10">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 font-mono text-xs text-cyan-300">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span>ACETERNITY UI &bull; DYNAMIC HOVER SPOTLIGHT</span>
+        </div>
+        <h2 class="font-headline text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+          Next-Gen AI Autonomous <span class="bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">Spending Protocol</span>
+        </h2>
+        <p class="font-body text-slate-300 text-sm sm:text-base leading-relaxed">
+          Hover over the letters below to ignite the interactive spectral radial beam. GENOVA delivers cryptographically verified micro-purchases for autonomous AI agents.
+        </p>
+      </div>
+
+      <!-- Large GENOVA Text Hover Area (h-[40rem] flex items-center justify-center) -->
+      <div class="w-full h-[40rem] flex items-center justify-center relative z-10 rounded-3xl bg-slate-950/70 border border-slate-800/80 backdrop-blur-2xl shadow-2xl p-4 sm:p-8">
+        <div id="landingGenovaHoverWrapper" class="w-full h-full flex items-center justify-center"></div>
+      </div>
+
+      <!-- Section CTA -->
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-4 relative z-10">
+        <button 
+          onclick="dismissSplineIntro()" 
+          class="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-mono font-bold text-sm tracking-wider shadow-xl shadow-cyan-500/30 transition-all hover:scale-105 active:scale-95 cursor-pointer border-0 flex items-center gap-2">
+          <span>ENTER APPLICATION NOW</span>
+          <span class="material-symbols-outlined text-base">arrow_forward</span>
+        </button>
+        <button 
+          onclick="document.getElementById('landingPillarsSection').scrollIntoView({ behavior: 'smooth' })" 
+          class="px-6 py-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700/80 font-mono text-sm tracking-wider transition-all hover:scale-105 cursor-pointer flex items-center gap-2">
+          <span>EXPLORE PROTOCOL PILLARS</span>
+          <span class="material-symbols-outlined text-base">expand_more</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SECTION 3: ACETERNITY UI LAMP CONTAINER - THREE CORE PROTOCOL PILLARS
+         ========================================================================= -->
+    <section id="landingPillarsSection" class="relative py-12 px-4 max-w-7xl mx-auto overflow-hidden">
+      <div id="lampContainerElem" class="lamp-container relative flex flex-col items-center justify-start overflow-hidden bg-black w-full rounded-2xl z-0 pt-16 pb-20 px-4 sm:px-6 border border-slate-900 shadow-2xl">
+        
+        <!-- Lamp Light Apparatus & Beams (Aceternity UI Lamp) -->
+        <div class="relative flex w-full flex-1 scale-y-125 items-center justify-center isolate z-0 pointer-events-none select-none mb-12">
+          <!-- Left Conic Beam -->
+          <div class="lamp-beam-left absolute inset-auto right-1/2 h-64 overflow-visible w-[18rem] md:w-[32rem] text-white opacity-90 [--conic-position:from_70deg_at_center_top]">
+            <div class="absolute w-full left-0 bg-black h-40 bottom-0 z-20 [mask-image:linear-gradient(to_top,white,transparent)]"></div>
+            <div class="absolute w-40 h-full left-0 bg-black bottom-0 z-20 [mask-image:linear-gradient(to_right,white,transparent)]"></div>
+          </div>
+
+          <!-- Right Conic Beam -->
+          <div class="lamp-beam-right absolute inset-auto left-1/2 h-64 w-[18rem] md:w-[32rem] text-white opacity-90 [--conic-position:from_290deg_at_center_top]">
+            <div class="absolute w-40 h-full right-0 bg-black bottom-0 z-20 [mask-image:linear-gradient(to_left,white,transparent)]"></div>
+            <div class="absolute w-full right-0 bg-black h-40 bottom-0 z-20 [mask-image:linear-gradient(to_top,white,transparent)]"></div>
+          </div>
+
+          <!-- Ambient Backlight Blurs -->
+          <div class="absolute top-1/2 h-48 w-full translate-y-12 scale-x-150 bg-black blur-2xl"></div>
+          <div class="absolute top-1/2 z-50 h-48 w-full bg-transparent opacity-10 backdrop-blur-md"></div>
+          <div class="absolute inset-auto z-50 h-36 w-[28rem] -translate-y-1/2 rounded-full bg-cyan-500 opacity-40 blur-3xl"></div>
+          
+          <!-- Focused Cyan Core Orb -->
+          <div class="lamp-glow-orb absolute inset-auto z-30 h-36 w-64 -translate-y-[6rem] rounded-full bg-cyan-400 blur-2xl"></div>
+          
+          <!-- Horizontal Glowing Beam Line -->
+          <div class="lamp-beam-line absolute inset-auto z-50 h-0.5 w-[18rem] md:w-[32rem] -translate-y-[7rem] bg-cyan-400"></div>
+
+          <!-- Top Blinder / Mask -->
+          <div class="absolute inset-auto z-40 h-44 w-full -translate-y-[12.5rem] bg-black"></div>
+        </div>
+
+        <!-- Illuminated Content (Placed directly beneath the Lamp beam) -->
+        <div class="relative z-50 flex flex-col items-center w-full max-w-6xl mx-auto -mt-28">
+          
+          <!-- Animated Lamp Title & Badges -->
+          <div class="lamp-header-motion text-center space-y-4 mb-16 max-w-3xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 font-mono text-xs text-cyan-300">
+              <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+              <span class="tracking-widest uppercase font-bold">ARCHITECTURE FOUNDATION</span>
+            </div>
+            
+            <h3 class="font-headline text-4xl sm:text-6xl font-extrabold tracking-tight text-white bg-gradient-to-br from-slate-100 via-white to-slate-400 py-2 bg-clip-text text-transparent">
+              Three Pillars of Safe AI Spend
+            </h3>
+            
+            <p class="font-body text-slate-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+              Designed from the ground up for untrusted AI agents operating with real financial balances.
+            </p>
+          </div>
+
+          <!-- Three Pillar Cards (Illuminated by the Lamp) -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+            <!-- Pillar 1: Autonomous Marketplace -->
+            <div class="p-8 rounded-2xl bg-black/90 border border-slate-800 hover:border-cyan-500/60 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 group shadow-2xl hover:shadow-cyan-500/10">
+              <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-cyan-400 text-2xl" data-icon="storefront">storefront</span>
+              </div>
+              <span class="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-bold">PILLAR 01</span>
+              <h4 class="font-headline text-xl font-bold text-white mt-1 mb-3">AI Service Marketplace</h4>
+              <p class="text-slate-400 text-sm leading-relaxed mb-6 font-body">
+                Autonomous provider registry with live health discovery, dynamic pricing schemas, and real-time execution endpoints for machine-to-machine commerce.
+              </p>
+              <ul class="space-y-2 text-xs font-mono text-slate-300">
+                <li class="flex items-center gap-2"><span class="text-cyan-400">&bull;</span> Dynamic AI Provider Catalog</li>
+                <li class="flex items-center gap-2"><span class="text-cyan-400">&bull;</span> Machine-Readable Service Specs</li>
+                <li class="flex items-center gap-2"><span class="text-cyan-400">&bull;</span> Automated Fallback Routing</li>
+              </ul>
+            </div>
+
+            <!-- Pillar 2: x402 V2 Wire Protocol -->
+            <div class="p-8 rounded-2xl bg-black/90 border border-slate-800 hover:border-blue-500/60 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 group shadow-2xl hover:shadow-blue-500/10">
+              <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-blue-400 text-2xl" data-icon="sync_alt">sync_alt</span>
+              </div>
+              <span class="text-[10px] font-mono uppercase tracking-widest text-blue-400 font-bold">PILLAR 02</span>
+              <h4 class="font-headline text-xl font-bold text-white mt-1 mb-3">x402 V2 Wire &amp; Permits</h4>
+              <p class="text-slate-400 text-sm leading-relaxed mb-6 font-body">
+                Standardized HTTP 402 Payment-Required protocol handshake. Gasless off-chain EIP-712 cryptographic permit signing with instantaneous facilitator verification.
+              </p>
+              <ul class="space-y-2 text-xs font-mono text-slate-300">
+                <li class="flex items-center gap-2"><span class="text-blue-400">&bull;</span> Official x402 V2 Headers</li>
+                <li class="flex items-center gap-2"><span class="text-blue-400">&bull;</span> Gasless EIP-712 Permit Signatures</li>
+                <li class="flex items-center gap-2"><span class="text-blue-400">&bull;</span> Sub-15ms Wire Facilitation</li>
+              </ul>
+            </div>
+
+            <!-- Pillar 3: TokenBudgetEnforcer.sol -->
+            <div class="p-8 rounded-2xl bg-black/90 border border-slate-800 hover:border-emerald-500/60 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 group shadow-2xl hover:shadow-emerald-500/10">
+              <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-emerald-400 text-2xl" data-icon="gavel">gavel</span>
+              </div>
+              <span class="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-bold">PILLAR 03</span>
+              <h4 class="font-headline text-xl font-bold text-white mt-1 mb-3">On-Chain Budget Guard</h4>
+              <p class="text-slate-400 text-sm leading-relaxed mb-6 font-body">
+                Smart contract-enforced spending limits via TokenBudgetEnforcer.sol. Hard transaction limits, total expenditure caps, and emergency owner freeze switches.
+              </p>
+              <ul class="space-y-2 text-xs font-mono text-slate-300">
+                <li class="flex items-center gap-2"><span class="text-emerald-400">&bull;</span> Hard On-Chain Budget Caps</li>
+                <li class="flex items-center gap-2"><span class="text-emerald-400">&bull;</span> Prompt Injection Interception</li>
+                <li class="flex items-center gap-2"><span class="text-emerald-400">&bull;</span> Atomic Circuit Breaker Switch</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SECTION 4: TECHNICAL ARCHITECTURE & LIVE TELEMETRY PREVIEW
+         ========================================================================= -->
+    <section id="landingSpecsSection" class="relative py-24 px-6 max-w-7xl mx-auto">
+      <div class="p-8 sm:p-12 rounded-3xl bg-slate-950/80 border border-slate-800 relative overflow-hidden backdrop-blur-2xl">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          <div class="lg:col-span-6 space-y-6">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 font-mono text-xs text-emerald-400">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>LIVE VERIFIED TELEMETRY</span>
+            </div>
+            <h3 class="font-headline text-3xl font-extrabold text-white">Full Cryptographic Lifecycle Verification</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">
+              Every purchase executed through the GENOVA engine produces an immutable SHA-256 content proof, verified on the local EVM ledger and settled atomically without centralized custody.
+            </p>
+
+            <div class="grid grid-cols-2 gap-4 pt-2">
+              <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                <span class="text-[10px] font-mono text-slate-500 uppercase block">Settlement Asset</span>
+                <span class="font-headline text-lg font-bold text-white">USDC (ERC-20)</span>
+                <span class="text-[10px] font-mono text-emerald-400 block mt-0.5">Atomic Transfer</span>
+              </div>
+              <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                <span class="text-[10px] font-mono text-slate-500 uppercase block">Verification Speed</span>
+                <span class="font-headline text-lg font-bold text-cyan-400">&lt; 15 ms</span>
+                <span class="text-[10px] font-mono text-slate-400 block mt-0.5">Wire Facilitator</span>
+              </div>
+              <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                <span class="text-[10px] font-mono text-slate-500 uppercase block">Budget Enforcement</span>
+                <span class="font-headline text-lg font-bold text-white">100% Solidity</span>
+                <span class="text-[10px] font-mono text-cyan-400 block mt-0.5">EVM Enforced</span>
+              </div>
+              <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                <span class="text-[10px] font-mono text-slate-500 uppercase block">Content Authenticity</span>
+                <span class="font-headline text-lg font-bold text-purple-400">SHA-256</span>
+                <span class="text-[10px] font-mono text-slate-400 block mt-0.5">Immutable Hashes</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Code / Wire Inspection Window -->
+          <div class="lg:col-span-6 rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden shadow-2xl font-mono text-xs">
+            <div class="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
+                <span class="w-3 h-3 rounded-full bg-yellow-500/80"></span>
+                <span class="w-3 h-3 rounded-full bg-green-500/80"></span>
+                <span class="text-slate-400 text-[11px] ml-2 font-mono">x402-handshake.log</span>
+              </div>
+              <span class="text-[10px] text-cyan-400 font-bold">PROTOCOL FLOW</span>
+            </div>
+            <div class="p-5 text-slate-300 space-y-2 bg-[#050811]/90">
+              <div class="text-slate-500">// 1. Autonomous Agent calls Service Provider</div>
+              <div class="text-cyan-400">POST /api/marketplace/buy HTTP/1.1</div>
+              <div class="text-amber-400 pl-4">&lt; HTTP/1.1 402 Payment Required</div>
+              <div class="text-slate-400 pl-4">&lt; PAYMENT-REQUIRED: {"x402Version":2, "amount":"0.05", "asset":"USDC"}</div>
+              <div class="text-slate-500 pt-1">// 2. Agent checks on-chain cap &amp; signs EIP-712 Permit</div>
+              <div class="text-emerald-400">POST /api/marketplace/buy HTTP/1.1</div>
+              <div class="text-slate-400 pl-4">&gt; PAYMENT-SIGNATURE: 0x7f82b9... (EIP-712 Auth)</div>
+              <div class="text-emerald-400 pl-4">&lt; HTTP/1.1 200 OK (Settled &amp; Verified)</div>
+              <div class="text-slate-400 pl-4">&lt; X-DELIVERY-HASH: sha256:4a8b...9c2e</div>
+              <div class="text-emerald-400 pt-1 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span>STATUS: TRANSACTION FINALIZED ON LOCAL EVM</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SECTION 5: ACETERNITY UI EVERVAULT CARD ENCRYPTED SECURITY SHOWCASE
+         ========================================================================= -->
+    <section id="landingEvervaultSection" class="relative py-28 px-6 bg-black border-t border-slate-900 overflow-hidden">
+      <!-- Ambient Glow Behind Cards -->
+      <div class="absolute w-[600px] h-[300px] bg-cyan-500/10 rounded-full blur-[140px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+
+      <div class="max-w-6xl mx-auto space-y-12 relative z-10">
+        <div class="text-center space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 font-mono text-xs text-cyan-300">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span>ACETERNITY UI &bull; EVERVAULT ENCRYPTED MASK CARDS</span>
+          </div>
+          <h3 class="font-headline text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+            Cryptographic Security &amp; <span class="bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">Spend Protection</span>
+          </h3>
+          <p class="font-body text-slate-400 text-sm sm:text-base max-w-2xl mx-auto">
+            Hover over the Evervault cards to reveal the real-time cryptographic matrix stream and authenticated protocol signatures.
+          </p>
+        </div>
+
+        <!-- 3-Column Evervault Card Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Card 1: x402 V2 Wire Protocol -->
+          <div id="cardEvervault_x402" class="evervault-card-wrapper border border-white/10 flex flex-col items-start w-full max-w-sm mx-auto p-5 relative min-h-[30rem] bg-black/80 backdrop-blur-xl rounded-2xl group/card transition-all duration-300 hover:border-cyan-500/40 select-none shadow-2xl">
+            <!-- Aceternity Corner Crosshair Icons -->
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute h-6 w-6 -top-3 -left-3 text-cyan-400 pointer-events-none z-30 transition-transform group-hover/card:rotate-90">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute h-6 w-6 -bottom-3 -left-3 text-cyan-400 pointer-events-none z-30 transition-transform group-hover/card:rotate-90">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute h-6 w-6 -top-3 -right-3 text-cyan-400 pointer-events-none z-30 transition-transform group-hover/card:rotate-90">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute h-6 w-6 -bottom-3 -right-3 text-cyan-400 pointer-events-none z-30 transition-transform group-hover/card:rotate-90">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+
+            <!-- Canvas Pattern -->
+            <div class="evervault-canvas-area p-0.5 bg-transparent aspect-square flex items-center justify-center w-full relative overflow-hidden rounded-2xl">
+              <div class="evervault-gradient absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 opacity-0 group-hover/card:opacity-100 backdrop-blur-xl transition-opacity duration-500 pointer-events-none z-0"></div>
+              <div class="evervault-matrix-container absolute inset-0 rounded-2xl opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 pointer-events-none overflow-hidden mix-blend-overlay z-0">
+                <p class="evervault-matrix text-[10px] leading-3 h-full break-words whitespace-pre-wrap text-white font-mono font-bold p-2 tracking-tighter"></p>
+              </div>
+              <div class="relative z-10 flex items-center justify-center pointer-events-none">
+                <div class="relative h-44 w-44 rounded-full flex items-center justify-center text-white font-bold text-3xl shadow-2xl">
+                  <div class="absolute w-full h-full bg-black/90 backdrop-blur-md rounded-full border border-white/10 shadow-inner"></div>
+                  <span class="text-white z-20 font-headline font-extrabold tracking-wider bg-gradient-to-r from-cyan-400 via-white to-blue-400 bg-clip-text text-transparent">
+                    x402
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-full mt-4 flex flex-col justify-between flex-1">
+              <div>
+                <h3 class="text-white font-headline text-base font-bold tracking-wide">
+                  x402 V2 Wire Protocol
+                </h3>
+                <p class="text-xs text-slate-400 mt-1.5 leading-relaxed font-body">
+                  Standardized HTTP 402 payment challenge with off-chain EIP-712 permit signing &amp; sub-15ms wire facilitation.
+                </p>
+              </div>
+              <div class="pt-4">
+                <span class="text-[11px] font-mono border border-cyan-500/30 rounded-full text-cyan-400 bg-cyan-950/30 px-3 py-1 inline-flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                  EIP-712 Permits
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: GENOVA TokenBudgetEnforcer (Featured Centerpiece) -->
+          <div id="cardEvervault_genova" class="evervault-card-wrapper border border-cyan-500/40 flex flex-col items-start w-full max-w-sm mx-auto p-5 relative min-h-[30rem] bg-black/90 backdrop-blur-xl rounded-2xl group/card transition-all duration-300 hover:border-cyan-400 select-none shadow-2xl shadow-cyan-500/10 cursor-pointer" onclick="dismissSplineIntro()" title="Click to Enter Protocol Console">
+            <!-- Aceternity Corner Crosshair Icons -->
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute h-6 w-6 -top-3 -left-3 text-cyan-300 pointer-events-none z-30 transition-transform group-hover/card:rotate-90">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute h-6 w-6 -bottom-3 -left-3 text-cyan-300 pointer-events-none z-30 transition-transform group-hover/card:rotate-90">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute h-6 w-6 -top-3 -right-3 text-cyan-300 pointer-events-none z-30 transition-transform group-hover/card:rotate-90">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute h-6 w-6 -bottom-3 -right-3 text-cyan-300 pointer-events-none z-30 transition-transform group-hover/card:rotate-90">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+
+            <!-- Canvas Pattern -->
+            <div class="evervault-canvas-area p-0.5 bg-transparent aspect-square flex items-center justify-center w-full relative overflow-hidden rounded-2xl">
+              <div class="evervault-gradient absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-600 to-indigo-600 opacity-0 group-hover/card:opacity-100 backdrop-blur-xl transition-opacity duration-500 pointer-events-none z-0"></div>
+              <div class="evervault-matrix-container absolute inset-0 rounded-2xl opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 pointer-events-none overflow-hidden mix-blend-overlay z-0">
+                <p class="evervault-matrix text-[10px] leading-3 h-full break-words whitespace-pre-wrap text-white font-mono font-bold p-2 tracking-tighter"></p>
+              </div>
+              <div class="relative z-10 flex items-center justify-center pointer-events-none">
+                <div class="relative h-44 w-44 rounded-full flex items-center justify-center text-white font-bold text-3xl shadow-2xl">
+                  <div class="absolute w-full h-full bg-black/95 backdrop-blur-md rounded-full border border-cyan-400/30 shadow-inner"></div>
+                  <span class="text-white z-20 font-headline font-extrabold tracking-wider bg-gradient-to-r from-cyan-300 via-white to-blue-400 bg-clip-text text-transparent">
+                    GENOVA
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-full mt-4 flex flex-col justify-between flex-1">
+              <div>
+                <h3 class="text-white font-headline text-base font-bold tracking-wide flex items-center justify-between">
+                  <span>On-Chain Budget Enforcer</span>
+                  <span class="material-symbols-outlined text-sm text-cyan-400 group-hover/card:translate-x-1 transition-transform">arrow_forward</span>
+                </h3>
+                <p class="text-xs text-slate-400 mt-1.5 leading-relaxed font-body">
+                  TokenBudgetEnforcer.sol hard ceiling defense. Autonomous AI agents can never exceed authorized spend limits.
+                </p>
+              </div>
+              <div class="pt-4 flex items-center justify-between w-full">
+                <span class="text-[11px] font-mono border border-cyan-400/40 rounded-full text-cyan-300 bg-cyan-950/40 px-3 py-1 inline-flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                  Hard Budget Ceiling
+                </span>
+                <span class="text-[10px] font-mono text-cyan-400 uppercase tracking-wider font-bold">Click to Enter &rarr;</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: SHA-256 Immutable Delivery Proof -->
+          <div id="cardEvervault_sha256" class="evervault-card-wrapper border border-white/10 flex flex-col items-start w-full max-w-sm mx-auto p-5 relative min-h-[30rem] bg-black/80 backdrop-blur-xl rounded-2xl group/card transition-all duration-300 hover:border-emerald-500/40 select-none shadow-2xl">
+            <!-- Aceternity Corner Crosshair Icons -->
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute h-6 w-6 -top-3 -left-3 text-emerald-400 pointer-events-none z-30 transition-transform group-hover/card:rotate-90">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute h-6 w-6 -bottom-3 -left-3 text-emerald-400 pointer-events-none z-30 transition-transform group-hover/card:rotate-90">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute h-6 w-6 -top-3 -right-3 text-emerald-400 pointer-events-none z-30 transition-transform group-hover/card:rotate-90">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute h-6 w-6 -bottom-3 -right-3 text-emerald-400 pointer-events-none z-30 transition-transform group-hover/card:rotate-90">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+
+            <!-- Canvas Pattern -->
+            <div class="evervault-canvas-area p-0.5 bg-transparent aspect-square flex items-center justify-center w-full relative overflow-hidden rounded-2xl">
+              <div class="evervault-gradient absolute inset-0 rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-600 opacity-0 group-hover/card:opacity-100 backdrop-blur-xl transition-opacity duration-500 pointer-events-none z-0"></div>
+              <div class="evervault-matrix-container absolute inset-0 rounded-2xl opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 pointer-events-none overflow-hidden mix-blend-overlay z-0">
+                <p class="evervault-matrix text-[10px] leading-3 h-full break-words whitespace-pre-wrap text-white font-mono font-bold p-2 tracking-tighter"></p>
+              </div>
+              <div class="relative z-10 flex items-center justify-center pointer-events-none">
+                <div class="relative h-44 w-44 rounded-full flex items-center justify-center text-white font-bold text-3xl shadow-2xl">
+                  <div class="absolute w-full h-full bg-black/90 backdrop-blur-md rounded-full border border-white/10 shadow-inner"></div>
+                  <span class="text-white z-20 font-headline font-extrabold tracking-wider bg-gradient-to-r from-emerald-400 via-white to-cyan-400 bg-clip-text text-transparent">
+                    SHA256
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-full mt-4 flex flex-col justify-between flex-1">
+              <div>
+                <h3 class="text-white font-headline text-base font-bold tracking-wide">
+                  Immutable Delivery Verification
+                </h3>
+                <p class="text-xs text-slate-400 mt-1.5 leading-relaxed font-body">
+                  Cryptographically sealed content payloads with nonce replay defense and real-time prompt injection defense.
+                </p>
+              </div>
+              <div class="pt-4">
+                <span class="text-[11px] font-mono border border-emerald-500/30 rounded-full text-emerald-400 bg-emerald-950/30 px-3 py-1 inline-flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Zero-Trust Delivery
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Launch Console & Back to Top Actions -->
+        <div class="flex flex-wrap items-center justify-center gap-4 pt-6">
+          <button 
+            type="button"
+            onclick="dismissSplineIntro()" 
+            class="px-10 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-mono font-bold text-sm tracking-widest shadow-2xl shadow-cyan-500/30 transition-all hover:scale-105 active:scale-95 cursor-pointer border-0 flex items-center gap-3">
+            <span>ENTER PROTOCOL CONSOLE</span>
+            <span class="material-symbols-outlined text-lg">rocket_launch</span>
+          </button>
+          <button 
+            type="button"
+            onclick="scrollLandingToTop()" 
+            class="px-8 py-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-mono font-bold text-sm tracking-wider transition-all hover:scale-105 cursor-pointer flex items-center gap-2">
+            <span>BACK TO 3D HERO</span>
+            <span class="material-symbols-outlined text-lg">arrow_upward</span>
+          </button>
+        </div>
+
+        <!-- Protocol Technical Footer -->
+        <div class="pt-12 border-t border-slate-900 text-xs font-mono text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <span>W3A-1 v4.2 PROT &bull; GENOVA Protocol Engine &bull; Hardhat Chain 31337</span>
+          <span>Official x402 V2 Wire &bull; Aceternity UI Evervault Security</span>
+        </div>
+      </div>
+    </section>
+
   </div>
 
   <!-- =========================================================================
@@ -89,131 +571,36 @@
        ========================================================================= -->
   <div id="w3aShaderBg" class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-50 transition-opacity duration-1000"></div>
 
-  <!-- =========================================================================
-       1. CYBERNETIC LEFT SIDEBAR
-       ========================================================================= -->
-  <aside class="w-64 flex-shrink-0 bg-surface-lowest/90 backdrop-blur-xl border-r border-outline-variant/30 flex flex-col justify-between p-4 z-20 relative">
-    <div class="space-y-6">
-
-      <!-- Brand & Wordmark -->
-      <div class="flex items-center gap-3 px-2 py-1.5 cursor-pointer group" onclick="App.navigate('overview')">
-        <div class="w-9 h-9 rounded-xl bg-surface-high border border-secondary/40 flex items-center justify-center glow-cyan transition-transform group-hover:scale-105">
-          <span class="material-symbols-outlined text-secondary" data-icon="shield">shield</span>
-        </div>
-        <div>
-          <div class="flex items-center gap-1.5">
-            <span class="font-headline text-base font-bold tracking-wider text-white">W3A-1</span>
-            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-secondary/15 text-secondary border border-secondary/30">v4.2 PROT</span>
-          </div>
-          <span class="text-[10px] block font-mono text-on-surface-variant tracking-wider uppercase">Safe-Spend Protocol</span>
-        </div>
-      </div>
-
-      <!-- Navigation Menu: 3 Core Pillars -->
-      <nav class="space-y-4">
-        <!-- 1. MARKETPLACE -->
-        <div>
-          <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-outline font-bold flex items-center justify-between">
-            <span>PILLAR 1</span>
-            <span class="text-tertiary">CATALOG</span>
-          </div>
-          <div class="nav-item" data-view="providers" onclick="App.navigate('providers')">
-            <span class="material-symbols-outlined text-base text-tertiary" data-icon="storefront">storefront</span>
-            <span class="font-bold text-white">Marketplace</span>
-          </div>
-        </div>
-
-        <!-- 2. AI PURCHASE -->
-        <div>
-          <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-outline font-bold flex items-center justify-between">
-            <span>PILLAR 2</span>
-            <span class="text-secondary">x402 V2 WIRE</span>
-          </div>
-          <div class="nav-item" data-view="agent" onclick="App.navigate('agent')">
-            <span class="material-symbols-outlined text-base text-secondary" data-icon="smart_toy">smart_toy</span>
-            <span class="flex items-center gap-1.5 font-bold text-white">
-              <span>AI Purchase</span>
-              <span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-secondary/15 text-secondary border border-secondary/30">AI</span>
-            </span>
-          </div>
-        </div>
-
-        <!-- 3. OWNER CONTROL CENTER -->
-        <div>
-          <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-outline font-bold flex items-center justify-between">
-            <span>PILLAR 3</span>
-            <span class="text-primary">GOVERNANCE</span>
-          </div>
-          <div class="space-y-0.5">
-            <div class="nav-item active" data-view="overview" onclick="App.navigate('overview')">
-              <span class="material-symbols-outlined text-base" data-icon="dashboard">dashboard</span>
-              <span>Owner Center</span>
-            </div>
-
-            <div class="nav-item" data-view="transactions" onclick="App.navigate('transactions')">
-              <span class="material-symbols-outlined text-base" data-icon="receipt_long">receipt_long</span>
-              <span>Transactions</span>
-            </div>
-
-            <div class="nav-item" data-view="security" onclick="App.navigate('security')">
-              <span class="material-symbols-outlined text-base text-error" data-icon="gavel">gavel</span>
-              <span>Security Defense</span>
-            </div>
-
-            <div class="nav-item" data-view="delivery" onclick="App.navigate('delivery')">
-              <span class="material-symbols-outlined text-base" data-icon="verified">verified</span>
-              <span>Delivery Proof</span>
-            </div>
-
-            <div class="nav-item" data-view="settings" onclick="App.navigate('settings')">
-              <span class="material-symbols-outlined text-base" data-icon="settings">settings</span>
-              <span>Settings</span>
-            </div>
-          </div>
-        </div>
-      </nav>
-    </div>
-
-    <!-- Sidebar Bottom System Telemetry -->
-    <div class="space-y-3 pt-4 border-t border-outline-variant/30 text-xs">
-      <div class="p-3 rounded-xl bg-surface-low/90 border border-outline-variant/40 space-y-2.5">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] uppercase font-bold text-outline">Network</span>
-          <div class="flex items-center gap-1.5 font-mono text-[10px] text-tertiary">
-            <span class="status-dot status-dot-emerald"></span>
-            <span id="sidebarNetworkLabel">LOCAL EVM</span>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] uppercase font-bold text-outline">Agent Status</span>
-          <div class="flex items-center gap-1.5 font-mono text-[10px]">
-            <span id="sidebarAgentDot" class="status-dot status-dot-emerald"></span>
-            <span id="sidebarAgentStatus" class="text-tertiary font-bold">AUTHORIZED</span>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between pt-1.5 border-t border-outline-variant/30">
-          <span class="text-[10px] uppercase font-bold text-outline">Protocol</span>
-          <span class="font-mono text-[10px] text-secondary font-semibold">x402 V2 EXACT</span>
-        </div>
-
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] uppercase font-bold text-outline">Owner Wallet</span>
-          <span id="sidebarOwnerWallet" class="font-mono text-[10px] text-on-surface">0xf39F...2266</span>
-        </div>
-      </div>
-    </div>
-  </aside>
+  <!-- Hidden Telemetry Bridge for State Sync -->
+  <div class="hidden" id="sidebarTelemetryHidden">
+    <span id="sidebarNetworkLabel">LOCAL EVM</span>
+    <span id="sidebarAgentDot"></span>
+    <span id="sidebarAgentStatus">AUTHORIZED</span>
+    <span id="sidebarOwnerWallet">0xf39F...2266</span>
+  </div>
 
   <!-- =========================================================================
-       2. MAIN CONTENT AREA + TOP BAR
+       2. MAIN CONTENT AREA + TOP BAR (Full Width with Floating Dock)
        ========================================================================= -->
-  <div class="flex-1 flex flex-col min-w-0 relative z-10">
+  <div class="flex-1 flex flex-col min-w-0 relative z-10 w-full">
 
     <!-- Top Bar -->
-    <header class="h-16 border-b border-outline-variant/30 bg-surface-lowest/80 backdrop-blur-md px-8 flex items-center justify-between z-10 sticky top-0">
+    <header class="h-16 border-b border-outline-variant/30 bg-surface-lowest/80 backdrop-blur-md px-6 flex items-center justify-between z-10 sticky top-0">
       <div class="flex items-center gap-4">
+        <!-- Brand & Wordmark -->
+        <div class="flex items-center gap-2.5 pr-4 border-r border-outline-variant/30 cursor-pointer group" onclick="App.navigate('overview')" title="W3A-1 Safe-Spend Protocol">
+          <div class="w-8 h-8 rounded-xl bg-surface-high border border-secondary/40 flex items-center justify-center glow-cyan transition-transform group-hover:scale-105">
+            <span class="material-symbols-outlined text-secondary text-base" data-icon="shield">shield</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-headline text-sm font-bold tracking-wider text-white">W3A-1</span>
+              <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-secondary/15 text-secondary border border-secondary/30">v4.2 PROT</span>
+            </div>
+            <span class="text-[9px] block font-mono text-on-surface-variant tracking-wider uppercase">Safe-Spend Protocol</span>
+          </div>
+        </div>
+
         <!-- Live System Operational Beacon -->
         <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-high border border-outline-variant/40">
           <span class="w-2 h-2 rounded-full bg-tertiary animate-pulse-subtle"></span>
@@ -458,6 +845,8 @@
   <script src="js/components/shader-gradient.js"></script>
   <script src="js/components/text-hover-effect.js"></script>
   <script src="js/components/floating-dock.js"></script>
+  <script src="js/components/evervault-card.js"></script>
+  <script src="js/components/lamp.js"></script>
   <script src="js/adapters.js"></script>
   <script src="js/state.js"></script>
   <script src="js/api.js"></script>
@@ -532,6 +921,31 @@
       }
     }
 
+    function scrollLandingDown() {
+      const overlay = document.getElementById("splineIntroOverlay");
+      const target = document.getElementById("landingGenovaSection");
+      if (target && overlay) {
+        target.scrollIntoView({ behavior: "smooth" });
+      } else if (overlay) {
+        overlay.scrollBy({ top: window.innerHeight, behavior: "smooth" });
+      }
+    }
+
+    function scrollLandingToTop() {
+      const overlay = document.getElementById("splineIntroOverlay");
+      if (overlay) {
+        overlay.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    function initLandingGenovaTextHover() {
+      const wrapper = document.getElementById("landingGenovaHoverWrapper");
+      if (wrapper && window.TextHoverEffect) {
+        wrapper.innerHTML = window.TextHoverEffect.render("GENOVA", "landingGenovaHoverContainer");
+        window.TextHoverEffect.attach("landingGenovaHoverContainer");
+      }
+    }
+
     function dismissSplineIntro() {
       if (isSplineDismissed) return;
       isSplineDismissed = true;
@@ -553,11 +967,36 @@
       void overlay.offsetWidth;
       overlay.classList.remove("opacity-0", "scale-105", "pointer-events-none");
       purgeSplineWatermark();
+      initLandingGenovaTextHover();
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       const overlay = document.getElementById("splineIntroOverlay");
       const viewer = document.getElementById("splineViewerElem");
+
+      // Initialize Aceternity GENOVA Text Hover Effect on landing
+      initLandingGenovaTextHover();
+      setTimeout(initLandingGenovaTextHover, 250);
+
+      // Initialize Aceternity Evervault Cards
+      if (window.EvervaultCard) {
+        window.EvervaultCard.attachAll();
+      }
+      setTimeout(() => {
+        if (window.EvervaultCard) window.EvervaultCard.attachAll();
+      }, 300);
+
+      // Initialize Aceternity Lamp Effect
+      if (window.LampEffect) {
+        window.LampEffect.init();
+      }
+
+      // Smooth scroll wheel forwarding from Spline 3D canvas to the landing scroll container
+      if (viewer && overlay) {
+        viewer.addEventListener("wheel", (e) => {
+          overlay.scrollBy({ top: e.deltaY, behavior: "auto" });
+        }, { passive: true });
+      }
 
       // Repeatedly purge watermark during initial load
       purgeSplineWatermark();
@@ -648,26 +1087,51 @@
 
       if (!overlay) return;
 
-      // Mouse move: change cursor to pointer ONLY when hovering over "Get in"
+      // Mouse move: change cursor to pointer ONLY when hovering over "Get in" on the hero screen
       overlay.addEventListener("mousemove", (e) => {
-        if (isClickOnGetInButton(e.clientX, e.clientY)) {
-          overlay.style.cursor = "pointer";
+        if (overlay.scrollTop < 60) {
+          if (isClickOnGetInButton(e.clientX, e.clientY)) {
+            overlay.style.cursor = "pointer";
+          } else {
+            overlay.style.cursor = "default";
+          }
         } else {
           overlay.style.cursor = "default";
         }
       });
 
-      // Mouse click: strictly enter ONLY if clicked on the "Get in" button
+      // Mouse click: strictly enter ONLY if clicked on the "Get in" button while at the top hero
       overlay.addEventListener("click", (e) => {
-        if (isClickOnGetInButton(e.clientX, e.clientY)) {
+        // If clicking on a button, link, navigation item, or inside the scrolled content, let normal click events proceed
+        if (
+          e.target.closest("button") || 
+          e.target.closest("a") || 
+          e.target.closest("#btnScrollDownToContent") ||
+          e.target.closest("#landingGenovaSection") ||
+          e.target.closest("#landingPillarsSection") ||
+          e.target.closest("#landingSpecsSection")
+        ) {
+          return;
+        }
+
+        if (overlay.scrollTop < 60 && isClickOnGetInButton(e.clientX, e.clientY)) {
           dismissSplineIntro();
         }
       });
 
-      // Touch handler: strictly enter ONLY if touched on the "Get in" button
+      // Touch handler: strictly enter ONLY if touched on the "Get in" button while at top
       overlay.addEventListener("touchend", (e) => {
+        if (
+          e.target.closest("button") || 
+          e.target.closest("a") || 
+          e.target.closest("#btnScrollDownToContent") ||
+          e.target.closest("#landingGenovaSection")
+        ) {
+          return;
+        }
+
         const touch = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]);
-        if (touch && isClickOnGetInButton(touch.clientX, touch.clientY)) {
+        if (touch && overlay.scrollTop < 60 && isClickOnGetInButton(touch.clientX, touch.clientY)) {
           dismissSplineIntro();
         }
       });
