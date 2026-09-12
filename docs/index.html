@@ -315,11 +315,57 @@
     </section>
 
     <!-- =========================================================================
-         SECTION 4: TECHNICAL ARCHITECTURE & LIVE TELEMETRY PREVIEW
+         SECTION 4: TECHNICAL ARCHITECTURE & LIVE TELEMETRY PREVIEW (SPOTLIGHT)
          ========================================================================= -->
     <section id="landingSpecsSection" class="relative py-24 px-6 max-w-7xl mx-auto">
-      <div class="p-8 sm:p-12 rounded-3xl bg-slate-950/80 border border-slate-800 relative overflow-hidden backdrop-blur-2xl">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+      <div class="p-8 sm:p-12 rounded-3xl bg-transparent border border-white/10 relative overflow-hidden backdrop-blur-xl shadow-2xl">
+        <!-- Aceternity Subtle Cybernetic Grid Pattern -->
+        <div class="pointer-events-none absolute inset-0 [background-size:40px_40px] select-none [background-image:linear-gradient(to_right,#171717_1px,transparent_1px),linear-gradient(to_bottom,#171717_1px,transparent_1px)] opacity-60"></div>
+
+        <!-- Aceternity UI Spotlight Animated Beam -->
+        <svg
+          class="animate-spotlight pointer-events-none absolute z-[1] -top-40 left-0 md:-top-20 md:left-60 h-[169%] w-[138%] lg:w-[84%] opacity-0"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 3787 2842"
+          fill="none"
+        >
+          <g filter="url(#spotlightFilterSpecs)">
+            <ellipse
+              cx="1924.71"
+              cy="273.501"
+              rx="1924.71"
+              ry="273.501"
+              transform="matrix(-0.822377 -0.568943 -0.568943 0.822377 3631.88 2291.09)"
+              fill="white"
+              fill-opacity="0.21"
+            />
+          </g>
+          <defs>
+            <filter
+              id="spotlightFilterSpecs"
+              x="0.860352"
+              y="0.838989"
+              width="3785.16"
+              height="2840.26"
+              filterUnits="userSpaceOnUse"
+              colorInterpolationFilters="sRGB"
+            >
+              <feFlood floodOpacity="0" result="BackgroundImageFix" />
+              <feBlend
+                mode="normal"
+                in="SourceGraphic"
+                in2="BackgroundImageFix"
+                result="shape"
+              />
+              <feGaussianBlur
+                stdDeviation="151"
+                result="effect1_foregroundBlur_1065_8"
+              />
+            </filter>
+          </defs>
+        </svg>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
           <div class="lg:col-span-6 space-y-6">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 font-mono text-xs text-emerald-400">
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -331,22 +377,22 @@
             </p>
 
             <div class="grid grid-cols-2 gap-4 pt-2">
-              <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+              <div class="p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 backdrop-blur-md transition-colors">
                 <span class="text-[10px] font-mono text-slate-500 uppercase block">Settlement Asset</span>
                 <span class="font-headline text-lg font-bold text-white">USDC (ERC-20)</span>
                 <span class="text-[10px] font-mono text-emerald-400 block mt-0.5">Atomic Transfer</span>
               </div>
-              <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+              <div class="p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 backdrop-blur-md transition-colors">
                 <span class="text-[10px] font-mono text-slate-500 uppercase block">Verification Speed</span>
                 <span class="font-headline text-lg font-bold text-cyan-400">&lt; 15 ms</span>
                 <span class="text-[10px] font-mono text-slate-400 block mt-0.5">Wire Facilitator</span>
               </div>
-              <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+              <div class="p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 backdrop-blur-md transition-colors">
                 <span class="text-[10px] font-mono text-slate-500 uppercase block">Budget Enforcement</span>
                 <span class="font-headline text-lg font-bold text-white">100% Solidity</span>
                 <span class="text-[10px] font-mono text-cyan-400 block mt-0.5">EVM Enforced</span>
               </div>
-              <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+              <div class="p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 backdrop-blur-md transition-colors">
                 <span class="text-[10px] font-mono text-slate-500 uppercase block">Content Authenticity</span>
                 <span class="font-headline text-lg font-bold text-purple-400">SHA-256</span>
                 <span class="text-[10px] font-mono text-slate-400 block mt-0.5">Immutable Hashes</span>
@@ -354,9 +400,9 @@
             </div>
           </div>
 
-          <!-- Code / Wire Inspection Window -->
-          <div class="lg:col-span-6 rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden shadow-2xl font-mono text-xs">
-            <div class="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+          <!-- Code / Wire Inspection Window (Transparent Cybernetic Glass) -->
+          <div class="lg:col-span-6 rounded-2xl bg-black/40 border border-white/10 overflow-hidden shadow-2xl font-mono text-xs backdrop-blur-xl">
+            <div class="px-4 py-3 bg-white/[0.04] border-b border-white/10 flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
                 <span class="w-3 h-3 rounded-full bg-yellow-500/80"></span>
@@ -365,7 +411,7 @@
               </div>
               <span class="text-[10px] text-cyan-400 font-bold">PROTOCOL FLOW</span>
             </div>
-            <div class="p-5 text-slate-300 space-y-2 bg-[#050811]/90">
+            <div class="p-5 text-slate-300 space-y-2 bg-transparent">
               <div class="text-slate-500">// 1. Autonomous Agent calls Service Provider</div>
               <div class="text-cyan-400">POST /api/marketplace/buy HTTP/1.1</div>
               <div class="text-amber-400 pl-4">&lt; HTTP/1.1 402 Payment Required</div>
