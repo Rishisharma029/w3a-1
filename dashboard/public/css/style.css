@@ -80,13 +80,15 @@ aside nav > div:first-child, aside nav > div.pt-4 { color: var(--muted-2) !impor
 aside .border-t { border-color: var(--line) !important; }
 aside .bg-surface-low { background: rgba(20,42,38,.62) !important; border-color: var(--line) !important; }
 
-/* Top navigation */
-header {
-  height: 76px !important;
-  padding: 0 34px !important;
-  background: rgba(0, 0, 0, 0.85) !important;
-  border-bottom: 1px solid var(--line) !important;
-  backdrop-filter: blur(22px);
+/* Top navigation - Aceternity FloatingNav */
+#w3aFloatingNavbar {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+header.floating-nav-container {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  height: auto !important;
 }
 header .bg-surface-high, header .bg-surface-low, header .bg-surface-lowest { background: rgba(12, 12, 12, 0.8) !important; border-color: var(--line) !important; }
 header .bg-tertiary\/20 { background: rgba(16, 185, 129, 0.12) !important; }
