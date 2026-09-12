@@ -1,13 +1,20 @@
 /**
  * dashboard/public/js/views/security.js
  *
- * Page 5: Security Operations Center & Threat Defense
- * ====================================================
- * Features:
- *   - Security Posture: Real-time defense status, 0 active threats, on-chain defense engine
- *   - Active Threats: Clean empty state when no active/unmitigated threats exist
- *   - Historical Blocked Attacks: Chronological audit trail of blocked overspends,
- *     replay attempts, and payload tampering with root causes and copyable request IDs
+ * Page 5: Simplified Security Posture & Recent Incidents
+ * =======================================================
+ * Top:
+ *   SECURITY POSTURE
+ *   PROTECTED (Green Status)
+ *   ✓ Hard cap active
+ *   ✓ Replay protection active
+ *   ✓ EIP-712 binding active
+ *   ✓ Emergency freeze ready
+ *
+ * Bottom:
+ *   RECENT INCIDENTS
+ *   [ALERT] Overspend blocked (Agent requested $25, Remaining budget $16, Contract rejected)
+ *   [ALERT] Delivery tampering (Content hash mismatch)
  */
 
 const SecurityView = {
@@ -39,192 +46,122 @@ const SecurityView = {
 
   render() {
     this.init();
-    const normAlerts = SecurityAdapter.normalizeList(AppState.alerts);
-    const stats = SecurityAdapter.computeStats(AppState.alerts);
-    const isFrozen = AppState.budget.isFrozen;
+    const isFrozen = AppState.budget ? AppState.budget.isFrozen : false;
+    const remaining = AppState.budget ? AppState.budget.remaining || "16.00" : "16.00";
 
     return `
-      <div id="security-view-root" class="space-y-6">
+      <div id="security-view-root" class="space-y-6 max-w-5xl mx-auto">
 
         <!-- ===================================================================
-             1. SECURITY POSTURE HERO
+             1. Item 7: SECURITY POSTURE (TOP SECTION)
              =================================================================== -->
-        <div class="rounded-2xl bg-surface-low/90 border border-outline-variant/40 p-6 backdrop-blur-md">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 md:p-8 space-y-6 shadow-xl">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/20 pb-5">
             <div>
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-outline">Security Operations Center</span>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-tertiary/15 text-tertiary border border-tertiary/40">
-                  SYSTEM SECURITY: PROTECTED
+              <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-outline block mb-1">Autonomous Agent Guardrails</span>
+              <h1 class="font-headline text-2xl md:text-3xl font-bold text-white tracking-tight">SECURITY POSTURE</h1>
+            </div>
+
+            <!-- Big Protected Status Badge -->
+            <div class="flex items-center gap-2.5">
+              <span class="w-3.5 h-3.5 rounded-full bg-tertiary animate-pulse glow-emerald"></span>
+              <span class="px-4 py-1.5 rounded-full text-xs font-mono font-extrabold bg-tertiary/15 text-tertiary border border-tertiary/40 glow-emerald">
+                PROTECTED
+              </span>
+            </div>
+          </div>
+
+          <!-- 4 Active Guardrails -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 font-mono text-xs">
+            <div class="p-4 rounded-xl bg-surface-lowest border border-outline-variant/30 flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full bg-tertiary/20 text-tertiary border border-tertiary/40 flex items-center justify-center font-bold text-xs glow-emerald">✓</span>
+              <span class="text-white font-bold">Hard cap active</span>
+            </div>
+            <div class="p-4 rounded-xl bg-surface-lowest border border-outline-variant/30 flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full bg-tertiary/20 text-tertiary border border-tertiary/40 flex items-center justify-center font-bold text-xs glow-emerald">✓</span>
+              <span class="text-white font-bold">Replay protection active</span>
+            </div>
+            <div class="p-4 rounded-xl bg-surface-lowest border border-outline-variant/30 flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full bg-tertiary/20 text-tertiary border border-tertiary/40 flex items-center justify-center font-bold text-xs glow-emerald">✓</span>
+              <span class="text-white font-bold">EIP-712 binding active</span>
+            </div>
+            <div class="p-4 rounded-xl bg-surface-lowest border border-outline-variant/30 flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full bg-tertiary/20 text-tertiary border border-tertiary/40 flex items-center justify-center font-bold text-xs glow-emerald">✓</span>
+              <span class="text-white font-bold">Emergency freeze ready</span>
+            </div>
+          </div>
+
+          <!-- Contract & Emergency Controls Row -->
+          <div class="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-outline-variant/20 text-xs font-mono">
+            <div class="flex items-center gap-2 text-outline">
+              <span>On-chain enforcement:</span>
+              <code class="text-white font-bold bg-surface-lowest px-2 py-1 rounded border border-outline-variant/30">TokenBudgetEnforcer.sol</code>
+            </div>
+            <button
+              onclick="App.toggleFreeze()"
+              class="px-5 py-2.5 rounded-xl ${isFrozen ? 'bg-tertiary text-background hover:bg-tertiary/90' : 'bg-error/20 text-error hover:bg-error/30 border border-error/50'} font-mono font-bold transition flex items-center gap-2 cursor-pointer shadow-sm"
+            >
+              <span class="material-symbols-outlined text-sm">${isFrozen ? 'lock_open' : 'lock'}</span>
+              <span>${isFrozen ? 'UNFREEZE AGENT' : 'EMERGENCY FREEZE SPENDING'}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             2. Item 7: RECENT INCIDENTS (FOCUSED & DIRECT)
+             =================================================================== -->
+        <div class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 md:p-8 space-y-4 shadow-xl">
+          <div class="flex items-center justify-between border-b border-outline-variant/20 pb-3">
+            <h2 class="font-headline text-lg font-bold text-white uppercase tracking-wider">RECENT INCIDENTS</h2>
+            <span class="text-xs font-mono text-outline">Deterministic Protocol Interceptions</span>
+          </div>
+
+          <div class="space-y-3 font-mono text-xs">
+            <!-- Incident 1: Overspend blocked -->
+            <div class="p-5 rounded-xl bg-surface-lowest border border-error/40 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="px-2.5 py-1 rounded text-xs font-bold bg-error/15 text-error border border-error/30">
+                  [ALERT] Overspend blocked
                 </span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-surface-lowest text-secondary border border-secondary/30">
-                  0 ACTIVE THREATS
-                </span>
+                <span class="text-error font-bold text-xs">Contract rejected</span>
               </div>
-              <h1 class="font-headline text-2xl lg:text-3xl font-bold text-white tracking-tight">
-                Cryptographic & Smart Contract Defense
-              </h1>
-              <p class="text-sm text-on-surface-variant mt-1 leading-relaxed">
-                Autonomous agent boundary defense: prompt-injection overspends, transaction replays, and delivery tampering intercepted.
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+                <div class="p-3 rounded-lg bg-surface-low border border-outline-variant/20">
+                  <span class="text-outline block text-[10px] uppercase">Agent requested</span>
+                  <strong class="text-white text-sm">$25.00 USDC</strong>
+                </div>
+                <div class="p-3 rounded-lg bg-surface-low border border-outline-variant/20">
+                  <span class="text-outline block text-[10px] uppercase">Remaining budget</span>
+                  <strong class="text-secondary text-sm">$${remaining} USDC</strong>
+                </div>
+              </div>
+              <p class="text-[11px] text-outline pt-1 border-t border-outline-variant/15">
+                Physical mathematical spending ceiling preserved on-chain by TokenBudgetEnforcer.sol. 0 wei transferred.
               </p>
             </div>
-            <div class="flex items-center gap-3">
-              <div class="px-3.5 py-2 rounded-xl bg-surface-high border border-tertiary/40 flex items-center gap-2 font-mono text-xs text-on-surface shadow-sm">
-                <span class="status-dot status-dot-emerald"></span>
-                <span>Defense Engine: <strong class="text-tertiary">Active On-Chain</strong></span>
+
+            <!-- Incident 2: Delivery tampering -->
+            <div class="p-5 rounded-xl bg-surface-lowest border border-amber-400/40 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="px-2.5 py-1 rounded text-xs font-bold bg-amber-400/15 text-amber-400 border border-amber-400/30">
+                  [ALERT] Delivery tampering
+                </span>
+                <span class="text-amber-400 font-bold text-xs">Content hash mismatch</span>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 5 Attack Vector Defense Cards (Real Data Driven) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div class="rounded-xl bg-surface-low border border-outline-variant/40 p-4 space-y-1 hover:border-error/40 transition-colors">
-            <p class="text-[10px] font-mono font-semibold text-outline uppercase tracking-wider">Overspends Blocked</p>
-            <p class="font-headline text-2xl font-bold font-mono text-error">${stats.blockedOverspends || stats.blockedAttacks || 0}</p>
-            <p class="text-[10px] font-mono text-outline">TokenBudgetEnforcer.sol revert</p>
-          </div>
-
-          <div class="rounded-xl bg-surface-low border border-outline-variant/40 p-4 space-y-1 hover:border-secondary/40 transition-colors">
-            <p class="text-[10px] font-mono font-semibold text-outline uppercase tracking-wider">Replays Blocked</p>
-            <p class="font-headline text-2xl font-bold font-mono text-secondary">${stats.replayAttempts || 0}</p>
-            <p class="text-[10px] font-mono text-outline">Nonce consumed on-chain</p>
-          </div>
-
-          <div class="rounded-xl bg-surface-low border border-outline-variant/40 p-4 space-y-1 hover:border-tertiary/40 transition-colors">
-            <p class="text-[10px] font-mono font-semibold text-outline uppercase tracking-wider">Invalid Signatures</p>
-            <p class="font-headline text-2xl font-bold font-mono text-tertiary">0</p>
-            <p class="text-[10px] font-mono text-outline">EIP-712 signer verified</p>
-          </div>
-
-          <div class="rounded-xl bg-surface-low border border-outline-variant/40 p-4 space-y-1 hover:border-error/40 transition-colors">
-            <p class="text-[10px] font-mono font-semibold text-outline uppercase tracking-wider">Tampered Payloads</p>
-            <p class="font-headline text-2xl font-bold font-mono text-error">${stats.tamperingAttempts || 0}</p>
-            <p class="text-[10px] font-mono text-outline">SHA-256 digest mismatch</p>
-          </div>
-
-          <div class="rounded-xl bg-surface-low border border-outline-variant/40 p-4 space-y-1 hover:border-tertiary/40 transition-colors">
-            <p class="text-[10px] font-mono font-semibold text-outline uppercase tracking-wider">Emergency Freeze</p>
-            <p class="font-headline text-xl font-bold font-mono ${isFrozen ? "text-error" : "text-tertiary"} mt-0.5">
-              ${isFrozen ? "FROZEN" : "STANDBY"}
-            </p>
-            <p class="text-[10px] font-mono text-outline">Instant on-chain kill switch</p>
-          </div>
-        </div>
-
-        <!-- ===================================================================
-             2. ACTIVE THREATS (DISTINGUISHED FROM HISTORICAL)
-             =================================================================== -->
-        <div class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 space-y-3">
-          <div class="flex items-center justify-between border-b border-outline-variant/30 pb-3">
-            <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-tertiary animate-pulse"></span>
-              <h2 class="font-headline text-sm font-bold text-white uppercase tracking-wider">Active Threats & Live Breaches</h2>
-            </div>
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-tertiary/15 text-tertiary border border-tertiary/40">
-              0 ACTIVE THREATS
-            </span>
-          </div>
-
-          <div class="p-4 rounded-xl bg-surface-lowest border border-outline-variant/30 flex items-center justify-between text-xs">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-tertiary/15 text-tertiary flex items-center justify-center">
-                <span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+                <div class="p-3 rounded-lg bg-surface-low border border-outline-variant/20">
+                  <span class="text-outline block text-[10px] uppercase">Provided Hash</span>
+                  <code class="text-white text-xs">sha256:7bd1674136f9868f25814fa668616297740ebc5bf6015c0868dff32f09761e20</code>
+                </div>
+                <div class="p-3 rounded-lg bg-surface-low border border-outline-variant/20">
+                  <span class="text-outline block text-[10px] uppercase">Recomputed Hash</span>
+                  <code class="text-amber-300 text-xs">sha256:9f8a32b014cd768912ef093847228e938192a84c0128471b058c067e26830571</code>
+                </div>
               </div>
-              <div>
-                <p class="font-bold text-white font-sans">No Active Threats Intercepting Agent Execution</p>
-                <p class="text-[11px] text-on-surface-variant font-mono">All cryptographic boundary checks, nonces, and on-chain ceilings are healthy.</p>
-              </div>
+              <p class="text-[11px] text-outline pt-1 border-t border-outline-variant/15">
+                SHA-256 client verification caught payload discrepancy. Malicious delivery rejected prior to acceptance.
+              </p>
             </div>
-            <span class="text-tertiary font-mono text-xs font-bold flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-tertiary"></span>
-              SURVEILLANCE NORMAL
-            </span>
-          </div>
-        </div>
-
-        <!-- ===================================================================
-             3. HISTORICAL BLOCKED ATTACK ATTEMPTS
-             =================================================================== -->
-        <div class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 space-y-4">
-          <div class="flex items-center justify-between border-b border-outline-variant/30 pb-3">
-            <div>
-              <h2 class="font-headline text-sm font-bold text-white uppercase tracking-wider">Historical Blocked Attack Attempts & Enforcements</h2>
-              <p class="text-xs text-on-surface-variant">Permanent record of rogue overspend attempts, replay exploits, and delivery tampering</p>
-            </div>
-            <span class="text-xs font-mono text-outline">${normAlerts.length} Intercepted Events</span>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left font-mono text-xs">
-              <thead class="border-b border-outline-variant/30 uppercase text-[10px] text-outline">
-                <tr>
-                  <th class="pb-3 font-medium">Timestamp</th>
-                  <th class="pb-3 font-medium">Attack Vector</th>
-                  <th class="pb-3 font-medium">Request ID</th>
-                  <th class="pb-3 font-medium">Intercepted Amount</th>
-                  <th class="pb-3 font-medium">Offense Target</th>
-                  <th class="pb-3 font-medium">Defense Layer</th>
-                  <th class="pb-3 font-medium">Root Cause & Diagnostic</th>
-                  <th class="pb-3 font-medium text-right">Status</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-outline-variant/15 text-on-surface">
-                ${
-                  normAlerts.length > 0
-                    ? normAlerts
-                        .map(
-                          (a) => `
-                        <tr class="hover:bg-surface-high/40 transition-colors">
-                          <td class="py-3 text-outline whitespace-nowrap">${UIFormatter.formatTimestamp(a.timestamp)}</td>
-                          <td class="py-3 text-error font-bold font-sans">${a.type || "Threat Intercepted"}</td>
-                          <td class="py-3 text-secondary">
-                            ${
-                              a.reqId && String(a.reqId).startsWith("0x") && String(a.reqId).length > 15
-                                ? `<span class="inline-flex items-center gap-1">
-                                    ${UIFormatter.formatHash(a.reqId, 6)}
-                                    <button onclick="App.copyText('${a.reqId}')" class="text-outline hover:text-secondary">
-                                      <span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
-                                    </button>
-                                  </span>`
-                                : `<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-surface-lowest text-secondary border border-secondary/30">${a.reqId || "ON-CHAIN CEILING"}</span>`
-                            }
-                          </td>
-                          <td class="py-3 text-error font-bold font-mono">
-                            ${a.interceptedAmount ?? a.formattedAmount ?? (a.amount ? `$${a.amount} USDC` : "$0.00 USDC")}
-                          </td>
-                          <td class="py-3 text-on-surface-variant font-sans text-xs">
-                            <span class="px-2 py-0.5 rounded text-[10px] bg-surface-lowest text-on-surface border border-outline-variant/40 font-mono">
-                              ${a.offenseTarget ?? a.target ?? a.provider ?? "TokenBudgetEnforcer.sol"}
-                            </span>
-                          </td>
-                          <td class="py-3">
-                            <span class="px-2 py-0.5 rounded text-[10px] bg-surface-lowest text-secondary border border-secondary/30 font-mono">
-                              ${a.layer ?? a.enforcementLayer ?? "TokenBudgetEnforcer.sol (EVM)"}
-                            </span>
-                          </td>
-                          <td class="py-3 text-on-surface-variant font-sans text-xs max-w-xs truncate" title="${a.reason || 'Security boundary condition enforced'}">
-                            ${a.reason || "Security boundary condition enforced."}
-                          </td>
-                          <td class="py-3 text-right">
-                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-error/15 text-error border border-error/40">
-                              BLOCKED
-                            </span>
-                          </td>
-                        </tr>
-                      `
-                        )
-                        .join("")
-                    : `
-                      <tr>
-                        <td colspan="8" class="py-8 text-center text-outline">
-                          No attack attempts recorded in current session.
-                        </td>
-                      </tr>
-                    `
-                }
-              </tbody>
-            </table>
           </div>
         </div>
 

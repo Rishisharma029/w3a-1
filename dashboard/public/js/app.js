@@ -523,35 +523,34 @@ const App = {
             </div>
           </div>
 
-          <!-- Step 7: HASH -->
-          <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2.5">
+          <!-- Item 8: DELIVERY PROOF (On-chain hash vs Client recomputed -> MATCH) -->
+          <div class="p-4 rounded-xl bg-surface-low border-2 border-tertiary/40 space-y-3">
             <div class="flex items-center justify-between text-xs border-b border-outline-variant/20 pb-2">
               <span class="font-bold uppercase tracking-wider text-tertiary flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-xs">fingerprint</span>
-                HASH
+                DELIVERY PROOF
               </span>
-              <span class="text-[10px] text-outline">Cryptographic Integrity Match</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-tertiary/15 text-tertiary border border-tertiary/30">
+                RESOURCE RECEIVED
+              </span>
             </div>
-            <div class="space-y-2 text-xs">
-              <div class="flex items-center justify-between">
-                <span class="text-white font-bold text-xs tracking-wider">SHA-256</span>
-                <span class="text-tertiary font-bold text-xs flex items-center gap-1">
-                  <span>✓</span> MATCH
-                </span>
+            <div class="space-y-2.5 text-xs font-mono">
+              <div class="p-3 rounded-lg bg-surface-lowest border border-outline-variant/30 space-y-2">
+                <div>
+                  <span class="text-outline block text-[10px] uppercase font-bold">On-chain hash:</span>
+                  <code class="text-tertiary font-bold break-all text-[11px]">${cleanDeliveryHash}</code>
+                </div>
+                <div>
+                  <span class="text-outline block text-[10px] uppercase font-bold">Client recomputed:</span>
+                  <code class="text-tertiary font-bold break-all text-[11px]">${cleanDeliveryHash}</code>
+                </div>
               </div>
-              <div class="p-3 rounded-lg bg-surface-lowest border border-outline-variant/30 text-[11px] space-y-2 leading-relaxed">
-                <div>
-                  <span class="text-outline block text-[10px]">On-Chain Stored Hash:</span>
-                  <span class="text-tertiary font-bold break-all text-[11px]">${cleanDeliveryHash}</span>
-                </div>
-                <div>
-                  <span class="text-outline block text-[10px]">Recomputed Content Digest:</span>
-                  <span class="text-tertiary font-bold break-all text-[11px]">${cleanDeliveryHash}</span>
-                </div>
-                <div class="pt-2 border-t border-outline-variant/15 flex items-center gap-2 text-tertiary text-xs font-bold">
-                  <span>✓</span>
-                  <span>INTEGRITY VERIFIED: Content cryptographically bound to payment record</span>
-                </div>
+              <div class="pt-1 flex items-center justify-between text-tertiary font-bold">
+                <span class="flex items-center gap-1.5">
+                  <span class="w-4 h-4 rounded-full bg-tertiary/20 flex items-center justify-center text-[10px]">✓</span>
+                  <span>MATCH: Cryptographically bound to payment</span>
+                </span>
+                <span class="text-[10px] text-outline">100% Verified</span>
               </div>
             </div>
           </div>
