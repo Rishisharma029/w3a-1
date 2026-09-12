@@ -109,6 +109,41 @@
         class="w-full h-full block">
       </spline-viewer>
 
+      <!-- Aceternity UI EncryptedText Cybernetic Overlay (Over 3D Spline Scene) -->
+      <div class="absolute top-24 sm:top-28 md:top-36 left-6 sm:left-12 md:left-20 max-w-xl z-20 pointer-events-none select-none">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 border border-cyan-500/30 font-mono text-[11px] text-cyan-300 backdrop-blur-md mb-4 shadow-[0_0_20px_rgba(6,182,212,0.25)]">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span>W3A-1 PROTOCOL &bull; AUTONOMOUS SAFE-SPEND</span>
+        </div>
+        
+        <h1 class="font-headline text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.08] text-white">
+          <span
+            data-encrypted-text="Autonomous Spending Protocol For AI Agents"
+            data-reveal-delay-ms="40"
+            data-flip-delay-ms="40"
+            data-encrypted-class="text-cyan-400 font-mono opacity-80"
+            data-revealed-class="text-white font-extrabold"
+          >Autonomous Spending Protocol For AI Agents</span>
+        </h1>
+
+        <p class="mt-4 text-sm sm:text-base text-slate-300 font-mono max-w-lg leading-relaxed bg-black/40 backdrop-blur-sm p-2 rounded-lg border border-white/5">
+          <span
+            data-encrypted-text="Cryptographically enforce EIP-712 budgets & x402 on-chain micro-settlement on EVM."
+            data-reveal-delay-ms="25"
+            data-flip-delay-ms="30"
+            data-encrypted-class="text-emerald-400 font-mono opacity-70"
+            data-revealed-class="text-slate-200"
+          >Cryptographically enforce EIP-712 budgets & x402 on-chain micro-settlement on EVM.</span>
+        </p>
+
+        <!-- Visual Badges matching W3A-1 architecture -->
+        <div class="mt-4 flex flex-wrap items-center gap-2 text-[11px] font-mono">
+          <span class="px-2.5 py-1 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Pillar 1: Marketplace</span>
+          <span class="px-2.5 py-1 rounded-md bg-blue-500/20 text-blue-300 border border-blue-500/30">Pillar 2: AI Purchase</span>
+          <span class="px-2.5 py-1 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30">Pillar 3: Owner Enforcer</span>
+        </div>
+      </div>
+
       <!-- Dedicated clickable target directly aligned over the 3D 'Get in' button -->
       <button 
         id="btnGetInOverlay"
@@ -934,6 +969,7 @@
   <script src="js/components/shooting-stars.js"></script>
   <script src="js/components/sparkles.js"></script>
   <script src="js/components/floating-navbar.js"></script>
+  <script src="js/components/encrypted-text.js"></script>
   <script src="js/adapters.js"></script>
   <script src="js/state.js"></script>
   <script src="js/api.js"></script>
