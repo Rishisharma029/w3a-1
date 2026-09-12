@@ -23,23 +23,12 @@ const App = {
   bgShader: null,
  
   async init() {
-    // 0. Initialize ShaderGradient 3D animated mesh canvas
-    if (window.ShaderGradient) {
+    // 0. Initialize Aceternity UI Shooting Stars & Stars Background (Cosmic obsidian theme)
+    if (window.ShootingStarsBackground) {
       try {
-        this.bgShader = window.ShaderGradient.create('#w3aShaderBg', {
-          color1: '#00f2ff',
-          color2: '#10b981',
-          color3: '#6366f1',
-          bgColor: '#090e1b',
-          speed: 0.25,
-          density: 1.15,
-          strength: 2.2,
-          grain: 0.35,
-          opacity: 0.55,
-          interactive: true
-        });
+        window.ShootingStarsBackground.init();
       } catch (err) {
-        console.warn('[App] ShaderGradient init skipped:', err);
+        console.warn('[App] ShootingStarsBackground init error:', err);
       }
     }
 

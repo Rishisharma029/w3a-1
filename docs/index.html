@@ -567,9 +567,20 @@
   </div>
 
   <!-- =========================================================================
-       0. SHADERGRADIENT (ruucm/shadergradient) 3D LIQUID AMBIENT CANVAS
+       0. ACETERNITY UI SHOOTING STARS & STARS BACKGROUND (REPLACING GREEN SHADER)
        ========================================================================= -->
-  <div id="w3aShaderBg" class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-50 transition-opacity duration-1000"></div>
+  <div id="w3aCosmicBackground" class="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-black">
+    <canvas id="w3aStarsBgCanvas" class="w-full h-full absolute inset-0 pointer-events-none"></canvas>
+    <svg id="w3aShootingStarsSvg" class="w-full h-full absolute inset-0 pointer-events-none">
+      <defs>
+        <linearGradient id="shootingStarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#00f2ff" stop-opacity="0" />
+          <stop offset="100%" stop-color="#38bdf8" stop-opacity="1" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+  <div id="w3aShaderBg" class="hidden"></div>
 
   <!-- Hidden Telemetry Bridge for State Sync -->
   <div class="hidden" id="sidebarTelemetryHidden">
@@ -846,6 +857,7 @@
   <script src="js/components/floating-dock.js"></script>
   <script src="js/components/evervault-card.js"></script>
   <script src="js/components/lamp.js"></script>
+  <script src="js/components/shooting-stars.js"></script>
   <script src="js/adapters.js"></script>
   <script src="js/state.js"></script>
   <script src="js/api.js"></script>
@@ -988,6 +1000,11 @@
       // Initialize Aceternity Lamp Effect
       if (window.LampEffect) {
         window.LampEffect.init();
+      }
+
+      // Initialize Aceternity Shooting Stars & Stars Background
+      if (window.ShootingStarsBackground) {
+        window.ShootingStarsBackground.init();
       }
 
       // Smooth scroll wheel forwarding from Spline 3D canvas to the landing scroll container
