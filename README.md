@@ -1,5 +1,12 @@
 # W3A-1: Let AI Agents Buy Services Safely
 
+[![Live Control Center](https://img.shields.io/badge/Live%20Demo-Owner%20Control%20Center-00f2ff?style=for-the-badge&logo=googlechrome&logoColor=white)](https://rishisharma029.github.io/w3a-1/)
+[![Live Marketplace](https://img.shields.io/badge/Live%20Demo-Service%20Marketplace-10b981?style=for-the-badge&logo=fastapi&logoColor=white)](https://rishisharma029.github.io/w3a-1/marketplace/)
+[![Tests Passing](https://img.shields.io/badge/Tests-169%20Passing-brightgreen?style=for-the-badge)](https://github.com/Rishisharma029/w3a-1)
+[![x402 V2](https://img.shields.io/badge/Protocol-x402%20V2%20Wire-blueviolet?style=for-the-badge)](https://github.com/coinbase/x402)
+
+> **Live Owner Control Center:** [https://rishisharma029.github.io/w3a-1/](https://rishisharma029.github.io/w3a-1/)  
+> **Live Service Marketplace:** [https://rishisharma029.github.io/w3a-1/marketplace/](https://rishisharma029.github.io/w3a-1/marketplace/)  
 > **Autonomous AI Agent Purchasing with Genuine x402 V2 Protocol Negotiation and Protocol-Level Smart Contract Spending Caps**  
 > Built for the Hackathon Track: **"Let AI Agents Buy Services Safely"**  
 > Verified Baseline: **169 Automated Tests Passing | 0 Failures**
