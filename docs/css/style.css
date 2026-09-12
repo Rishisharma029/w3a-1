@@ -222,3 +222,22 @@ spline-viewer::part(watermark) {
   background: #ffffff !important;
 }
 
+/* Aceternity UI Floating Dock */
+.w3a-dock-item {
+  transition: width 0.12s cubic-bezier(0.25, 1, 0.5, 1), height 0.12s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: width, height;
+}
+
+.w3a-dock-icon-box {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.w3a-dock-icon-box:hover {
+  box-shadow: 0 8px 30px rgba(93, 230, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.w3a-dock-tooltip {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px rgba(93, 230, 255, 0.2);
+}
+

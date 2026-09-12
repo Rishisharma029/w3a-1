@@ -221,35 +221,8 @@
         </div>
       </div>
 
-      <!-- Core Story Pipeline Stepper -->
-      <div class="hidden xl:flex items-center p-1 rounded-xl bg-surface-low border border-outline-variant/40 font-mono text-xs font-bold gap-1 shadow-inner">
-        <button
-          onclick="App.navigate('marketplace')"
-          id="btnPillarMarketplace"
-          class="px-3 py-1.5 rounded-lg transition-all text-on-surface hover:text-white flex items-center gap-1.5 cursor-pointer"
-        >
-          <span class="material-symbols-outlined text-sm">storefront</span>
-          <span>1. MARKETPLACE</span>
-        </button>
-        <span class="text-outline text-xs">→</span>
-        <button
-          onclick="App.navigate('buy')"
-          id="btnPillarAiPurchase"
-          class="px-3 py-1.5 rounded-lg transition-all text-on-surface hover:text-white flex items-center gap-1.5 cursor-pointer"
-        >
-          <span class="material-symbols-outlined text-sm">smart_toy</span>
-          <span>2. BUY WITH AI</span>
-        </button>
-        <span class="text-outline text-xs">→</span>
-        <button
-          onclick="App.navigate('execution')"
-          id="btnPillarExecution"
-          class="px-3 py-1.5 rounded-lg transition-all text-on-surface hover:text-white flex items-center gap-1.5 cursor-pointer"
-        >
-          <span class="material-symbols-outlined text-sm">bolt</span>
-          <span>3. LIVE EXECUTION</span>
-        </button>
-      </div>
+      <!-- 3-Pillar Aceternity Floating Dock Navigation -->
+      <div id="w3aHeaderFloatingDock" class="hidden xl:flex items-center"></div>
 
       <!-- Right Controls -->
       <div class="flex items-center gap-4">
@@ -467,6 +440,7 @@
   <script src="js/vendor/three.min.js"></script>
   <script src="js/components/shader-gradient.js"></script>
   <script src="js/components/text-hover-effect.js"></script>
+  <script src="js/components/floating-dock.js"></script>
   <script src="js/adapters.js"></script>
   <script src="js/state.js"></script>
   <script src="js/api.js"></script>
@@ -689,5 +663,7 @@
       });
     });
   </script>
+  <!-- Global Aceternity UI Floating Dock Navigation -->
+  <div id="w3aGlobalFloatingDock" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 select-none"></div>
 </body>
 </html>
