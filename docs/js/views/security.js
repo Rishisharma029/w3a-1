@@ -163,6 +163,7 @@ const SecurityView = {
                   <th class="pb-3 font-medium">Attack Vector</th>
                   <th class="pb-3 font-medium">Request ID</th>
                   <th class="pb-3 font-medium">Intercepted Amount</th>
+                  <th class="pb-3 font-medium">Offense Target</th>
                   <th class="pb-3 font-medium">Defense Layer</th>
                   <th class="pb-3 font-medium">Root Cause & Diagnostic</th>
                   <th class="pb-3 font-medium text-right">Status</th>
@@ -178,21 +179,32 @@ const SecurityView = {
                           <td class="py-3 text-outline whitespace-nowrap">${UIFormatter.formatTimestamp(a.timestamp)}</td>
                           <td class="py-3 text-error font-bold font-sans">${a.type || "Threat Intercepted"}</td>
                           <td class="py-3 text-secondary">
-                            <span class="inline-flex items-center gap-1">
-                              ${UIFormatter.formatHash(a.reqId, 6)}
-                              <button onclick="App.copyText('${a.reqId}')" class="text-outline hover:text-secondary">
-                                <span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
-                              </button>
+                            ${
+                              a.reqId && String(a.reqId).startsWith("0x") && String(a.reqId).length > 15
+                                ? `<span class="inline-flex items-center gap-1">
+                                    ${UIFormatter.formatHash(a.reqId, 6)}
+                                    <button onclick="App.copyText('${a.reqId}')" class="text-outline hover:text-secondary">
+                                      <span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+                                    </button>
+                                  </span>`
+                                : `<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-surface-lowest text-secondary border border-secondary/30">${a.reqId || "ON-CHAIN CEILING"}</span>`
+                            }
+                          </td>
+                          <td class="py-3 text-error font-bold font-mono">
+                            ${a.interceptedAmount ?? a.formattedAmount ?? (a.amount ? `$${a.amount} USDC` : "$0.00 USDC")}
+                          </td>
+                          <td class="py-3 text-on-surface-variant font-sans text-xs">
+                            <span class="px-2 py-0.5 rounded text-[10px] bg-surface-lowest text-on-surface border border-outline-variant/40 font-mono">
+                              ${a.offenseTarget ?? a.target ?? a.provider ?? "TokenBudgetEnforcer.sol"}
                             </span>
                           </td>
-                          <td class="py-3 text-error font-bold">${a.formattedAmount}</td>
                           <td class="py-3">
-                            <span class="px-2 py-0.5 rounded text-[10px] bg-surface-lowest text-secondary border border-secondary/30">
-                              ${a.layer}
+                            <span class="px-2 py-0.5 rounded text-[10px] bg-surface-lowest text-secondary border border-secondary/30 font-mono">
+                              ${a.layer ?? a.enforcementLayer ?? "TokenBudgetEnforcer.sol (EVM)"}
                             </span>
                           </td>
-                          <td class="py-3 text-on-surface-variant font-sans text-xs max-w-xs truncate" title="${a.reason}">
-                            ${a.reason}
+                          <td class="py-3 text-on-surface-variant font-sans text-xs max-w-xs truncate" title="${a.reason || 'Security boundary condition enforced'}">
+                            ${a.reason || "Security boundary condition enforced."}
                           </td>
                           <td class="py-3 text-right">
                             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-error/15 text-error border border-error/40">
@@ -205,7 +217,7 @@ const SecurityView = {
                         .join("")
                     : `
                       <tr>
-                        <td colspan="7" class="py-8 text-center text-outline">
+                        <td colspan="8" class="py-8 text-center text-outline">
                           No attack attempts recorded in current session.
                         </td>
                       </tr>

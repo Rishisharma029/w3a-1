@@ -226,6 +226,24 @@ const App = {
     if (!rawTx && AppState.x402Transactions) {
       rawTx = AppState.x402Transactions.find((t) => t.reqId === reqId || t.txHash === reqId);
     }
+    if (!rawTx && AppState.alerts) {
+      const alert = AppState.alerts.find((a) => a.reqId === reqId || a.txHash === reqId);
+      if (alert) {
+        rawTx = {
+          reqId: alert.reqId,
+          txHash: alert.txHash || "0xreverted_on_chain",
+          amountUSD: alert.amountUSD || alert.amount || "25.00",
+          provider: alert.provider || alert.offenseTarget,
+          providerName: alert.offenseTarget || alert.target || alert.provider || "TokenBudgetEnforcer.sol",
+          serviceName: alert.type ? alert.type.replace(/_/g, " ") : "Threat Intercepted",
+          serviceId: alert.type || "attack-blocked",
+          displayStatus: "BLOCKED",
+          status: "BLOCKED",
+          intent: alert.reason || "Unauthorized transaction blocked by protocol",
+          content: { reason: alert.reason, layer: alert.layer || alert.enforcementLayer },
+        };
+      }
+    }
     const tx = TransactionAdapter.normalize(rawTx || { reqId });
     AppState.setSelectedTx(tx);
 

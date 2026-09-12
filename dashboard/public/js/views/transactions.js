@@ -12,7 +12,7 @@
  */
 
 const TransactionsView = {
-  activeFilter: "All",
+  activeFilter: "Settled Purchases",
   searchQuery: "",
   initialized: false,
 
@@ -52,13 +52,36 @@ const TransactionsView = {
 
     // Convert security alerts into standard blocked record format
     const alertRecords = rawAlerts.map((a, idx) => {
-      const amountUSD = a.amountUSD || (a.amount ? (Number(a.amount) / 1e6).toFixed(2) : "0.00");
+      let amountUSD = "0.00";
+      if (a.amountUSD !== undefined && a.amountUSD !== null) {
+        amountUSD = typeof a.amountUSD === "number" ? a.amountUSD.toFixed(2) : String(a.amountUSD).replace("$", "").trim();
+      } else if (a.interceptedAmount && typeof a.interceptedAmount === "string") {
+        amountUSD = a.interceptedAmount.replace(/[^0-9.]/g, "") || "0.00";
+      } else if (a.amount || a.amountAtomic) {
+        const val = Number(a.amount || a.amountAtomic);
+        if (!isNaN(val) && val > 0) {
+          amountUSD = val >= 10000 ? (val / 1e6).toFixed(2) : val.toFixed(2);
+        }
+      } else if (String(a.type || "").toUpperCase().includes("OVERSPEND")) {
+        amountUSD = "25.00";
+      }
+
+      const rawType = String(a.type || a.event || "SECURITY_ALERT");
+      const serviceName = a.type ? a.type.replace(/_/g, " ") : "Threat Intercepted";
+      const offenseTarget = a.offenseTarget || a.target || a.providerId || a.provider || a.endpoint || "TokenBudgetEnforcer.sol";
+      const targetLabel = String(offenseTarget).startsWith("0x") ? UIFormatter.formatAddress(offenseTarget) : String(offenseTarget);
+
+      const hasValidHexReqId = a.reqId && String(a.reqId).startsWith("0x") && String(a.reqId).length > 15 && !String(a.reqId).includes("Protocol Level");
+      const reqId = hasValidHexReqId ? String(a.reqId) : `0xdefend_${idx + 1}`;
+
       return {
-        reqId: a.reqId || `0xblocked_alert_${idx}`,
-        provider: a.provider || "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
-        providerName: a.provider ? UIFormatter.formatAddress(a.provider) : "Protected Provider",
+        isBlockedAttack: true,
+        reqId,
+        hasValidHexReqId,
+        provider: a.provider || offenseTarget,
+        providerName: targetLabel,
         serviceId: a.type || "attack-blocked",
-        serviceName: a.type || "Attack Blocked",
+        serviceName,
         amountUSD,
         formattedAmount: `$${amountUSD} USDC`,
         currency: "USDC",
@@ -74,14 +97,14 @@ const TransactionsView = {
         scheme: "exact",
         asset: AppState.config.tokenAddress || "0x5FbDB2315678afecb367f032d93F642f64180aa3",
         payer: AppState.config.agentAddress || "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
-        nonce: a.reqId ? String(a.reqId).slice(0, 18) : "0x0",
+        nonce: reqId.slice(0, 18),
         validBefore: 0,
         signatureStatus: "REJECTED",
         verificationStatus: "FAILED",
         settlementStatus: "BLOCKED",
         budgetBefore: AppState.budget.totalFunded || "30.00",
         budgetAfter: AppState.budget.remaining || "26.00",
-        content: { reason: a.reason, enforcement: "TokenBudgetEnforcer.sol" },
+        content: { reason: a.reason, enforcement: a.layer || a.enforcementLayer || "TokenBudgetEnforcer.sol" },
       };
     });
 
@@ -89,9 +112,13 @@ const TransactionsView = {
 
     // Filter logic
     const filtered = allRecords.filter((item) => {
-      if (this.activeFilter === "Successful" && item.displayStatus !== "SETTLED") return false;
-      if (this.activeFilter === "Blocked" && item.displayStatus !== "BLOCKED") return false;
-      if (this.activeFilter === "Pending" && item.displayStatus !== "PENDING") return false;
+      if (this.activeFilter === "Settled Purchases" || this.activeFilter === "Successful") {
+        if (item.displayStatus !== "SETTLED") return false;
+      } else if (this.activeFilter === "Blocked Attacks" || this.activeFilter === "Blocked") {
+        if (item.displayStatus !== "BLOCKED") return false;
+      } else if (this.activeFilter === "Pending") {
+        if (item.displayStatus !== "PENDING") return false;
+      }
 
       if (this.searchQuery.trim()) {
         const q = this.searchQuery.toLowerCase();
@@ -140,19 +167,33 @@ const TransactionsView = {
         <!-- Filter & Search Toolbar -->
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl bg-surface-low border border-outline-variant/40 p-3">
           <!-- Filter Tabs -->
-          <div class="flex items-center bg-surface-lowest p-1 rounded-xl border border-outline-variant/30 text-xs font-mono">
-            ${["All", "Successful", "Blocked", "Pending"]
+          <div class="flex items-center bg-surface-lowest p-1 rounded-xl border border-outline-variant/30 text-xs font-mono overflow-x-auto">
+            ${[
+              { id: "Settled Purchases", label: "Settled Purchases", count: transactions.length },
+              { id: "Blocked Attacks", label: "Blocked Attacks", count: alertRecords.length, isAlert: true },
+              { id: "All Activity", label: "All Activity", count: allRecords.length },
+              { id: "Pending", label: "Pending", count: allRecords.filter((r) => r.displayStatus === "PENDING").length },
+            ]
               .map(
                 (tab) => `
               <button
-                onclick="TransactionsView.setFilter('${tab}')"
-                class="px-3 py-1 rounded-lg transition-all ${
-                  this.activeFilter === tab
-                    ? "bg-secondary/20 text-secondary font-bold border border-secondary/30"
+                onclick="TransactionsView.setFilter('${tab.id}')"
+                class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap ${
+                  this.activeFilter === tab.id
+                    ? tab.isAlert
+                      ? "bg-error/20 text-error font-bold border border-error/40"
+                      : "bg-secondary/20 text-secondary font-bold border border-secondary/30"
                     : "text-outline hover:text-white"
                 }"
               >
-                ${tab}
+                <span>${tab.label}</span>
+                <span class="px-1.5 py-0.5 rounded-full text-[10px] ${
+                  this.activeFilter === tab.id
+                    ? tab.isAlert
+                      ? "bg-error/30 text-white"
+                      : "bg-secondary/30 text-white"
+                    : "bg-surface-high text-outline"
+                }">${tab.count}</span>
               </button>
             `
               )
@@ -196,44 +237,83 @@ const TransactionsView = {
                           (t) => `
                         <tr
                           onclick="App.openTransactionDetail('${t.reqId}')"
-                          class="hover:bg-surface-high/40 cursor-pointer transition-colors group"
+                          class="hover:bg-surface-high/40 cursor-pointer transition-colors group ${
+                            t.isBlockedAttack ? "bg-error/[0.04] border-l-2 border-l-error/70" : ""
+                          }"
                         >
-                          <td class="py-3 font-mono text-secondary font-semibold">
-                            <span class="inline-flex items-center gap-1">
-                              ${UIFormatter.formatHash(t.reqId, 6)}
-                              <button onclick="event.stopPropagation(); App.copyText('${t.reqId}')" class="text-outline hover:text-secondary opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
-                              </button>
-                            </span>
+                          <td class="py-3 font-mono font-semibold">
+                            ${
+                              t.isBlockedAttack && !t.hasValidHexReqId
+                                ? `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-error/15 text-error border border-error/30">ON-CHAIN DEFENSE</span>`
+                                : `<span class="inline-flex items-center gap-1 ${t.isBlockedAttack ? "text-error" : "text-secondary"}">
+                                    ${UIFormatter.formatHash(t.reqId, 6)}
+                                    <button onclick="event.stopPropagation(); App.copyText('${t.reqId}')" class="text-outline hover:text-secondary opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+                                    </button>
+                                  </span>`
+                            }
                           </td>
-                          <td class="py-3 font-sans text-white">${t.serviceName}</td>
-                          <td class="py-3 text-on-surface-variant font-sans font-semibold">${t.providerName}</td>
-                          <td class="py-3 font-mono ${t.displayStatus === "BLOCKED" ? "text-error" : "text-tertiary"} font-bold">
+                          <td class="py-3 font-sans text-white">
+                            ${
+                              t.isBlockedAttack
+                                ? `<span class="flex items-center gap-1.5 text-rose-300 font-semibold text-xs">
+                                    <span class="material-symbols-outlined text-[13px] text-error" data-icon="shield">shield</span>
+                                    ${t.serviceName}
+                                  </span>`
+                                : t.serviceName
+                            }
+                          </td>
+                          <td class="py-3 text-on-surface-variant font-sans font-semibold">
+                            ${
+                              t.isBlockedAttack
+                                ? `<span class="px-2 py-0.5 rounded text-[10px] bg-surface-lowest text-on-surface border border-outline-variant/40 font-mono">${t.providerName}</span>`
+                                : t.providerName
+                            }
+                          </td>
+                          <td class="py-3 font-mono font-bold ${t.displayStatus === "BLOCKED" ? "text-error" : "text-tertiary"}">
                             ${t.formattedAmount}
+                            ${t.isBlockedAttack ? `<span class="text-[9px] text-error/80 uppercase font-mono block">Intercepted</span>` : ""}
                           </td>
                           <td class="py-3">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-surface-lowest text-secondary border border-secondary/30">
-                              v2 ${t.scheme}
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-surface-lowest ${
+                              t.isBlockedAttack ? "text-error border border-error/30" : "text-secondary border border-secondary/30"
+                            }">
+                              ${t.isBlockedAttack ? "v2 guard" : `v2 ${t.scheme}`}
                             </span>
                           </td>
                           <td class="py-3 font-mono text-outline">
-                            <span class="inline-flex items-center gap-1">
-                              ${UIFormatter.formatHash(t.txHash, 4)}
-                              <button onclick="event.stopPropagation(); App.copyText('${t.txHash}')" class="text-outline hover:text-secondary opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
-                              </button>
-                            </span>
+                            ${
+                              t.isBlockedAttack
+                                ? `<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-error/10 text-error/80 border border-error/20">REVERTED</span>`
+                                : `<span class="inline-flex items-center gap-1">
+                                    ${UIFormatter.formatHash(t.txHash, 4)}
+                                    <button onclick="event.stopPropagation(); App.copyText('${t.txHash}')" class="text-outline hover:text-secondary opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+                                    </button>
+                                  </span>`
+                            }
                           </td>
                           <td class="py-3 font-mono text-[11px] text-outline">
-                            <span class="inline-flex items-center gap-1">
-                              ${UIFormatter.formatDeliveryHash(t.deliveryHash, 4)}
-                              <button onclick="event.stopPropagation(); App.copyText('${t.deliveryHash}')" class="text-outline hover:text-secondary opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
-                              </button>
-                            </span>
+                            ${
+                              t.isBlockedAttack
+                                ? `<span class="text-outline/70">N/A (Reverted)</span>`
+                                : `<span class="inline-flex items-center gap-1">
+                                    ${UIFormatter.formatDeliveryHash(t.deliveryHash, 4)}
+                                    <button onclick="event.stopPropagation(); App.copyText('${t.deliveryHash}')" class="text-outline hover:text-secondary opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+                                    </button>
+                                  </span>`
+                            }
                           </td>
                           <td class="py-3 text-right">
-                            ${UIFormatter.statusBadge(t.displayStatus)}
+                            ${
+                              t.isBlockedAttack
+                                ? `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-error/15 text-error border border-error/40 inline-flex items-center gap-1 justify-end ml-auto">
+                                    <span class="material-symbols-outlined text-[12px]" data-icon="block">block</span>
+                                    BLOCKED ATTACK
+                                  </span>`
+                                : UIFormatter.statusBadge(t.displayStatus)
+                            }
                           </td>
                         </tr>
                       `

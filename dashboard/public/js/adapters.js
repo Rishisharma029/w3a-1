@@ -569,7 +569,7 @@ const SecurityAdapter = {
   normalize(raw) {
     if (!raw || typeof raw !== "object") return null;
 
-    const rawType = String(raw.type || "SECURITY_ALERT").toUpperCase();
+    const rawType = String(raw.type || raw.event || "SECURITY_ALERT").toUpperCase();
     let severity = raw.severity || "HIGH";
     if (rawType.includes("OVERSPEND") || rawType.includes("ATTACK")) {
       severity = "CRITICAL";
@@ -587,8 +587,44 @@ const SecurityAdapter = {
       "Security boundary condition enforced by TokenBudgetEnforcer.sol."
     );
 
-    const reqId = raw.reqId ? String(raw.reqId) : "N/A (Protocol Level)";
-    const txHash = raw.txHash ? String(raw.txHash) : "0xreverted_on_chain";
+    const reqId = raw.reqId || raw.requestId || raw.nonce || "0xblock_protocol_enforce";
+    const txHash = raw.txHash || raw.transactionHash || "0xreverted_on_chain";
+
+    // Format amount cleanly: handle amountUSD, amountAtomic, amount, interceptedAmount
+    let amountUSD = "0.00";
+    if (raw.amountUSD !== undefined && raw.amountUSD !== null) {
+      amountUSD = typeof raw.amountUSD === "number" ? raw.amountUSD.toFixed(2) : String(raw.amountUSD).replace("$", "").trim();
+    } else if (raw.interceptedAmount && typeof raw.interceptedAmount === "string" && !raw.interceptedAmount.includes("undefined")) {
+      amountUSD = raw.interceptedAmount.replace(/[^0-9.]/g, "") || "0.00";
+    } else if (raw.amount || raw.amountAtomic) {
+      const val = Number(raw.amount || raw.amountAtomic);
+      if (!isNaN(val) && val > 0) {
+        amountUSD = val >= 10000 ? (val / 1e6).toFixed(2) : val.toFixed(2);
+      }
+    } else if (rawType.includes("OVERSPEND")) {
+      amountUSD = "25.00";
+    }
+
+    const formattedAmount = `$${amountUSD} USDC`;
+    const interceptedAmount = formattedAmount;
+
+    // Resolve offense target / provider / endpoint
+    const offenseTarget = raw.offenseTarget || raw.target || raw.providerId || raw.provider || raw.endpoint || (
+      rawType.includes("OVERSPEND") ? "TokenBudgetEnforcer.sol (Spending Cap)" :
+      rawType.includes("REPLAY") ? "TokenBudgetEnforcer.sol (Replay Guard)" :
+      rawType.includes("TAMPER") ? "Provider Delivery Gateway (SHA-256)" :
+      "TokenBudgetEnforcer.sol"
+    );
+    const target = offenseTarget;
+    const provider = raw.provider || raw.providerId || offenseTarget;
+
+    // Enforcement layer
+    const layer = raw.layer || raw.enforcementLayer || (
+      rawType.includes("TAMPER") ? "SHA-256 Verifier" :
+      rawType.includes("REPLAY") ? "Contract Nonce Replay Guard" :
+      "TokenBudgetEnforcer.sol (EVM)"
+    );
+    const enforcementLayer = layer;
 
     return {
       type: rawType,
@@ -597,7 +633,15 @@ const SecurityAdapter = {
       reqId,
       txHash,
       timestamp,
-      enforcementLayer: "TokenBudgetEnforcer.sol (EVM)",
+      amount: amountUSD,
+      amountUSD,
+      formattedAmount,
+      interceptedAmount,
+      offenseTarget,
+      target,
+      provider,
+      layer,
+      enforcementLayer,
     };
   },
 
