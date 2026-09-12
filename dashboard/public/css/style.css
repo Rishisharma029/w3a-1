@@ -205,7 +205,7 @@ spline-viewer {
   height: 100% !important;
   display: block !important;
   background: #000000 !important;
-  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(1.05);
+  /* Clean dark spline viewer */
 }
 
 spline-viewer::part(watermark) {

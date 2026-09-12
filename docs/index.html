@@ -106,6 +106,7 @@
       <spline-viewer 
         id="splineViewerElem"
         url="scene.splinecode" 
+        style="background: #060913 !important;"
         class="w-full h-full block">
       </spline-viewer>
 
@@ -116,7 +117,7 @@
           <span>W3A-1 PROTOCOL &bull; AUTONOMOUS SAFE-SPEND</span>
         </div>
         
-        <h1 class="font-headline text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-bold tracking-tight leading-tight text-white">
+        <h1 class="font-headline text-xl sm:text-2xl md:text-3xl lg:text-[34px] font-bold tracking-tight leading-tight text-white">
           <span
             data-encrypted-text="Autonomous Spending Protocol For AI Agents"
             data-reveal-delay-ms="40"
@@ -1012,6 +1013,10 @@
             const style = document.createElement("style");
             style.id = "spline-hide-logo-style";
             style.textContent = `
+              :host, canvas {
+                background: #060913 !important;
+                background-color: #060913 !important;
+              }
               #logo, a#logo, #logo-container, a[href*="spline.design"], .watermark,
               [data-testid="watermark"], [class*="watermark"], [id*="watermark"],
               #hint-drag, #preloader {
