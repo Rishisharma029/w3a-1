@@ -50,10 +50,101 @@
     }
   </script>
 
+  <!-- Spline 3D Viewer CDN -->
+  <script type="module" src="https://cdn.spline.design/@splinetool/viewer@2.0.46/build/spline-viewer.js"></script>
+
   <!-- Cybernetic Telemetry Design System -->
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body class="bg-background text-on-surface font-body antialiased min-h-screen flex select-none selection:bg-secondary selection:text-surface relative overflow-x-hidden">
+
+  <!-- =========================================================================
+       SPLINE 3D INTRO OVERLAY (In front of everything until clicked)
+       ========================================================================= -->
+  <div id="splineIntroOverlay" class="fixed inset-0 z-[99999] bg-[#060913] flex flex-col justify-between overflow-hidden transition-all duration-700 ease-out select-none">
+    
+    <!-- 3D Spline Canvas -->
+    <div class="absolute inset-0 z-0">
+      <spline-viewer 
+        id="splineViewerElem"
+        url="https://prod.spline.design/LY4wOOGszIMladBL/scene.splinecode" 
+        class="w-full h-full block">
+      </spline-viewer>
+    </div>
+
+    <!-- Top floating HUD bar -->
+    <header class="relative z-10 p-6 flex items-center justify-between pointer-events-none">
+      <div class="flex items-center gap-3 bg-surface-lowest/80 backdrop-blur-xl border border-outline-variant/40 px-4 py-2 rounded-2xl pointer-events-auto shadow-2xl">
+        <div class="w-8 h-8 rounded-xl bg-surface-high border border-secondary/40 flex items-center justify-center glow-cyan">
+          <span class="material-symbols-outlined text-secondary text-lg">shield</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-headline font-bold text-white tracking-wider text-sm">W3A-1</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-secondary/20 text-secondary border border-secondary/30">x402 V2 PROTOCOL</span>
+          </div>
+          <p class="text-[10px] font-mono text-on-surface-variant">Autonomous AI Safe-Spend System</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <div class="hidden sm:flex items-center gap-2 bg-surface-lowest/80 backdrop-blur-xl border border-outline-variant/40 px-3.5 py-1.5 rounded-full pointer-events-auto shadow-lg">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider">3D INTERACTIVE SCENE</span>
+        </div>
+
+        <button 
+          onclick="dismissSplineIntro()" 
+          class="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-surface-high/80 hover:bg-surface-highest text-white border border-outline-variant/50 backdrop-blur-md transition-all pointer-events-auto flex items-center gap-1.5 cursor-pointer shadow-lg active:scale-95"
+          title="Skip intro to Control Center"
+        >
+          <span>SKIP TO APP</span>
+          <span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Bottom floating hero call-to-action -->
+    <footer class="relative z-10 pb-10 pt-6 px-6 flex flex-col items-center justify-center text-center pointer-events-none">
+      <div class="space-y-4 max-w-xl pointer-events-auto bg-surface-lowest/85 backdrop-blur-2xl p-6 sm:p-8 rounded-3xl border border-white/10 shadow-[0_10px_50px_rgba(0,0,0,0.8)]">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-secondary/15 text-secondary border border-secondary/40 uppercase tracking-widest mb-3">
+            <span class="material-symbols-outlined text-xs">bolt</span>
+            <span>LET AI AGENTS BUY SERVICES SAFELY</span>
+          </div>
+          <h1 class="font-headline text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            W3A-1 Safe-Spend Platform
+          </h1>
+          <p class="text-xs sm:text-sm font-body text-slate-300 mt-2 max-w-md mx-auto leading-relaxed">
+            Experience autonomous AI negotiation on x402 V2 wire with immutable EVM spending caps.
+          </p>
+        </div>
+
+        <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button
+            id="btnEnterPlatform"
+            onclick="dismissSplineIntro()"
+            class="w-full sm:w-auto px-8 py-3.5 rounded-xl font-headline font-bold text-sm text-black bg-gradient-to-r from-secondary via-emerald-400 to-secondary hover:brightness-110 active:scale-95 transition-all shadow-[0_0_35px_rgba(93,230,255,0.6)] glow-cyan flex items-center justify-center gap-3 cursor-pointer group"
+          >
+            <span class="tracking-wider uppercase font-extrabold">ENTER CONTROL CENTER</span>
+            <span class="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          </button>
+          
+          <button
+            onclick="dismissSplineIntro(); if (window.App) App.navigate('providers');"
+            class="w-full sm:w-auto px-5 py-3.5 rounded-xl font-mono text-xs font-bold text-white bg-surface-high hover:bg-surface-highest border border-outline-variant/40 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-sm text-tertiary">storefront</span>
+            <span>MARKETPLACE</span>
+          </button>
+        </div>
+
+        <p class="text-[11px] font-mono text-slate-400 tracking-wider">
+          Click anywhere or press Enter to launch the dashboard
+        </p>
+      </div>
+    </footer>
+  </div>
 
   <!-- =========================================================================
        0. SHADERGRADIENT (ruucm/shadergradient) 3D LIQUID AMBIENT CANVAS
@@ -245,6 +336,17 @@
         >
           <span class="material-symbols-outlined text-sm text-secondary group-hover:rotate-45 transition-transform" data-icon="bolt">bolt</span>
           <span class="tracking-wide uppercase font-bold text-transparent bg-clip-text bg-gradient-to-r from-secondary via-white to-tertiary">RUN AUTONOMOUS PURCHASE</span>
+        </button>
+
+        <!-- 3D Scene View Reopen Button -->
+        <button
+          onclick="openSplineIntro()"
+          id="btnSplineToggle"
+          class="px-2.5 py-1.5 rounded-xl border border-secondary/40 bg-secondary/10 hover:bg-secondary/20 text-secondary transition flex items-center gap-1.5 text-xs font-mono font-bold cursor-pointer active:scale-95 shadow-sm glow-cyan"
+          title="Reopen 3D Interactive Scene"
+        >
+          <span class="material-symbols-outlined text-sm">view_in_ar</span>
+          <span class="hidden md:inline">3D SCENE</span>
         </button>
 
         <!-- Secondary Demo Toggle (Subtle Icon) -->
@@ -439,5 +541,92 @@
   <script src="js/views/delivery.js"></script>
   <script src="js/views/settings.js"></script>
   <script src="js/app.js"></script>
+
+  <!-- Spline 3D Intro Controller -->
+  <script>
+    let isSplineDismissed = false;
+    let splineMouseDownPos = { x: 0, y: 0 };
+    let isSplineDragging = false;
+
+    function dismissSplineIntro() {
+      if (isSplineDismissed) return;
+      isSplineDismissed = true;
+      const overlay = document.getElementById("splineIntroOverlay");
+      if (!overlay) return;
+      
+      overlay.classList.add("opacity-0", "scale-105", "pointer-events-none");
+      setTimeout(() => {
+        overlay.style.display = "none";
+      }, 700);
+    }
+
+    function openSplineIntro() {
+      isSplineDismissed = false;
+      const overlay = document.getElementById("splineIntroOverlay");
+      if (!overlay) return;
+      
+      overlay.style.display = "flex";
+      // Trigger reflow to restart transition
+      void overlay.offsetWidth;
+      overlay.classList.remove("opacity-0", "scale-105", "pointer-events-none");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const overlay = document.getElementById("splineIntroOverlay");
+      if (!overlay) return;
+
+      // Mouse drag vs click detector: clicking anywhere dismisses, dragging to orbit does not
+      overlay.addEventListener("mousedown", (e) => {
+        splineMouseDownPos = { x: e.clientX, y: e.clientY };
+        isSplineDragging = false;
+      });
+
+      overlay.addEventListener("mousemove", (e) => {
+        const dx = Math.abs(e.clientX - splineMouseDownPos.x);
+        const dy = Math.abs(e.clientY - splineMouseDownPos.y);
+        if (dx > 10 || dy > 10) {
+          isSplineDragging = true;
+        }
+      });
+
+      overlay.addEventListener("mouseup", (e) => {
+        // If it was a click and not a drag, dismiss to reveal app
+        if (!isSplineDragging) {
+          dismissSplineIntro();
+        }
+      });
+
+      // Touch drag vs tap detector for mobile
+      let touchStartPos = { x: 0, y: 0 };
+      let isTouching = false;
+      overlay.addEventListener("touchstart", (e) => {
+        if (e.touches && e.touches[0]) {
+          touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          isTouching = false;
+        }
+      }, { passive: true });
+
+      overlay.addEventListener("touchmove", (e) => {
+        if (e.touches && e.touches[0]) {
+          const dx = Math.abs(e.touches[0].clientX - touchStartPos.x);
+          const dy = Math.abs(e.touches[0].clientY - touchStartPos.y);
+          if (dx > 10 || dy > 10) isTouching = true;
+        }
+      }, { passive: true });
+
+      overlay.addEventListener("touchend", () => {
+        if (!isTouching) {
+          dismissSplineIntro();
+        }
+      });
+
+      // Keyboard shortcuts: Enter, Space, Escape to dismiss
+      window.addEventListener("keydown", (e) => {
+        if (!isSplineDismissed && (e.key === "Enter" || e.key === " " || e.key === "Escape")) {
+          dismissSplineIntro();
+        }
+      });
+    });
+  </script>
 </body>
 </html>

@@ -827,7 +827,7 @@ Highest quality under $5.</textarea>
 
       const txHash = trace.txHash || "0xda48b1c9f4d7159c8e192a6374028471b058c067e26830571092e093847228e9";
       const deliveryHash = trace.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
-      const rawContent = trace.deliveredContent || trace.content || "This is the translated text - Autonomous AI legal translation delivered.";
+      const rawContent = trace.deliveredContent || trace.content || "यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.";
       const deliveredText = typeof rawContent === "object" ? (rawContent.translatedText || JSON.stringify(rawContent)) : rawContent;
 
       await delay(300);

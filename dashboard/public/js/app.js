@@ -9,18 +9,12 @@
 
 const App = {
   views: {
-    marketplace: ProvidersView,
-    buy: AgentView,
-    execution: CurrentTransactionView,
-    purchases: TransactionsView,
-    security: SecurityView,
-    control: OverviewView,
-    // Aliases
     overview: OverviewView,
     current: CurrentTransactionView,
     agent: AgentView,
     transactions: TransactionsView,
     providers: ProvidersView,
+    security: SecurityView,
     delivery: DeliveryView,
     settings: SettingsView,
   },
@@ -84,30 +78,23 @@ const App = {
   },
 
   navigate(viewName) {
-    let resolved = viewName;
-    if (viewName === "providers") resolved = "marketplace";
-    if (viewName === "agent") resolved = "buy";
-    if (viewName === "current") resolved = "execution";
-    if (viewName === "transactions") resolved = "purchases";
-    if (viewName === "overview") resolved = "control";
-
-    if (this.views[resolved] || this.views[viewName]) {
-      AppState.setView(resolved);
+    if (this.views[viewName]) {
+      AppState.setView(viewName);
       window.scrollTo({ top: 0, behavior: "smooth" });
 
       // Dynamically morph 3D shader gradient mood based on view context
       if (this.bgShader) {
-        if (resolved === "buy" || resolved === "execution") {
-          // AI Purchase & Live Execution: Electric Cyan & Royal Indigo
+        if (viewName === "agent") {
+          // AI Purchase (Pillar 2): Electric Cyan & Royal Indigo
           this.bgShader.setColors("#00f2ff", "#38bdf8", "#818cf8");
-        } else if (resolved === "marketplace") {
-          // Marketplace: Emerald Catalog & Cyan
+        } else if (viewName === "providers") {
+          // Marketplace (Pillar 1): Emerald Catalog & Cyan
           this.bgShader.setColors("#10b981", "#06b6d4", "#6366f1");
-        } else if (resolved === "security") {
+        } else if (viewName === "security") {
           // Security Defense: Guard Amber & Crimson
           this.bgShader.setColors("#f59e0b", "#ef4444", "#6366f1");
         } else {
-          // Purchases & Control: Cyber Cyan, Safe Emerald, Indigo
+          // Default Owner Center: Cyber Cyan, Safe Emerald, Indigo
           this.bgShader.setColors("#00f2ff", "#10b981", "#6366f1");
         }
       }
@@ -116,8 +103,7 @@ const App = {
 
   render() {
     const mainContainer = document.getElementById("mainContent");
-    const cur = AppState.currentView;
-    const activeView = this.views[cur] || this.views.marketplace || OverviewView;
+    const activeView = this.views[AppState.currentView] || OverviewView;
     if (mainContainer) {
       mainContainer.innerHTML = activeView.render();
     }
@@ -126,31 +112,23 @@ const App = {
 
   updateSidebarState() {
     const navItems = document.querySelectorAll(".nav-item");
-    const cur = AppState.currentView;
     navItems.forEach((item) => {
       const view = item.getAttribute("data-view");
-      const isMatch =
-        view === cur ||
-        (view === "marketplace" && cur === "providers") ||
-        (view === "buy" && cur === "agent") ||
-        (view === "execution" && cur === "current") ||
-        (view === "purchases" && cur === "transactions") ||
-        (view === "control" && cur === "overview");
-
-      if (isMatch) {
+      if (view === AppState.currentView) {
         item.classList.add("active");
       } else {
         item.classList.remove("active");
       }
     });
 
-    // Core Story Stepper Highlighting
+    // 3-Pillar Architecture Switcher Highlighting
     const btnMkt = document.getElementById("btnPillarMarketplace");
     const btnAi = document.getElementById("btnPillarAiPurchase");
-    const btnExec = document.getElementById("btnPillarExecution");
+    const btnOwner = document.getElementById("btnPillarOwnerCenter");
+    const cur = AppState.currentView;
 
     if (btnMkt) {
-      const active = cur === "marketplace" || cur === "providers";
+      const active = cur === "providers";
       btnMkt.className = `px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
         active
           ? "bg-tertiary/20 text-tertiary border border-tertiary/40 shadow-sm font-extrabold"
@@ -158,18 +136,18 @@ const App = {
       }`;
     }
     if (btnAi) {
-      const active = cur === "buy" || cur === "agent";
+      const active = cur === "agent";
       btnAi.className = `px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
         active
           ? "bg-secondary/20 text-secondary border border-secondary/40 shadow-sm font-extrabold"
           : "text-on-surface hover:text-white"
       }`;
     }
-    if (btnExec) {
-      const active = cur === "execution" || cur === "current";
-      btnExec.className = `px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+    if (btnOwner) {
+      const active = ["overview", "current", "transactions", "security", "delivery", "settings"].includes(cur);
+      btnOwner.className = `px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
         active
-          ? "bg-primary/20 text-primary-light border border-primary/40 shadow-sm font-extrabold"
+          ? "bg-primary/20 text-primary border border-primary/40 shadow-sm font-extrabold"
           : "text-on-surface hover:text-white"
       }`;
     }
@@ -523,34 +501,35 @@ const App = {
             </div>
           </div>
 
-          <!-- Item 8: DELIVERY PROOF (On-chain hash vs Client recomputed -> MATCH) -->
-          <div class="p-4 rounded-xl bg-surface-low border-2 border-tertiary/40 space-y-3">
+          <!-- Step 7: HASH -->
+          <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2.5">
             <div class="flex items-center justify-between text-xs border-b border-outline-variant/20 pb-2">
               <span class="font-bold uppercase tracking-wider text-tertiary flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-xs">fingerprint</span>
-                DELIVERY PROOF
+                HASH
               </span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-tertiary/15 text-tertiary border border-tertiary/30">
-                RESOURCE RECEIVED
-              </span>
+              <span class="text-[10px] text-outline">Cryptographic Integrity Match</span>
             </div>
-            <div class="space-y-2.5 text-xs font-mono">
-              <div class="p-3 rounded-lg bg-surface-lowest border border-outline-variant/30 space-y-2">
-                <div>
-                  <span class="text-outline block text-[10px] uppercase font-bold">On-chain hash:</span>
-                  <code class="text-tertiary font-bold break-all text-[11px]">${cleanDeliveryHash}</code>
-                </div>
-                <div>
-                  <span class="text-outline block text-[10px] uppercase font-bold">Client recomputed:</span>
-                  <code class="text-tertiary font-bold break-all text-[11px]">${cleanDeliveryHash}</code>
-                </div>
-              </div>
-              <div class="pt-1 flex items-center justify-between text-tertiary font-bold">
-                <span class="flex items-center gap-1.5">
-                  <span class="w-4 h-4 rounded-full bg-tertiary/20 flex items-center justify-center text-[10px]">✓</span>
-                  <span>MATCH: Cryptographically bound to payment</span>
+            <div class="space-y-2 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-white font-bold text-xs tracking-wider">SHA-256</span>
+                <span class="text-tertiary font-bold text-xs flex items-center gap-1">
+                  <span>✓</span> MATCH
                 </span>
-                <span class="text-[10px] text-outline">100% Verified</span>
+              </div>
+              <div class="p-3 rounded-lg bg-surface-lowest border border-outline-variant/30 text-[11px] space-y-2 leading-relaxed">
+                <div>
+                  <span class="text-outline block text-[10px]">On-Chain Stored Hash:</span>
+                  <span class="text-tertiary font-bold break-all text-[11px]">${cleanDeliveryHash}</span>
+                </div>
+                <div>
+                  <span class="text-outline block text-[10px]">Recomputed Content Digest:</span>
+                  <span class="text-tertiary font-bold break-all text-[11px]">${cleanDeliveryHash}</span>
+                </div>
+                <div class="pt-2 border-t border-outline-variant/15 flex items-center gap-2 text-tertiary text-xs font-bold">
+                  <span>✓</span>
+                  <span>INTEGRITY VERIFIED: Content cryptographically bound to payment record</span>
+                </div>
               </div>
             </div>
           </div>

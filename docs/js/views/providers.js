@@ -109,20 +109,6 @@ const ProvidersView = {
     }
   },
 
-  askAi(serviceName, providerName, price) {
-    const maxBudget = Math.max(5, Math.ceil((typeof price === "number" ? price : parseFloat(price) || 4) + 1));
-    const prompt = `Find me a ${serviceName} service by ${providerName}. Quality > 0.9. Max $${maxBudget}.`;
-    if (typeof AppState !== "undefined" && typeof AppState.setPrompt === "function") {
-      AppState.setPrompt(prompt);
-    }
-    if (typeof AgentView !== "undefined" && typeof AgentView.setPreset === "function") {
-      AgentView.setPreset(prompt);
-    }
-    if (typeof App !== "undefined" && typeof App.navigate === "function") {
-      App.navigate("buy");
-    }
-  },
-
   async handlePublishSubmit(event) {
     if (event) event.preventDefault();
 
@@ -177,7 +163,7 @@ const ProvidersView = {
         name: "Translation API",
         providerId: "alpha-translate",
         providerName: "Alpha Translate",
-        description: "Translate documents to English with nuance verification",
+        description: "Translate documents to Hindi with nuance verification",
         quality: 0.92,
         latency: "200ms",
         price: "$4.00 USDC / request",
@@ -312,7 +298,7 @@ const ProvidersView = {
         whyItems: [
           { icon: "✓", text: "Within $5 budget ($3.00)", color: "text-slate-200" },
           { icon: "✘", text: "Quality 0.84 < 0.90 threshold", color: "text-amber-400" },
-          { icon: "!", text: "Discarded: lower quality score", color: "text-outline" },
+          { icon: "⚠", text: "Discarded: lower quality score", color: "text-outline" },
         ],
       },
       "gamma-translate": {
@@ -610,34 +596,25 @@ const ProvidersView = {
                   </div>
                 </div>
 
-                <!-- Bottom: Tags & [View] / [Ask AI] Actions -->
-                <div class="pt-4 border-t border-outline-variant/20 flex flex-wrap items-center justify-between gap-3">
-                  <div class="flex items-center gap-1.5 font-mono text-[10px] font-bold">
-                    <span class="px-2 py-0.5 rounded bg-secondary/15 text-secondary border border-secondary/30 glow-cyan">
-                      x402 V2
+                <!-- Bottom: Tags & [VIEW SERVICE] Action -->
+                <div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-1.5">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-secondary/15 text-secondary border border-secondary/30 glow-cyan">
+                      [x402 V2]
                     </span>
-                    <span class="px-2 py-0.5 rounded bg-tertiary/15 text-tertiary border border-tertiary/30 glow-emerald flex items-center gap-1">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-tertiary/15 text-tertiary border border-tertiary/30 glow-emerald flex items-center gap-1">
                       <span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
-                      AVAILABLE
+                      [AVAILABLE]
                     </span>
                   </div>
 
-                  <div class="flex items-center gap-2">
-                    <button
-                      onclick="ProvidersView.openViewService('${s.serviceId}')"
-                      class="px-3.5 py-1.5 rounded-xl bg-surface-high hover:bg-surface-highest border border-outline-variant/40 hover:border-secondary/60 text-xs font-mono font-bold text-white transition shadow-sm active:scale-95 cursor-pointer"
-                    >
-                      View
-                    </button>
-                    <button
-                      onclick="ProvidersView.askAi('${s.name}', '${s.providerName || s.providerId}', ${s.priceNum || 4})"
-                      class="px-3.5 py-1.5 rounded-xl bg-secondary/20 hover:bg-secondary/30 border border-secondary/50 text-xs font-mono font-bold text-secondary hover:text-white flex items-center gap-1.5 transition shadow-sm glow-cyan active:scale-95 cursor-pointer"
-                      title="Ask AI to discover and purchase this service"
-                    >
-                      <span>Ask AI</span>
-                      <span class="material-symbols-outlined text-xs">smart_toy</span>
-                    </button>
-                  </div>
+                  <button
+                    onclick="ProvidersView.openViewService('${s.serviceId}')"
+                    class="px-4 py-2 rounded-xl bg-surface-high hover:bg-surface-highest border border-outline-variant/40 hover:border-secondary/60 text-xs font-mono font-bold text-white flex items-center gap-1.5 transition shadow-sm active:scale-95 cursor-pointer"
+                  >
+                    <span>VIEW SERVICE</span>
+                    <span class="material-symbols-outlined text-sm text-secondary">arrow_forward</span>
+                  </button>
                 </div>
               </div>
             `;
@@ -870,9 +847,9 @@ const ProvidersView = {
               <textarea
                 id="pubServiceDesc"
                 rows="2"
-                placeholder="e.g. Translate PDF documents to English with layout preservation"
+                placeholder="e.g. Translate PDF documents to Hindi with layout preservation"
                 class="w-full px-3 py-2 rounded-lg bg-surface-lowest border border-outline-variant/40 text-white placeholder-outline focus:outline-none focus:border-secondary transition font-sans text-xs"
-              >Translate PDF documents to English with layout preservation</textarea>
+              >Translate PDF documents to Hindi with layout preservation</textarea>
             </div>
 
             <!-- Price & Quality Grid -->

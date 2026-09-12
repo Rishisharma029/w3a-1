@@ -1033,7 +1033,7 @@ function createN8nRouter({
         deliveredContent = {
           service: selectedService.id || "text-translate",
           provider: selected.name,
-          translatedText: `[${selected.name}] Legal Contract Translation to ${targetLang}:\n"This document analysis and translation is complete. Quality confidence: ${selected.qualityScore}."`,
+          translatedText: `[${selected.name}] PDF Translation to ${targetLang}:\n"इस दस्तावेज़ का विश्लेषण व अनुवाद पूर्ण हो चुका है। गुणवत्ता प्रामाणिकता: ${selected.qualityScore}।"`,
           confidence: 0.94,
           status: "DELIVERED",
           latencyMs: selected.estimatedLatencyMs || 200,

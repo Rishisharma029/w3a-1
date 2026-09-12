@@ -8,8 +8,7 @@
  */
 
 const AppState = {
-  currentView: "marketplace",
-  currentPrompt: "Find me a translation service for this PDF. English. Quality > 0.9. Max $5.",
+  currentView: "overview",
   environment: "local",      // "local" | "sepolia"
   isMockMode: false,         // true when user toggles or backend is offline
   isBackendReachable: false, // live backend status
@@ -109,7 +108,7 @@ const AppState = {
         whyItems: [
           { icon: "✓", text: "Within $5 budget ($3.00)", color: "text-slate-200" },
           { icon: "✘", text: "Quality 0.84 < 0.90 threshold", color: "text-amber-400" },
-          { icon: "!", text: "Discarded: lower quality score", color: "text-outline" },
+          { icon: "⚠", text: "Discarded: lower quality score", color: "text-outline" },
         ],
       },
       "gamma-translate": {
@@ -224,19 +223,8 @@ const AppState = {
   },
 
   setView(viewName) {
-    let resolved = viewName;
-    if (viewName === "providers") resolved = "marketplace";
-    if (viewName === "agent") resolved = "buy";
-    if (viewName === "current") resolved = "execution";
-    if (viewName === "transactions") resolved = "purchases";
-    if (viewName === "overview") resolved = "control";
-    this.currentView = resolved;
-    this.notify("view_changed", resolved);
-  },
-
-  setPrompt(prompt) {
-    this.currentPrompt = prompt;
-    this.notify("prompt_changed", prompt);
+    this.currentView = viewName;
+    this.notify("view_changed", viewName);
   },
 
   setEnvironment(env) {
@@ -642,8 +630,8 @@ const AppState = {
         validBefore: Math.floor(Date.now() / 1000) + 300,
         content: {
           sourceText: "The quick brown fox jumps over the lazy dog",
-          targetLanguage: "English",
-          translatedText: "[Alpha] The quick brown fox jumps over the lazy dog → (translated to English)",
+          targetLanguage: "Hindi",
+          translatedText: "[Alpha] The quick brown fox jumps over the lazy dog → (translated to Hindi)",
           qualityConfidence: 0.92,
         },
         hashVerified: true,
@@ -851,7 +839,7 @@ const AppState = {
         name: "Translation API",
         providerId: "alpha-translate",
         providerName: "Alpha Translate",
-        description: "Translate documents to English with nuance verification",
+        description: "Translate documents to Hindi with nuance verification",
         quality: 0.92,
         latency: "200ms",
         latencyMs: 200,

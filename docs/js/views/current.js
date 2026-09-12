@@ -374,7 +374,6 @@ const CurrentTransactionView = {
         `;
       },
     },
-  ],
 
   onStateChange(event, data) {
     if (
