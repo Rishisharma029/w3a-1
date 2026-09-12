@@ -101,7 +101,7 @@
     <!-- =========================================================================
          SECTION 1: HERO - Pure 3D Spline Interactive Canvas (100vh)
          ========================================================================= -->
-    <section id="splineHeroSection" class="relative w-full h-screen min-h-[700px] overflow-hidden bg-white">
+    <section id="splineHeroSection" class="relative w-full h-screen min-h-[700px] overflow-hidden bg-[#070b14]">
       <!-- Pure 3D Spline Canvas with local 'Get in' scene -->
       <spline-viewer 
         id="splineViewerElem"
@@ -110,13 +110,13 @@
       </spline-viewer>
 
       <!-- Aceternity UI EncryptedText Cybernetic Overlay (Over 3D Spline Scene) -->
-      <div class="absolute top-24 sm:top-28 md:top-36 left-6 sm:left-12 md:left-20 max-w-xl z-20 pointer-events-none select-none">
+      <div class="absolute top-20 sm:top-24 md:top-28 left-6 sm:left-12 md:left-16 max-w-lg z-20 pointer-events-none select-none">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 border border-cyan-500/30 font-mono text-[11px] text-cyan-300 backdrop-blur-md mb-4 shadow-[0_0_20px_rgba(6,182,212,0.25)]">
           <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
           <span>W3A-1 PROTOCOL &bull; AUTONOMOUS SAFE-SPEND</span>
         </div>
         
-        <h1 class="font-headline text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.08] text-white">
+        <h1 class="font-headline text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-bold tracking-tight leading-tight text-white">
           <span
             data-encrypted-text="Autonomous Spending Protocol For AI Agents"
             data-reveal-delay-ms="40"
@@ -126,7 +126,7 @@
           >Autonomous Spending Protocol For AI Agents</span>
         </h1>
 
-        <p class="mt-4 text-sm sm:text-base text-slate-300 font-mono max-w-lg leading-relaxed bg-black/40 backdrop-blur-sm p-2 rounded-lg border border-white/5">
+        <p class="mt-3 text-xs sm:text-sm text-slate-300 font-mono max-w-md leading-relaxed bg-black/50 backdrop-blur-md p-2.5 rounded-lg border border-white/10 shadow-lg">
           <span
             data-encrypted-text="Cryptographically enforce EIP-712 budgets & x402 on-chain micro-settlement on EVM."
             data-reveal-delay-ms="25"
@@ -154,22 +154,20 @@
         onclick="dismissSplineIntro()">
       </button>
 
-      <!-- Watermark shield cover at bottom-right corner (Seamless White) -->
-      <div id="splineWatermarkShield" class="absolute bottom-0 right-0 w-48 h-16 bg-white z-20 pointer-events-none"></div>
 
       <!-- Animated Scroll Down Indicator over the Spline down chevron -->
       <div 
         id="btnScrollDownToContent"
-        class="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 cursor-pointer flex flex-col items-center gap-1 group py-2 px-5 rounded-full bg-white/75 hover:bg-white backdrop-blur-md border border-slate-200 shadow-xl transition-all hover:scale-105"
+        class="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 cursor-pointer flex flex-col items-center gap-1 group py-2 px-5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/15 shadow-xl transition-all hover:scale-105"
         onclick="scrollLandingDown()"
         title="Scroll down to explore GENOVA Engine">
-        <span class="text-[10px] font-mono font-bold tracking-widest text-slate-700 uppercase group-hover:text-blue-600">SCROLL DOWN</span>
-        <span class="material-symbols-outlined text-slate-700 group-hover:text-blue-600 text-lg animate-bounce">expand_more</span>
+        <span class="text-[10px] font-mono font-bold tracking-widest text-slate-300 uppercase group-hover:text-cyan-400">SCROLL DOWN</span>
+        <span class="material-symbols-outlined text-slate-300 group-hover:text-cyan-400 text-lg animate-bounce">expand_more</span>
       </div>
     </section>
 
     <!-- Seamless Transition Gradient from White Spline Canvas into Cybernetic Dark Space -->
-    <div class="h-32 w-full bg-gradient-to-b from-white via-[#0a0f1d] to-[#060913] relative z-10 pointer-events-none"></div>
+    <div class="h-32 w-full bg-gradient-to-b from-[#070b14] via-[#0a0f1d] to-[#060913] relative z-10 pointer-events-none"></div>
 
     <!-- =========================================================================
          SECTION 2: ACETERNITY UI LARGE GENOVA TEXT-HOVER-EFFECT (h-[40rem])
@@ -1133,8 +1131,7 @@
 
       // Repeatedly purge watermark during initial load
       purgeSplineWatermark();
-      const watermarkInterval = setInterval(purgeSplineWatermark, 100);
-      setTimeout(() => clearInterval(watermarkInterval), 10000);
+      setTimeout(purgeSplineWatermark, 500);
 
       // Helper to check if a screen (clientX, clientY) position is clicking the "Get in" button
       function isClickOnGetInButton(clientX, clientY) {
