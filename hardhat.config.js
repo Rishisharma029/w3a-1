@@ -20,11 +20,14 @@ module.exports = {
     localhost: {
       url: "http://127.0.0.1:8545",
     },
-    // Uncomment for Phase 2 Sepolia deployment
-    // sepolia: {
-    //   url: process.env.SEPOLIA_RPC_URL || "",
-    //   accounts: process.env.OWNER_PRIVATE_KEY ? [process.env.OWNER_PRIVATE_KEY] : [],
-    // },
+    sepolia: {
+      url: process.env.SEPOLIA_RPC_URL || "",
+      accounts: process.env.SEPOLIA_OWNER_PRIVATE_KEY
+        ? [process.env.SEPOLIA_OWNER_PRIVATE_KEY]
+        : process.env.OWNER_PRIVATE_KEY
+        ? [process.env.OWNER_PRIVATE_KEY]
+        : [],
+    },
   },
   paths: {
     sources: "./contracts",

@@ -1,9 +1,10 @@
 {
   "name": "w3a-1",
   "version": "4.0.0",
-  "description": "W3A-1: Let AI Agents Buy Services Safely — Phase 4 Security Hardening & Judge Readiness",
+  "description": "W3A-1: Autonomous Machine Payments (x402 V2) with On-Chain Escrow & Proof of Delivery",
   "private": true,
   "scripts": {
+    "test": "npm run test:all",
     "env": "node scripts/make-env.js",
     "env:force": "node scripts/make-env.js --force",
     "compile": "hardhat compile",
