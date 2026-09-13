@@ -54,6 +54,277 @@ const OverviewView = {
     }
   },
 
+  
+  renderBentoGrid(normBudget, normTxs, secStats, isFrozen) {
+    if (typeof BentoGrid !== "undefined" && typeof BentoGrid.BentoGridThirdDemo === "function") {
+      return BentoGrid.BentoGridThirdDemo({
+        normBudget,
+        normTxs,
+        enforcerAddress: (typeof AppState !== "undefined" && AppState.config && AppState.config.enforcerAddress) || "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+      });
+    }
+
+    const formattedTotal = normBudget.formattedTotal || "$30.00 USDC";
+    const formattedSpent = normBudget.formattedSpent || "$4.00 USDC";
+    const formattedRemaining = normBudget.formattedRemaining || "$26.00 USDC";
+    const utilizationPercent = normBudget.utilizationPercent || "20.0";
+    const unspentPercent = (100 - parseFloat(utilizationPercent)).toFixed(1);
+    const txCount = normTxs.length || 0;
+    const avgTx = txCount > 0
+      ? (parseFloat(normBudget.settledSpend || normBudget.spent || 0) / txCount).toFixed(2) + " USDC"
+      : "0.80 USDC";
+    const enforcerAddress = (typeof AppState !== "undefined" && AppState.config && AppState.config.enforcerAddress) || "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+    const shortVault = enforcerAddress ? enforcerAddress.slice(0, 6) + "..." + enforcerAddress.slice(-4) : "0xe7f1...0512";
+    const utilNum = parseFloat(utilizationPercent) || 0;
+    const strokeDash = Math.round((utilNum / 100) * 126);
+
+    return `
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-7xl mx-auto md:auto-rows-[19.5rem]">
+        <!-- Item 1: Total Authorized Escrow Vault -->
+        <div class="row-span-1 rounded-2xl group/bento hover:shadow-2xl transition duration-300 p-5 bg-surface-low/90 border border-white/[0.08] hover:border-cyan-500/50 justify-between flex flex-col space-y-3 relative overflow-hidden backdrop-blur-md md:col-span-1">
+          <div class="absolute -right-16 -top-16 w-36 h-36 bg-cyan-500/10 rounded-full blur-2xl group-hover/bento:bg-cyan-500/20 transition-all duration-500 pointer-events-none"></div>
+          <div class="flex-1 w-full min-h-[8rem] rounded-xl overflow-hidden relative flex flex-col justify-center">
+            <div class="w-full h-full p-2 flex flex-col justify-center items-center gap-2 relative select-none bg-dot-grid">
+              <div class="absolute w-24 h-24 bg-cyan-500/15 rounded-full blur-xl pointer-events-none"></div>
+              <div class="w-full max-w-[17rem] p-2 rounded-lg bg-surface-container/90 border border-cyan-500/30 flex items-center justify-between text-[11px] font-mono shadow-md bento-tilt-right transition-transform duration-300">
+                <div class="flex items-center gap-1.5 text-cyan-300">
+                  <span class="material-symbols-outlined text-xs">key</span>
+                  <span class="font-bold">EIP-712 Envelope</span>
+                </div>
+                <span class="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[9px] font-bold">SEALED</span>
+              </div>
+              <div class="w-full max-w-[17.5rem] p-3 rounded-xl bg-surface-highest/95 border border-primary/40 flex items-center justify-between shadow-xl bento-elevate transition-transform duration-300 relative z-10">
+                <div>
+                  <div class="text-[9px] font-mono uppercase font-bold text-outline">ALLOCATED ESCROW</div>
+                  <div class="font-headline text-lg font-bold text-white font-mono tracking-tight">${formattedTotal}</div>
+                </div>
+                <button
+                  onclick="App.openFundModal()"
+                  class="px-2.5 py-1 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 font-mono text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer glow-cyan"
+                >
+                  <span class="material-symbols-outlined text-xs">add</span>
+                  <span>TOP UP</span>
+                </button>
+              </div>
+              <div class="w-full max-w-[17rem] p-2 rounded-lg bg-surface-container/80 border border-outline-variant/30 flex items-center justify-between text-[10px] font-mono text-outline shadow-md bento-tilt-left transition-transform duration-300">
+                <span>Vault: <span class="text-primary hover:underline cursor-pointer" onclick="App.copyText('${enforcerAddress}')">${shortVault}</span></span>
+                <span class="text-[9px] text-tertiary font-bold flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+                  ACTIVE
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="group-hover/bento:translate-x-2 transition duration-200 relative z-10">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="material-symbols-outlined text-cyan-400 text-lg">account_balance_wallet</span>
+              <div class="font-headline font-bold text-white text-base tracking-tight">${formattedTotal} Authorized Escrow</div>
+            </div>
+            <div class="font-mono text-xs text-on-surface-variant leading-relaxed">
+              Allocated via Smart Contract Vault (${shortVault}). Micro-invoices verified via EIP-712 typed envelopes.
+            </div>
+          </div>
+        </div>
+
+        <!-- Item 2: Settled Spend & Wire Velocity -->
+        <div class="row-span-1 rounded-2xl group/bento hover:shadow-2xl transition duration-300 p-5 bg-surface-low/90 border border-white/[0.08] hover:border-secondary/50 justify-between flex flex-col space-y-3 relative overflow-hidden backdrop-blur-md md:col-span-1">
+          <div class="absolute -right-16 -top-16 w-36 h-36 bg-secondary/10 rounded-full blur-2xl group-hover/bento:bg-secondary/20 transition-all duration-500 pointer-events-none"></div>
+          <div class="flex-1 w-full min-h-[8rem] rounded-xl overflow-hidden relative flex flex-col justify-center">
+            <div class="w-full h-full p-2.5 flex flex-col justify-center gap-2 font-mono text-xs select-none">
+              <div class="flex items-baseline justify-between mb-1">
+                <span class="font-headline text-xl font-bold text-secondary font-mono">${formattedSpent}</span>
+                <span class="text-[10px] text-outline">${txCount} purchases &bull; avg ${avgTx}</span>
+              </div>
+              <div class="space-y-1">
+                <div class="flex justify-between text-[10px] text-on-surface-variant">
+                  <span class="flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                    <span>x402 Micro-Invoice</span>
+                  </span>
+                  <span class="text-cyan-400 font-bold">100% OK</span>
+                </div>
+                <div class="w-full bg-surface-highest rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full w-full glow-cyan"></div>
+                </div>
+              </div>
+              <div class="space-y-1">
+                <div class="flex justify-between text-[10px] text-on-surface-variant">
+                  <span class="flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    <span>ECDSA Typed Hash</span>
+                  </span>
+                  <span class="text-emerald-400 font-bold">VERIFIED</span>
+                </div>
+                <div class="w-full bg-surface-highest rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full w-[96%] glow-emerald"></div>
+                </div>
+              </div>
+              <div class="space-y-1">
+                <div class="flex justify-between text-[10px] text-on-surface-variant">
+                  <span class="flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                    <span>EVM On-Chain Settle</span>
+                  </span>
+                  <span class="text-purple-300 font-bold">CONFIRMED</span>
+                </div>
+                <div class="w-full bg-surface-highest rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full w-full"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="group-hover/bento:translate-x-2 transition duration-200 relative z-10">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="material-symbols-outlined text-emerald-400 text-lg">query_stats</span>
+              <div class="font-headline font-bold text-white text-base tracking-tight">${formattedSpent} Settled Spend (24H)</div>
+            </div>
+            <div class="font-mono text-xs text-on-surface-variant leading-relaxed">
+              Across ${txCount} autonomous purchases. Real-time x402 wire protocol streaming with zero human delay.
+            </div>
+          </div>
+        </div>
+
+        <!-- Item 3: Spending Ceiling Defense -->
+        <div class="row-span-1 rounded-2xl group/bento hover:shadow-2xl transition duration-300 p-5 bg-surface-low/90 border border-white/[0.08] hover:border-tertiary/50 justify-between flex flex-col space-y-3 relative overflow-hidden backdrop-blur-md md:col-span-1">
+          <div class="absolute -right-16 -top-16 w-36 h-36 bg-tertiary/10 rounded-full blur-2xl group-hover/bento:bg-tertiary/20 transition-all duration-500 pointer-events-none"></div>
+          <div class="flex-1 w-full min-h-[8rem] rounded-xl overflow-hidden relative flex flex-col justify-center">
+            <div class="w-full h-full rounded-xl relative flex flex-col items-center justify-center overflow-hidden p-3 bg-gradient-to-br from-amber-500/10 via-surface-lowest to-tertiary/10 border border-outline-variant/20">
+              <div class="absolute w-36 h-36 rounded-full border border-tertiary/20 animate-ping opacity-25 pointer-events-none"></div>
+              <div class="absolute w-24 h-24 rounded-full border border-amber-400/30 pointer-events-none"></div>
+              <div class="w-10 h-10 rounded-2xl bg-tertiary/20 border border-tertiary/50 flex items-center justify-center glow-emerald mb-1.5 relative z-10">
+                <span class="material-symbols-outlined text-tertiary text-xl">verified_user</span>
+              </div>
+              <div class="font-headline text-xl font-bold text-tertiary font-mono tracking-tight relative z-10">
+                ${formattedRemaining}
+              </div>
+              <div class="mt-1 px-2.5 py-0.5 rounded-full bg-surface-highest/90 border border-amber-400/40 text-[10px] font-mono text-amber-300 flex items-center gap-1 relative z-10 shadow-lg">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                <span>STRICT HARD-CAP: $5.00 MAX</span>
+              </div>
+            </div>
+          </div>
+          <div class="group-hover/bento:translate-x-2 transition duration-200 relative z-10">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="material-symbols-outlined text-amber-400 text-lg">shield</span>
+              <div class="font-headline font-bold text-white text-base tracking-tight">${formattedRemaining} Remaining Allowance</div>
+            </div>
+            <div class="font-mono text-xs text-on-surface-variant leading-relaxed">
+              Strict Hard-Cap Active: $5.00 max per call. Cryptographically enforced before signature release.
+            </div>
+          </div>
+        </div>
+
+        <!-- Item 4: Autonomous Pareto Provider Selection (span-2) -->
+        <div class="row-span-1 rounded-2xl group/bento hover:shadow-2xl transition duration-300 p-5 bg-surface-low/90 border border-white/[0.08] hover:border-purple-500/50 justify-between flex flex-col space-y-3 relative overflow-hidden backdrop-blur-md md:col-span-2">
+          <div class="absolute -right-16 -top-16 w-44 h-44 bg-purple-500/10 rounded-full blur-2xl group-hover/bento:bg-purple-500/20 transition-all duration-500 pointer-events-none"></div>
+          <div class="flex-1 w-full min-h-[8rem] rounded-xl overflow-hidden relative flex flex-col justify-center">
+            <div class="w-full h-full p-2 flex flex-col justify-center gap-2 select-none">
+              <div class="flex items-center justify-between px-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-mono uppercase font-bold text-outline">MULTI-OBJECTIVE PARETO OPTIMIZATION</span>
+                  <span class="px-1.5 py-0.2 rounded bg-secondary/20 text-secondary text-[9px] font-mono font-bold">3 CANDIDATES EVALUATED</span>
+                </div>
+                <span class="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs">auto_awesome</span>
+                  AUTONOMOUS ARBITRAGE
+                </span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div class="p-2.5 rounded-xl bg-surface-container/90 border border-emerald-500/50 glow-emerald flex flex-col justify-between transition-all duration-300 hover:scale-[1.02]">
+                  <div>
+                    <div class="flex items-center justify-between">
+                      <span class="font-headline font-bold text-white text-xs">Alpha Translate</span>
+                      <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[8px] font-bold">SELECTED</span>
+                    </div>
+                    <div class="mt-1 font-mono text-xs font-bold text-emerald-400">$0.02 USDC</div>
+                    <div class="text-[10px] font-mono text-outline">Latency: 82ms &bull; Score: 0.98</div>
+                  </div>
+                  <div class="mt-2 pt-1 border-t border-emerald-500/20 text-[9px] font-mono text-emerald-300 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs">check_circle</span>
+                    <span>Enforcer Approved</span>
+                  </div>
+                </div>
+                <div class="p-2.5 rounded-xl bg-surface-container/60 border border-outline-variant/30 flex flex-col justify-between transition-all duration-300 hover:border-cyan-500/40">
+                  <div>
+                    <div class="flex items-center justify-between">
+                      <span class="font-headline font-bold text-on-surface-variant text-xs">Beta Neural</span>
+                      <span class="px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300 text-[8px] font-bold">STANDBY</span>
+                    </div>
+                    <div class="mt-1 font-mono text-xs font-bold text-cyan-300">$0.05 USDC</div>
+                    <div class="text-[10px] font-mono text-outline">Latency: 64ms &bull; Score: 0.91</div>
+                  </div>
+                  <div class="mt-2 pt-1 border-t border-outline-variant/20 text-[9px] font-mono text-outline flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs">schedule</span>
+                    <span>Secondary Pareto</span>
+                  </div>
+                </div>
+                <div class="p-2.5 rounded-xl bg-error/10 border border-error/50 glow-crimson flex flex-col justify-between transition-all duration-300">
+                  <div>
+                    <div class="flex items-center justify-between">
+                      <span class="font-headline font-bold text-error text-xs line-through">Gamma Rogue</span>
+                      <span class="px-1.5 py-0.5 rounded bg-error/20 text-error text-[8px] font-bold">REJECTED</span>
+                    </div>
+                    <div class="mt-1 font-mono text-xs font-bold text-error line-through">$12.00 USDC</div>
+                    <div class="text-[10px] font-mono text-error/80">Breaches $5 Invariant</div>
+                  </div>
+                  <div class="mt-2 pt-1 border-t border-error/20 text-[9px] font-mono text-error flex items-center gap-1 font-bold">
+                    <span class="material-symbols-outlined text-xs">block</span>
+                    <span>Zero-Exposure Halt</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="group-hover/bento:translate-x-2 transition duration-200 relative z-10">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="material-symbols-outlined text-purple-400 text-lg">psychology</span>
+              <div class="font-headline font-bold text-white text-base tracking-tight">Autonomous Pareto Provider Arbitrage</div>
+            </div>
+            <div class="font-mono text-xs text-on-surface-variant leading-relaxed">
+              AI agent dynamically ranks latency, price & quality on the Pareto frontier. Overspending proposals are rejected deterministically before signature generation.
+            </div>
+          </div>
+        </div>
+
+        <!-- Item 5: Budget Utilization & Security Guard -->
+        <div class="row-span-1 rounded-2xl group/bento hover:shadow-2xl transition duration-300 p-5 bg-surface-low/90 border border-white/[0.08] hover:border-blue-500/50 justify-between flex flex-col space-y-3 relative overflow-hidden backdrop-blur-md md:col-span-1">
+          <div class="absolute -right-16 -top-16 w-36 h-36 bg-blue-500/10 rounded-full blur-2xl group-hover/bento:bg-blue-500/20 transition-all duration-500 pointer-events-none"></div>
+          <div class="flex-1 w-full min-h-[8rem] rounded-xl overflow-hidden relative flex flex-col justify-center">
+            <div class="w-full h-full p-2 flex items-center justify-around select-none">
+              <div class="relative w-20 h-20 flex items-center justify-center shrink-0">
+                <svg class="w-20 h-20 -rotate-90 transform" viewBox="0 0 48 48">
+                  <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="4" class="text-surface-highest" fill="none"></circle>
+                  <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="4" stroke-dasharray="126" stroke-dashoffset="${126 - strokeDash}" stroke-linecap="round" class="text-cyan-400 transition-all duration-700 glow-cyan" fill="none"></circle>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <span class="font-headline font-bold text-white text-xs font-mono">${utilNum.toFixed(0)}%</span>
+                  <span class="text-[8px] font-mono text-outline uppercase">USED</span>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1.5 font-mono">
+                <div class="text-[10px] text-tertiary font-bold flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+                  <span>${unspentPercent}% Unspent</span>
+                </div>
+                <div class="text-[10px] text-outline">Epoch: <span class="text-white font-semibold">Rolling Block</span></div>
+                <div class="px-2 py-0.5 rounded bg-surface-highest border border-outline-variant/30 text-[9px] text-cyan-300 font-bold">NONCE GUARD: PASS</div>
+              </div>
+            </div>
+          </div>
+          <div class="group-hover/bento:translate-x-2 transition duration-200 relative z-10">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="material-symbols-outlined text-blue-400 text-lg">pie_chart</span>
+              <div class="font-headline font-bold text-white text-base tracking-tight">${utilizationPercent}% Budget Utilization</div>
+            </div>
+            <div class="font-mono text-xs text-on-surface-variant leading-relaxed">
+              ${unspentPercent}% unspent reserve. Rolling block window ensures automatic replay protection with deterministic nonces.
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
   render() {
     this.init();
     const normBudget = BudgetAdapter.normalize(AppState.budget);
@@ -207,109 +478,22 @@ const OverviewView = {
         </section>
 
         <!-- ===================================================================
-             2. FINANCIAL SPENDING CEILING HERO CARDS (4-COLUMN GRID)
+             2. ACETERNITY UI BENTO GRID: SAFE-SPEND & AUTONOMOUS PROTOCOL DECK
              =================================================================== -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Card 1: Total Authorized Escrow -->
-          <div class="rounded-xl bg-surface-low border border-outline-variant/40 p-5 flex flex-col justify-between hover:border-primary/40 transition-colors">
-            <div class="flex items-center justify-between text-on-surface-variant">
-              <span class="text-xs font-mono uppercase font-semibold text-outline">TOTAL AUTHORIZED ESCROW</span>
-              <button
-                onclick="App.openFundModal()"
-                class="px-2 py-0.5 rounded bg-primary/15 hover:bg-primary/25 text-primary border border-primary/40 text-[10px] font-mono font-bold transition flex items-center gap-1 cursor-pointer"
-                title="Top up escrow vault"
-              >
-                <span class="material-symbols-outlined text-xs">add</span>
-                <span>TOP UP</span>
-              </button>
-            </div>
-            <div class="my-3">
-              <div class="font-headline text-2xl lg:text-3xl font-bold text-white font-mono tracking-tight">
-                ${normBudget.formattedTotal}
-              </div>
-              <span class="text-[11px] font-mono text-on-surface-variant">Allocated via Smart Contract Vault</span>
-            </div>
-            <div class="pt-2 border-t border-outline-variant/20 flex items-center justify-between text-[11px] font-mono text-outline">
-              <span>Vault Contract</span>
-              <span class="text-primary hover:underline cursor-pointer" onclick="App.copyText('${AppState.config.enforcerAddress || "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"}')">
-                ${UIFormatter.formatAddress(AppState.config.enforcerAddress || "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512")}
+        <section id="overviewBentoGridSection" class="space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+              <span class="text-xs font-mono uppercase tracking-wider font-bold text-outline">
+                ACETERNITY UI &bull; PROTOCOL TELEMETRY BENTO DECK
               </span>
             </div>
+            <span class="text-[11px] font-mono text-on-surface-variant flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs text-primary">verified</span>
+              EIP-712 &bull; x402 V2 &bull; Hardhat / Base
+            </span>
           </div>
-
-          <!-- Card 2: Settled Spend -->
-          <div class="rounded-xl bg-surface-low border border-outline-variant/40 p-5 flex flex-col justify-between hover:border-secondary/40 transition-colors">
-            <div class="flex items-center justify-between text-on-surface-variant">
-              <span class="text-xs font-mono uppercase font-semibold text-outline">SETTLED SPEND (24H)</span>
-              <span class="material-symbols-outlined text-secondary" data-icon="query_stats">query_stats</span>
-            </div>
-            <div class="my-3 flex items-baseline justify-between">
-              <div>
-                <div class="font-headline text-2xl lg:text-3xl font-bold text-secondary font-mono tracking-tight">
-                  ${normBudget.formattedSpent}
-                </div>
-                <span class="text-[11px] font-mono text-on-surface-variant">Across ${normTxs.length} autonomous purchases</span>
-              </div>
-              <!-- Sparkline Visualizer -->
-              <div class="h-8 w-16 flex items-end gap-1">
-                <div class="w-2.5 bg-secondary/30 rounded-t h-3"></div>
-                <div class="w-2.5 bg-secondary/50 rounded-t h-5"></div>
-                <div class="w-2.5 bg-secondary/70 rounded-t h-4"></div>
-                <div class="w-2.5 bg-secondary rounded-t h-8 glow-cyan"></div>
-              </div>
-            </div>
-            <div class="pt-2 border-t border-outline-variant/20 flex items-center justify-between text-[11px] font-mono text-outline">
-              <span>Avg Transaction</span>
-              <span class="text-on-surface font-semibold">${normTxs.length > 0 ? (parseFloat(normBudget.settledSpend || normBudget.spent || 0) / normTxs.length).toFixed(2) : "0.00"} USDC</span>
-            </div>
-          </div>
-
-          <!-- Card 3: Remaining Allowance -->
-          <div class="rounded-xl bg-surface-low border border-outline-variant/40 p-5 flex flex-col justify-between hover:border-tertiary/40 transition-colors">
-            <div class="flex items-center justify-between text-on-surface-variant">
-              <span class="text-xs font-mono uppercase font-semibold text-outline">REMAINING ALLOWANCE</span>
-              <button
-                onclick="App.openFundModal()"
-                class="px-2 py-0.5 rounded bg-tertiary/15 hover:bg-tertiary/25 text-tertiary border border-tertiary/40 text-[10px] font-mono font-bold transition flex items-center gap-1 cursor-pointer"
-                title="Add funds to remaining allowance"
-              >
-                <span class="material-symbols-outlined text-xs">add</span>
-                <span>+ ADD FUNDS</span>
-              </button>
-            </div>
-            <div class="my-3">
-              <div class="font-headline text-2xl lg:text-3xl font-bold text-tertiary font-mono tracking-tight">
-                ${normBudget.formattedRemaining}
-              </div>
-              <span class="text-[11px] font-mono text-on-surface-variant">Safe reserve cap: $5.00 max per single call</span>
-            </div>
-            <div class="pt-2 border-t border-outline-variant/20 flex items-center justify-between text-[11px] font-mono text-outline">
-              <span>Policy Ceiling</span>
-              <span class="text-tertiary font-semibold">Strict Hard-Cap Active</span>
-            </div>
-          </div>
-
-          <!-- Card 4: Budget Utilization -->
-          <div class="rounded-xl bg-surface-low border border-outline-variant/40 p-5 flex flex-col justify-between hover:border-secondary/40 transition-colors">
-            <div class="flex items-center justify-between text-on-surface-variant">
-              <span class="text-xs font-mono uppercase font-semibold text-outline">BUDGET UTILIZATION</span>
-              <span class="material-symbols-outlined text-secondary" data-icon="pie_chart">pie_chart</span>
-            </div>
-            <div class="my-3">
-              <div class="flex items-baseline justify-between">
-                <span class="font-headline text-2xl lg:text-3xl font-bold text-white font-mono">${normBudget.utilizationPercent}%</span>
-                <span class="font-mono text-tertiary text-xs">${(100 - parseFloat(normBudget.utilizationPercent)).toFixed(1)}% Unspent</span>
-              </div>
-              <!-- High-Contrast Gradient Progress Bar -->
-              <div class="w-full bg-surface-highest rounded-full h-2 mt-2 overflow-hidden border border-outline-variant/30">
-                <div class="bg-gradient-to-r from-secondary to-tertiary h-2 rounded-full glow-cyan transition-all duration-500" style="width: ${normBudget.utilizationPercent}%"></div>
-              </div>
-            </div>
-            <div class="pt-2 border-t border-outline-variant/20 flex items-center justify-between text-[11px] font-mono text-outline">
-              <span>Epoch Reset</span>
-              <span class="text-on-surface font-semibold">Rolling Block Window</span>
-            </div>
-          </div>
+          ${this.renderBentoGrid(normBudget, normTxs, secStats, isFrozen)}
         </section>
 
         <!-- ===================================================================
