@@ -17,20 +17,27 @@ const AgentView = {
   isExecuting: false,
 
   openFlowchartModal() {
-    const modal = document.getElementById("flowchartModal");
-    if (modal) {
-      modal.classList.remove("hidden");
-      modal.classList.add("flex");
-      document.body.style.overflow = "hidden";
+    if (typeof App !== "undefined" && typeof App.openFlowchartModal === "function") {
+      App.openFlowchartModal();
     }
   },
 
   closeFlowchartModal() {
-    const modal = document.getElementById("flowchartModal");
-    if (modal) {
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
-      document.body.style.overflow = "";
+    if (typeof App !== "undefined" && typeof App.closeFlowchartModal === "function") {
+      App.closeFlowchartModal();
+    }
+  },
+
+  onStateChange(event, data) {
+    // Graceful reactive handler - never crash on state updates
+    if (typeof document === "undefined") return;
+    if (event === "budget_updated" || event === "freeze_toggled") {
+      const isFrozen = AppState && AppState.budget ? AppState.budget.isFrozen : false;
+      const badges = document.querySelectorAll(".agent-freeze-status-badge");
+      badges.forEach(b => {
+        b.className = isFrozen ? "bg-error/15 text-error border border-error/50 glow-crimson" : "bg-tertiary/15 text-tertiary border border-tertiary/50 glow-emerald";
+        b.innerText = isFrozen ? "● SPENDING FROZEN" : "● PERMITTED SIGNER";
+      });
     }
   },
 
@@ -1222,172 +1229,7 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
           </div>
         </div>
 
-        <!-- ================================================================= -->
-        <!-- INDEPENDENT HOW IT WORKS FLOWCHART MODAL (IN FRONT) -->
-        <!-- ================================================================= -->
-        <div
-          id="flowchartModal"
-          class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto"
-          onclick="if (event.target === this) AgentView.closeFlowchartModal()"
-        >
-          <div class="relative w-full max-w-5xl rounded-2xl bg-surface-lowest border-2 border-secondary/60 shadow-2xl p-6 md:p-8 space-y-6 max-h-[90vh] overflow-y-auto font-mono">
-            
-            <!-- Modal Header -->
-            <div class="flex items-center justify-between border-b border-outline-variant/30 pb-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-secondary/20 border border-secondary/50 flex items-center justify-center glow-cyan shrink-0">
-                  <span class="material-symbols-outlined text-secondary text-xl">account_tree</span>
-                </div>
-                <div>
-                  <div class="flex items-center gap-2 mb-0.5">
-                    <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-secondary">Architecture &amp; Wire Protocol</span>
-                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-tertiary/20 text-tertiary border border-tertiary/40">INDEPENDENT VIEW</span>
-                  </div>
-                  <h2 class="font-headline text-xl md:text-2xl font-bold text-white tracking-tight">
-                    How Autonomous x402 Purchasing Works
-                  </h2>
-                  <p class="text-xs text-on-surface-variant font-sans mt-0.5">
-                    End-to-end execution flow: from human prompt through AI discovery, wire 402 challenge, and smart contract settlement.
-                  </p>
-                </div>
               </div>
-              <button
-                type="button"
-                onclick="AgentView.closeFlowchartModal()"
-                class="text-outline hover:text-white p-2 rounded-xl hover:bg-surface-high transition cursor-pointer"
-                title="Close Flowchart"
-              >
-                <span class="material-symbols-outlined text-xl">close</span>
-              </button>
-            </div>
-
-            <!-- Simulation Controls -->
-            <div class="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-surface-low border border-outline-variant/30">
-              <div>
-                <span class="text-xs font-bold text-white block">Step-By-Step Wire Simulation</span>
-                <span class="text-[11px] text-outline font-sans">Watch the machine state transition in real-time with authentic x402 V2 headers</span>
-              </div>
-              <button
-                type="button"
-                onclick="if (typeof X402ProtocolVisualizer !== 'undefined') X402ProtocolVisualizer.simulateLiveStepByStep()"
-                class="px-4 py-2 rounded-xl text-xs font-bold bg-secondary hover:bg-secondary/90 text-black font-headline transition flex items-center gap-2 glow-cyan cursor-pointer active:scale-95"
-              >
-                <span class="material-symbols-outlined text-base">play_arrow</span>
-                <span>Run Live Flow Simulation &rarr;</span>
-              </button>
-            </div>
-
-            <!-- 4-Layer Architecture Diagram Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-              <!-- Layer 1 -->
-              <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2">
-                <div class="flex items-center gap-2 text-secondary font-bold text-[11px] uppercase">
-                  <span class="w-2 h-2 rounded-full bg-secondary"></span>
-                  <span>1. Intent Formulation</span>
-                </div>
-                <h4 class="font-bold text-white text-xs">Human &rarr; Agent Prompt</h4>
-                <p class="text-[11px] text-on-surface-variant leading-relaxed">
-                  User specifies task and constraints (e.g. "Highest quality under $5"). Agent formats task into objective utility function.
-                </p>
-                <div class="text-[10px] text-outline pt-2 border-t border-outline-variant/20">
-                  Ceiling Guard: $5.00 Hard-Cap
-                </div>
-              </div>
-
-              <!-- Layer 2 -->
-              <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2">
-                <div class="flex items-center gap-2 text-primary font-bold text-[11px] uppercase">
-                  <span class="w-2 h-2 rounded-full bg-primary"></span>
-                  <span>2. Dynamic Discovery</span>
-                </div>
-                <h4 class="font-bold text-white text-xs">Marketplace Catalog</h4>
-                <p class="text-[11px] text-on-surface-variant leading-relaxed">
-                  AI scans candidate providers, evaluates latency and quality, and selects Pareto-optimal provider under the budget ceiling.
-                </p>
-                <div class="text-[10px] text-outline pt-2 border-t border-outline-variant/20">
-                  Scoring: Quality (0.92) &bull; $4.00
-                </div>
-              </div>
-
-              <!-- Layer 3 -->
-              <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2">
-                <div class="flex items-center gap-2 text-amber-400 font-bold text-[11px] uppercase">
-                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-                  <span>3. x402 V2 Wire Handshake</span>
-                </div>
-                <h4 class="font-bold text-white text-xs">HTTP 402 &amp; EIP-712</h4>
-                <p class="text-[11px] text-on-surface-variant leading-relaxed">
-                  Provider returns HTTP 402 with PAYMENT-REQUIRED header. Agent signs structured payment authorization envelope.
-                </p>
-                <div class="text-[10px] text-outline pt-2 border-t border-outline-variant/20">
-                  Header: PAYMENT-SIGNATURE
-                </div>
-              </div>
-
-              <!-- Layer 4 -->
-              <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2">
-                <div class="flex items-center gap-2 text-tertiary font-bold text-[11px] uppercase">
-                  <span class="w-2 h-2 rounded-full bg-tertiary"></span>
-                  <span>4. EVM Settlement</span>
-                </div>
-                <h4 class="font-bold text-white text-xs">TokenBudgetEnforcer.sol</h4>
-                <p class="text-[11px] text-on-surface-variant leading-relaxed">
-                  Smart contract verifies signature, checks remaining allowance, executes atomic ERC-20 transfer, and verifies SHA-256 hash.
-                </p>
-                <div class="text-[10px] text-outline pt-2 border-t border-outline-variant/20">
-                  On-Chain Settlement Confirmed
-                </div>
-              </div>
-            </div>
-
-            <!-- 13-Node Detailed Execution Pipeline Sequence -->
-            <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-3">
-              <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-outline block">
-                13-Node Verified Execution Pipeline:
-              </span>
-              <div class="flex flex-wrap items-center gap-2 text-[10px] font-mono">
-                <span class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40">1. Purchase Webhook</span>
-                <span class="text-outline">&rarr;</span>
-                <span class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40">2. Validate Intent</span>
-                <span class="text-outline">&rarr;</span>
-                <span class="px-2.5 py-1 rounded bg-secondary/10 text-secondary border border-secondary/30">3. Request Resource (402)</span>
-                <span class="text-outline">&rarr;</span>
-                <span class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40">4. Parse PAYMENT-REQUIRED</span>
-                <span class="text-outline">&rarr;</span>
-                <span class="px-2.5 py-1 rounded bg-tertiary/10 text-tertiary border border-tertiary/30">5. Check Budget & Freeze</span>
-                <span class="text-outline">&rarr;</span>
-                <span class="px-2.5 py-1 rounded bg-tertiary/10 text-tertiary border border-tertiary/30">6. Sign EIP-712</span>
-                <span class="text-outline">&rarr;</span>
-                <span class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40">7. Submit Paid Request</span>
-                <span class="text-outline">&rarr;</span>
-                <span class="px-2.5 py-1 rounded bg-tertiary/10 text-tertiary border border-tertiary/30">8. Settle On-Chain</span>
-                <span class="text-outline">&rarr;</span>
-                <span class="px-2.5 py-1 rounded bg-secondary/10 text-secondary border border-secondary/30">9. SHA-256 Verify</span>
-                <span class="text-outline">&rarr;</span>
-                <span class="px-2.5 py-1 rounded bg-primary/10 text-primary border border-primary/30">10. Emit Audit Event</span>
-              </div>
-            </div>
-
-            <!-- Embedded Live Visualizer in Modal -->
-            <div class="rounded-xl border border-outline-variant/30 p-2 bg-surface-low/50">
-              ${typeof X402ProtocolVisualizer !== "undefined" ? X402ProtocolVisualizer.render() : ""}
-            </div>
-
-            <!-- Footer Close -->
-            <div class="flex items-center justify-between pt-2 border-t border-outline-variant/20">
-              <span class="text-xs text-outline">Autonomous Safe-Spend Protocol Deck</span>
-              <button
-                type="button"
-                onclick="AgentView.closeFlowchartModal()"
-                class="px-5 py-2 rounded-xl bg-surface-high hover:bg-surface-highest text-white border border-outline-variant/40 font-mono text-xs font-bold transition cursor-pointer"
-              >
-                Close Flowchart
-              </button>
-            </div>
-
-          </div>
-        </div>
-      </div>
     `;
   },
 };

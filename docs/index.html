@@ -54,7 +54,7 @@
   <script type="module" src="https://cdn.spline.design/@splinetool/viewer@2.0.46/build/spline-viewer.js"></script>
 
   <!-- Cybernetic Telemetry Design System -->
-  <link rel="stylesheet" href="css/style.css?v=3.2" />
+  <link rel="stylesheet" href="css/style.css?v=3.3" />
 </head>
 <body class="bg-background text-on-surface font-body antialiased min-h-screen flex select-none selection:bg-secondary selection:text-surface relative overflow-x-hidden">
 
@@ -954,6 +954,251 @@
     </div>
   </div>
 
+<!-- =========================================================================
+       4C. INDEPENDENT HOW IT WORKS FLOWCHART MODAL (ROOT LEVEL - ZERO SCROLL LOCK)
+       ========================================================================= -->
+  <div
+    id="flowchartModal"
+    class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-200 bg-black/85 backdrop-blur-md p-4 sm:p-6 overflow-y-auto flex items-start justify-center"
+    onclick="if (event.target === this) App.closeFlowchartModal()"
+  >
+    <div class="relative w-full max-w-5xl rounded-2xl bg-surface-lowest border-2 border-secondary/60 shadow-2xl p-6 sm:p-8 space-y-6 my-6 font-mono text-white">
+      
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between border-b border-outline-variant/30 pb-5 gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="w-11 h-11 rounded-xl bg-secondary/20 border border-secondary/50 flex items-center justify-center glow-cyan shrink-0">
+            <span class="material-symbols-outlined text-secondary text-2xl">account_tree</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-secondary">Autonomous Architecture &amp; Protocol</span>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-tertiary/20 text-tertiary border border-tertiary/40">INDEPENDENT VIEW</span>
+            </div>
+            <h2 class="font-headline text-xl sm:text-2xl font-bold text-white tracking-tight">
+              Autonomous x402 Execution Pipeline &amp; Flowchart
+            </h2>
+            <p class="text-xs text-on-surface-variant font-sans mt-0.5 leading-relaxed">
+              End-to-end execution flow: from human prompt through AI discovery, wire 402 challenge, smart contract enforcement, and delivery proof.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onclick="App.closeFlowchartModal()"
+          class="text-outline hover:text-white p-2 rounded-xl hover:bg-surface-high transition cursor-pointer shrink-0"
+          title="Close Flowchart (Esc)"
+        >
+          <span class="material-symbols-outlined text-2xl">close</span>
+        </button>
+      </div>
+
+      <!-- Quick Interactive Switcher Banner -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-surface-low border border-outline-variant/30">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span class="text-xs font-bold text-white">Interactive Protocol Simulation</span>
+          </div>
+          <span class="text-[11px] text-outline font-sans">Trigger the live 4-stage machine state transition with real x402 V2 headers</span>
+        </div>
+        <button
+          type="button"
+          onclick="if (typeof X402ProtocolVisualizer !== 'undefined') X402ProtocolVisualizer.simulateLiveStepByStep()"
+          class="px-4 py-2 rounded-xl text-xs font-bold bg-secondary hover:bg-secondary/90 text-black font-headline transition flex items-center justify-center gap-2 glow-cyan cursor-pointer active:scale-95"
+        >
+          <span class="material-symbols-outlined text-base">play_arrow</span>
+          <span>Run Live Flow Simulation &rarr;</span>
+        </button>
+      </div>
+
+      <!-- 4-Layer Architecture Diagram Cards -->
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-outline mb-3 flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm text-secondary">layers</span>
+          <span>4 Architectural Layers &amp; Responsibilities</span>
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <!-- Layer 1 -->
+          <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2 hover:border-secondary/50 transition-colors">
+            <div class="flex items-center gap-2 text-secondary font-bold text-[11px] uppercase">
+              <span class="w-2 h-2 rounded-full bg-secondary"></span>
+              <span>1. Intent Formulation</span>
+            </div>
+            <h4 class="font-bold text-white text-xs font-headline">Human &rarr; Agent Prompt</h4>
+            <p class="text-[11px] text-on-surface-variant leading-relaxed font-sans">
+              User specifies task &amp; budget constraints (e.g. "Highest quality under $5"). Agent compiles intent into an objective Pareto function.
+            </p>
+            <div class="text-[10px] text-outline pt-2 border-t border-outline-variant/20 flex items-center justify-between">
+              <span>Constraint:</span>
+              <span class="text-tertiary font-bold">$5.00 Hard-Cap</span>
+            </div>
+          </div>
+
+          <!-- Layer 2 -->
+          <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2 hover:border-primary/50 transition-colors">
+            <div class="flex items-center gap-2 text-primary font-bold text-[11px] uppercase">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              <span>2. Dynamic Discovery</span>
+            </div>
+            <h4 class="font-bold text-white text-xs font-headline">Marketplace Catalog</h4>
+            <p class="text-[11px] text-on-surface-variant leading-relaxed font-sans">
+              Agent polls registered providers, balances latency vs. quality, and eliminates providers exceeding the budget ceiling.
+            </p>
+            <div class="text-[10px] text-outline pt-2 border-t border-outline-variant/20 flex items-center justify-between">
+              <span>Selected:</span>
+              <span class="text-primary font-bold">Alpha (Q: 0.92, $4)</span>
+            </div>
+          </div>
+
+          <!-- Layer 3 -->
+          <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2 hover:border-amber-400/50 transition-colors">
+            <div class="flex items-center gap-2 text-amber-400 font-bold text-[11px] uppercase">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span>3. x402 Handshake</span>
+            </div>
+            <h4 class="font-bold text-white text-xs font-headline">HTTP 402 &amp; EIP-712</h4>
+            <p class="text-[11px] text-on-surface-variant leading-relaxed font-sans">
+              Provider responds with HTTP 402 challenge. Agent computes and signs secp256k1 EIP-712 payload with unique nonce <code class="text-white">reqId</code>.
+            </p>
+            <div class="text-[10px] text-outline pt-2 border-t border-outline-variant/20 flex items-center justify-between">
+              <span>Header:</span>
+              <span class="text-amber-400 font-bold">PAYMENT-SIGNATURE</span>
+            </div>
+          </div>
+
+          <!-- Layer 4 -->
+          <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2 hover:border-tertiary/50 transition-colors">
+            <div class="flex items-center gap-2 text-tertiary font-bold text-[11px] uppercase">
+              <span class="w-2 h-2 rounded-full bg-tertiary"></span>
+              <span>4. EVM Settlement</span>
+            </div>
+            <h4 class="font-bold text-white text-xs font-headline">TokenBudgetEnforcer</h4>
+            <p class="text-[11px] text-on-surface-variant leading-relaxed font-sans">
+              Solidity contract checks signature validity, ensures spend &le; allowance, executes atomic ERC-20 transfer, and logs SHA-256 hash.
+            </p>
+            <div class="text-[10px] text-outline pt-2 border-t border-outline-variant/20 flex items-center justify-between">
+              <span>Status:</span>
+              <span class="text-tertiary font-bold">Atomic On-Chain</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 13-Node Detailed Execution Pipeline Sequence -->
+      <div class="p-5 rounded-xl bg-surface-low border border-outline-variant/30 space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-outline flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm text-tertiary">alt_route</span>
+            <span>13-Node Verified Execution Pipeline:</span>
+          </span>
+          <span class="text-[10px] text-tertiary font-mono font-bold">100% Deterministic</span>
+        </div>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 text-[11px] font-mono">
+          <div class="p-2.5 rounded-lg bg-surface-lowest border border-outline-variant/30 flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-white/10 text-white flex items-center justify-center text-[10px] font-bold">1</span>
+            <span class="text-slate-300">Purchase Webhook</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-surface-lowest border border-outline-variant/30 flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-white/10 text-white flex items-center justify-center text-[10px] font-bold">2</span>
+            <span class="text-slate-300">Validate Intent</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-surface-lowest border border-secondary/40 text-secondary flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-secondary/20 text-secondary flex items-center justify-center text-[10px] font-bold">3</span>
+            <span>Request Resource (402)</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-surface-lowest border border-outline-variant/30 flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-white/10 text-white flex items-center justify-center text-[10px] font-bold">4</span>
+            <span class="text-slate-300">Parse PAYMENT-REQ</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-surface-lowest border border-tertiary/40 text-tertiary flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-tertiary/20 text-tertiary flex items-center justify-center text-[10px] font-bold">5</span>
+            <span>Budget &amp; Freeze Guard</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-surface-lowest border border-tertiary/40 text-tertiary flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-tertiary/20 text-tertiary flex items-center justify-center text-[10px] font-bold">6</span>
+            <span>Sign EIP-712 Envelope</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-surface-lowest border border-outline-variant/30 flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-white/10 text-white flex items-center justify-center text-[10px] font-bold">7</span>
+            <span class="text-slate-300">Submit Paid Request</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-surface-lowest border border-tertiary/40 text-tertiary flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-tertiary/20 text-tertiary flex items-center justify-center text-[10px] font-bold">8</span>
+            <span>Settle On-Chain (EVM)</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-surface-lowest border border-secondary/40 text-secondary flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-secondary/20 text-secondary flex items-center justify-center text-[10px] font-bold">9</span>
+            <span>SHA-256 Digest Match</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-surface-lowest border border-primary/40 text-primary flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold">10</span>
+            <span>Emit SSE Audit Event</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-surface-lowest border border-outline-variant/30 flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-white/10 text-white flex items-center justify-center text-[10px] font-bold">11</span>
+            <span class="text-slate-300">Deliver Payload</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-surface-lowest border border-tertiary/40 text-tertiary flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-tertiary/20 text-tertiary flex items-center justify-center text-[10px] font-bold">12</span>
+            <span>Immutable Receipt</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Invariants & Cryptographic Guarantees -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+        <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-1.5">
+          <div class="flex items-center gap-1.5 text-tertiary font-bold text-xs">
+            <span class="material-symbols-outlined text-sm">shield_locked</span>
+            <span>Mathematical Spending Ceiling</span>
+          </div>
+          <p class="text-[11px] text-on-surface-variant font-sans leading-relaxed">
+            The AI Agent wallet does NOT hold private custody of funds. Collateral lives in <code class="text-white">TokenBudgetEnforcer.sol</code> and cannot exceed the deposited budget.
+          </p>
+        </div>
+
+        <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-1.5">
+          <div class="flex items-center gap-1.5 text-secondary font-bold text-xs">
+            <span class="material-symbols-outlined text-sm">fingerprint</span>
+            <span>EIP-712 Nonce Guard</span>
+          </div>
+          <p class="text-[11px] text-on-surface-variant font-sans leading-relaxed">
+            Every authorization envelope is hashed with a 32-byte unique nonce. Replay attacks are rejected on-chain with <code class="text-white">REPLAY_ATTEMPT</code> revert.
+          </p>
+        </div>
+
+        <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-1.5">
+          <div class="flex items-center gap-1.5 text-error font-bold text-xs">
+            <span class="material-symbols-outlined text-sm">power_settings_new</span>
+            <span>Owner Circuit Breaker</span>
+          </div>
+          <p class="text-[11px] text-on-surface-variant font-sans leading-relaxed">
+            Human owner retains absolute authority to freeze agent spending at any microsecond directly on the EVM via the Emergency Freeze button.
+          </p>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-between pt-4 border-t border-outline-variant/20">
+        <div class="flex items-center gap-2 text-xs text-outline font-mono">
+          <span class="material-symbols-outlined text-sm text-tertiary">check_circle</span>
+          <span>W3A-1 Safe-Spend Architecture Deck</span>
+        </div>
+        <button
+          type="button"
+          onclick="App.closeFlowchartModal()"
+          class="px-6 py-2.5 rounded-xl bg-surface-high hover:bg-surface-highest text-white border border-outline-variant/40 font-mono text-xs font-bold transition cursor-pointer active:scale-95 shadow-md"
+        >
+          Close Flowchart (Esc)
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- =========================================================================
        5. TOAST CONTAINER
        ========================================================================= -->
@@ -969,20 +1214,20 @@
   <script src="js/components/sparkles.js"></script>
   <script src="js/components/floating-navbar.js"></script>
   <script src="js/components/encrypted-text.js"></script>
-  <script src="js/components/bento-grid.js?v=3.2"></script>
+  <script src="js/components/bento-grid.js?v=3.3"></script>
   <script src="js/adapters.js"></script>
   <script src="js/state.js"></script>
   <script src="js/api.js"></script>
-  <script src="js/stream.js?v=3.2"></script>
-  <script src="js/views/current.js?v=3.2"></script>
-  <script src="js/views/overview.js?v=3.2"></script>
+  <script src="js/stream.js?v=3.3"></script>
+  <script src="js/views/current.js?v=3.3"></script>
+  <script src="js/views/overview.js?v=3.3"></script>
   <script src="js/views/agent.js"></script>
   <script src="js/views/transactions.js"></script>
   <script src="js/views/providers.js"></script>
   <script src="js/views/security.js"></script>
   <script src="js/views/delivery.js"></script>
   <script src="js/views/settings.js"></script>
-  <script src="js/app.js?v=3.2"></script>
+  <script src="js/app.js?v=3.3"></script>
 
   <!-- Spline 3D Intro Controller & Watermark Purger -->
   <script>

@@ -60,6 +60,7 @@ const App = {
 
     // 5. Setup keyboard shortcuts (ESC closes modals/drawers)
     window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { App.closeFlowchartModal(); }
       if (e.key === "Escape") {
         this.closeDrawer();
         this.closeModal();
@@ -668,29 +669,31 @@ ${JSON.stringify(
   // Flowchart Modal Controls
   // ---------------------------------------------------------------------------
   openFlowchartModal() {
-    if (typeof AgentView !== "undefined" && typeof AgentView.openFlowchartModal === "function") {
-      AgentView.openFlowchartModal();
-    } else {
-      const modal = document.getElementById("flowchartModal");
-      if (modal) {
-        modal.classList.remove("hidden");
-        modal.classList.add("flex");
-        document.body.style.overflow = "hidden";
-      }
-    }
+    const modal = document.getElementById("flowchartModal");
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    setTimeout(() => {
+      modal.classList.remove("opacity-0");
+    }, 10);
+    // Smoothly lock body and main content scrolling
+    document.body.style.overflow = "hidden";
+    const main = document.getElementById("mainContent");
+    if (main) main.style.overflow = "hidden";
   },
 
   closeFlowchartModal() {
-    if (typeof AgentView !== "undefined" && typeof AgentView.closeFlowchartModal === "function") {
-      AgentView.closeFlowchartModal();
-    } else {
-      const modal = document.getElementById("flowchartModal");
-      if (modal) {
-        modal.classList.add("hidden");
-        modal.classList.remove("flex");
-        document.body.style.overflow = "";
-      }
-    }
+    const modal = document.getElementById("flowchartModal");
+    if (!modal) return;
+    modal.classList.add("opacity-0");
+    setTimeout(() => {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      // Cleanly restore scrolling
+      document.body.style.overflow = "";
+      const main = document.getElementById("mainContent");
+      if (main) main.style.overflow = "";
+    }, 200);
   },
 
   // ---------------------------------------------------------------------------
