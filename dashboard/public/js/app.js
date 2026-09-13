@@ -280,7 +280,8 @@ const App = {
       if (cleanDeliveryHash && !cleanDeliveryHash.startsWith("sha256:") && !cleanDeliveryHash.startsWith("N/A")) {
         cleanDeliveryHash = `sha256:${cleanDeliveryHash}`;
       }
-      const isBlocked = tx.displayStatus === "BLOCKED";
+      const isBlocked = tx.displayStatus === "BLOCKED" || tx.displayStatus === "CAPPED" || tx.displayStatus === "REJECTED" || tx.status === "CAPPED" || tx.status === "REJECTED";
+      const isCapped = tx.displayStatus === "CAPPED" || tx.status === "CAPPED";
 
       drawerContainer.innerHTML = `
         <div class="space-y-5 font-mono">
@@ -295,7 +296,7 @@ const App = {
                     ? "bg-error/15 text-error border border-error/40 glow-crimson"
                     : "bg-tertiary/15 text-tertiary border border-tertiary/40 glow-emerald"
                 }">
-                  ${isBlocked ? "● PROTOCOL REVERTED" : "● SETTLED ON-CHAIN"}
+                  ${isCapped ? "● BUDGET CAPPED" : isBlocked ? "● PROTOCOL REVERTED" : "● SETTLED ON-CHAIN"}
                 </span>
               </div>
               <h3 class="font-headline text-lg font-bold text-white tracking-tight">x402 V2 TRANSACTION</h3>

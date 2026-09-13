@@ -172,6 +172,12 @@ const UIFormatter = {
       </span>`;
     }
 
+    if (s === "CAPPED" || s === "BUDGET CAPPED" || s === "CAPPED / REJECTED") {
+      return `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-rose-500/15 text-rose-300 border border-rose-500/40">
+        <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>${s}
+      </span>`;
+    }
+
     if (s === "BLOCKED" || s === "REJECTED" || s === "REJECTED (> $5)" || s === "FROZEN" || s === "FAILED" || s === "TAMPERED" || s === "CRITICAL") {
       return `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-rose-500/10 text-rose-300 border border-rose-500/30">
         <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>${s}
@@ -569,6 +575,222 @@ const TransactionAdapter = {
       content: { note: "No data" },
       hashVerified: false,
     };
+  },
+
+  /**
+   * Normalize an alert or security block into a full transaction record schema
+   */
+  normalizeAlert(raw, index = 0) {
+    if (!raw || typeof raw !== "object") return null;
+
+    const rawType = String(raw.type || raw.event || "SECURITY_ALERT").toUpperCase();
+    const isOverspend = rawType.includes("OVERSPEND") || rawType.includes("BUDGET");
+    const isReplay = rawType.includes("REPLAY");
+    const isTamper = rawType.includes("TAMPER");
+    const isFreeze = rawType.includes("FREEZE") || rawType.includes("FROZEN");
+
+    // Amount extraction
+    let amountUSD = "0.00";
+    if (raw.amountUSD !== undefined && raw.amountUSD !== null) {
+      amountUSD = typeof raw.amountUSD === "number" ? raw.amountUSD.toFixed(2) : String(raw.amountUSD).replace("$", "").trim();
+    } else if (raw.interceptedAmount && typeof raw.interceptedAmount === "string" && !raw.interceptedAmount.includes("undefined")) {
+      amountUSD = raw.interceptedAmount.replace(/[^0-9.]/g, "") || "0.00";
+    } else if (raw.amount || raw.amountAtomic) {
+      const val = Number(raw.amount || raw.amountAtomic);
+      if (!isNaN(val) && val > 0) {
+        amountUSD = val >= 10000 ? (val / 1e6).toFixed(2) : val.toFixed(2);
+      }
+    } else if (isOverspend) {
+      amountUSD = "25.00";
+    }
+
+    const reqId = raw.reqId && String(raw.reqId).length > 10 ? String(raw.reqId) : `0xdefend_${Date.now().toString(16)}_${index}`;
+    const txHash = raw.txHash || "0xreverted_on_chain";
+
+    let status = "BLOCKED";
+    let displayStatus = "BLOCKED";
+    let isCapped = false;
+    let isRejected = false;
+
+    if (isOverspend) {
+      status = "CAPPED";
+      displayStatus = "CAPPED";
+      isCapped = true;
+    } else if (isReplay || isTamper || isFreeze) {
+      status = "REJECTED";
+      displayStatus = "REJECTED";
+      isRejected = true;
+    }
+
+    const providerAddr = raw.provider || raw.offenseTarget || "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";
+    const lowerAddr = String(providerAddr).toLowerCase();
+    let providerName = raw.providerName;
+    if (!providerName) {
+      providerName = this.KNOWN_PROVIDERS[lowerAddr] || (
+        String(providerAddr).startsWith("0x") ? UIFormatter.formatAddress(providerAddr) : String(providerAddr)
+      );
+    }
+
+    let serviceName = raw.serviceName;
+    if (!serviceName) {
+      if (isOverspend) serviceName = "Budget Cap Defense";
+      else if (isReplay) serviceName = "Replay Attack Defense";
+      else if (isTamper) serviceName = "Payload Tamper Defense";
+      else serviceName = raw.type ? raw.type.replace(/_/g, " ") : "Protocol Security Intercept";
+    }
+
+    const serviceId = raw.serviceId || (isOverspend ? "budget-overspend-intercept" : "security-intercept");
+    const reason = raw.reason || (
+      isOverspend ? `Smart contract rejected: requested ${amountUSD} exceeds authorized spending cap (ZERO tokens moved).` :
+      isReplay ? "Contract replay guard rejected: request ID already executed on-chain." :
+      "Cryptographic integrity check intercepted unauthorized transaction."
+    );
+
+    const deliveryHash = raw.deliveryHash || "N/A (Reverted On-Chain)";
+    const blockNumber = raw.blockNumber ? Number(raw.blockNumber) : 12;
+    const timestamp = raw.timestamp ? new Date(raw.timestamp).toISOString() : new Date().toISOString();
+
+    return {
+      reqId,
+      requestId: reqId,
+      provider: providerAddr,
+      providerName,
+      serviceId,
+      serviceName,
+      intent: reason,
+      userIntent: reason,
+      quality: 0.0,
+      amount: Math.round(parseFloat(amountUSD) * 1e6).toString(),
+      amountUnits: Math.round(parseFloat(amountUSD) * 1e6).toString(),
+      amountUSD,
+      formattedAmount: `${amountUSD} USDC`,
+      currency: "USDC",
+      displayStatus,
+      status,
+      isSettled: false,
+      isBlocked: true,
+      isCapped,
+      isRejected,
+      isBlockedAttack: true,
+      txHash,
+      blockNumber,
+      deliveryHash,
+      timestamp,
+      x402Version: 2,
+      scheme: "exact",
+      network: "eip155:31337",
+      asset: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      payer: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      payTo: providerAddr,
+      nonce: reqId.slice(0, 18),
+      validBefore: 0,
+      signatureStatus: "VERIFIED",
+      verificationStatus: isOverspend ? "CAP_EXCEEDED" : "REVERTED",
+      settlementStatus: displayStatus,
+      budgetBefore: "20.00",
+      budgetAfter: "20.00",
+      content: {
+        reason,
+        status: "INTERCEPTED",
+        layer: raw.layer || raw.enforcementLayer || "TokenBudgetEnforcer.sol",
+        zeroTokensMoved: true,
+      },
+      hashVerified: false,
+    };
+  },
+
+  /**
+   * Get unified list of all transactions: Settled, Capped, Blocked, and Rejected attempts
+   */
+  getUnifiedHistory(transactions = [], alerts = [], providerSelectionState = null) {
+    const settled = this.normalizeList(transactions || []).map((t) => ({
+      ...t,
+      isSettled: true,
+      isBlocked: false,
+      isCapped: false,
+      isRejected: false,
+      isBlockedAttack: false,
+    }));
+
+    const alertRecords = (alerts || [])
+      .map((a, idx) => this.normalizeAlert(a, idx))
+      .filter(Boolean);
+
+    // If Gamma Premium Translation was rejected during AI provider selection, include candidate record
+    const candidateRejections = [];
+    if (providerSelectionState && providerSelectionState.evaluations && providerSelectionState.evaluations["gamma-translate"]) {
+      const g = providerSelectionState.evaluations["gamma-translate"];
+      if (g.status === "REJECTED") {
+        candidateRejections.push({
+          reqId: "0xgamma_ceiling_reject_01",
+          requestId: "0xgamma_ceiling_reject_01",
+          provider: "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+          providerName: "Gamma Premium Translation",
+          serviceId: "text-translate",
+          serviceName: "Text Translation (Premium)",
+          intent: "Translate legal contract under $5 budget ceiling",
+          userIntent: "Translate legal contract under $5 budget ceiling",
+          quality: 0.97,
+          amount: "6000000",
+          amountUnits: "6000000",
+          amountUSD: "6.00",
+          formattedAmount: "$6.00 USDC",
+          currency: "USDC",
+          displayStatus: "REJECTED",
+          status: "REJECTED",
+          isSettled: false,
+          isBlocked: true,
+          isCapped: true,
+          isRejected: true,
+          isBlockedAttack: true,
+          txHash: "0xrejected_ceiling_rule",
+          blockNumber: 12,
+          deliveryHash: "N/A (Pre-Settlement Rejection)",
+          timestamp: new Date(Date.now() - 240000).toISOString(),
+          x402Version: 2,
+          scheme: "exact",
+          network: "eip155:31337",
+          asset: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+          payer: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+          payTo: "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+          nonce: "0xgamma_rej_01",
+          validBefore: 0,
+          signatureStatus: "BLOCKED",
+          verificationStatus: "CEILING_EXCEEDED",
+          settlementStatus: "REJECTED",
+          budgetBefore: "30.00",
+          budgetAfter: "30.00",
+          content: {
+            reason: "Exceeds $5 budget limit ($6.00 > $5.00) — filtered out by autonomous agent spending ceiling rule.",
+            status: "REJECTED",
+            layer: "Protocol Policy Engine",
+            zeroTokensMoved: true,
+          },
+          hashVerified: false,
+        });
+      }
+    }
+
+    // Merge and deduplicate by reqId or txHash
+    const seen = new Set();
+    const unified = [];
+
+    for (const record of [...settled, ...alertRecords, ...candidateRejections]) {
+      const key = record.reqId || record.txHash;
+      if (!seen.has(key)) {
+        seen.add(key);
+        unified.push(record);
+      }
+    }
+
+    // Sort chronologically descending (newest first)
+    unified.sort((a, b) => {
+      const tA = new Date(a.timestamp).getTime() || 0;
+      const tB = new Date(b.timestamp).getTime() || 0;
+      return tB - tA;
+    });
+
+    return unified;
   },
 };
 

@@ -10,7 +10,7 @@
  */
 
 const TransactionsView = {
-  activeFilter: "Settled Purchases",
+  activeFilter: "All Purchases",
   searchQuery: "",
   viewMode: "cards", // "cards" | "table"
   initialized: false,
@@ -62,10 +62,12 @@ const TransactionsView = {
   },
 
   exportCSV() {
-    const rawTxs = AppState.transactions || [];
-    const rows = [["Request ID", "Provider", "Service", "Amount USD", "Status", "Tx Hash", "Delivery Hash", "Timestamp"]];
-    rawTxs.forEach((t) => {
-      rows.push([t.reqId, t.providerName || t.provider, t.serviceId, t.amountUSD, t.status, t.txHash, t.deliveryHash, t.timestamp]);
+    const allRecords = typeof TransactionAdapter !== "undefined" && typeof TransactionAdapter.getUnifiedHistory === "function"
+      ? TransactionAdapter.getUnifiedHistory(AppState.transactions, AppState.alerts, AppState.providerSelectionState)
+      : (AppState.transactions || []);
+    const rows = [["Request ID", "Provider", "Service", "Amount USD", "Status", "Tx Hash", "Delivery Hash", "Timestamp", "Reason"]];
+    allRecords.forEach((t) => {
+      rows.push([t.reqId, t.providerName || t.provider, t.serviceName || t.serviceId, t.amountUSD, t.status, t.txHash, t.deliveryHash, t.timestamp, t.intent || ""]);
     });
     const csvContent = "data:text/csv;charset=utf-8," + rows.map((e) => e.map((val) => `"${val || ""}"`).join(",")).join("\n");
     const encodedUri = encodeURI(csvContent);
@@ -82,55 +84,22 @@ const TransactionsView = {
     const rawTxs = AppState.transactions || [];
     const rawAlerts = AppState.alerts || [];
 
-    const transactions = typeof TransactionAdapter !== "undefined"
-      ? TransactionAdapter.normalizeList(rawTxs)
-      : rawTxs;
+    const allRecords = typeof TransactionAdapter !== "undefined" && typeof TransactionAdapter.getUnifiedHistory === "function"
+      ? TransactionAdapter.getUnifiedHistory(rawTxs, rawAlerts, AppState.providerSelectionState)
+      : (rawTxs || []);
 
-    const alertRecords = rawAlerts.map((a, idx) => {
-      let amountUSD = "0.00";
-      if (a.amountUSD !== undefined && a.amountUSD !== null) {
-        amountUSD = typeof a.amountUSD === "number" ? a.amountUSD.toFixed(2) : String(a.amountUSD).replace("$", "").trim();
-      } else if (a.interceptedAmount && typeof a.interceptedAmount === "string") {
-        amountUSD = a.interceptedAmount.replace(/[^0-9.]/g, "") || "0.00";
-      } else if (a.amount || a.amountAtomic) {
-        const val = Number(a.amount || a.amountAtomic);
-        if (!isNaN(val) && val > 0) {
-          amountUSD = val >= 10000 ? (val / 1e6).toFixed(2) : val.toFixed(2);
-        }
-      } else if (String(a.type || "").toUpperCase().includes("OVERSPEND")) {
-        amountUSD = "25.00";
-      }
-
-      const serviceName = a.type ? a.type.replace(/_/g, " ") : "Threat Intercepted";
-      const offenseTarget = a.offenseTarget || a.target || a.providerId || a.provider || a.endpoint || "TokenBudgetEnforcer.sol";
-      const targetLabel = String(offenseTarget).startsWith("0x") ? UIFormatter.formatAddress(offenseTarget) : String(offenseTarget);
-      const reqId = a.reqId && String(a.reqId).startsWith("0x") && String(a.reqId).length > 15 ? String(a.reqId) : `0xdefend_${idx + 1}`;
-
-      return {
-        isBlockedAttack: true,
-        reqId,
-        provider: a.provider || offenseTarget,
-        providerName: targetLabel,
-        serviceId: a.type || "attack-blocked",
-        serviceName,
-        amountUSD,
-        formattedAmount: `$${amountUSD} USDC`,
-        currency: "USDC",
-        displayStatus: "BLOCKED",
-        status: "BLOCKED",
-        txHash: a.txHash || "0xreverted_on_chain",
-        deliveryHash: "N/A (Reverted)",
-        timestamp: a.timestamp || new Date().toISOString(),
-        intent: a.reason || "Unauthorized transaction blocked by protocol",
-      };
-    });
-
-    const allRecords = [...transactions, ...alertRecords];
+    const settledRecords = allRecords.filter((r) => r.isSettled || r.status === "SETTLED");
+    const blockedRecords = allRecords.filter((r) => r.isBlocked || r.status === "CAPPED" || r.status === "BLOCKED" || r.status === "REJECTED");
+    const pendingRecords = allRecords.filter((r) => r.displayStatus === "PENDING");
 
     const filtered = allRecords.filter((record) => {
-      if (this.activeFilter === "Settled Purchases" && record.isBlockedAttack) return false;
-      if (this.activeFilter === "Blocked Attacks" && !record.isBlockedAttack) return false;
-      if (this.activeFilter === "Pending" && record.displayStatus !== "PENDING") return false;
+      if (this.activeFilter === "Settled Purchases") {
+        if (!record.isSettled && record.status !== "SETTLED") return false;
+      } else if (this.activeFilter === "Capped & Rejected" || this.activeFilter === "Blocked Attacks") {
+        if (!record.isBlocked && record.status !== "CAPPED" && record.status !== "BLOCKED" && record.status !== "REJECTED") return false;
+      } else if (this.activeFilter === "Pending") {
+        if (record.displayStatus !== "PENDING") return false;
+      }
 
       if (this.searchQuery) {
         const q = this.searchQuery.toLowerCase();
@@ -187,10 +156,10 @@ const TransactionsView = {
           <!-- Filter Tabs -->
           <div class="flex items-center bg-surface-lowest p-1 rounded-xl border border-outline-variant/30 text-xs font-mono overflow-x-auto w-full sm:w-auto">
             ${[
-              { id: "Settled Purchases", label: "Settled Purchases", count: transactions.length },
-              { id: "Blocked Attacks", label: "Blocked Attacks", count: alertRecords.length, isAlert: true },
-              { id: "All Activity", label: "All Activity", count: allRecords.length },
-              { id: "Pending", label: "Pending", count: allRecords.filter((r) => r.displayStatus === "PENDING").length },
+              { id: "All Purchases", label: "All Purchases", count: allRecords.length },
+              { id: "Settled Purchases", label: "Settled Purchases", count: settledRecords.length },
+              { id: "Capped & Rejected", label: "Capped & Rejected", count: blockedRecords.length, isAlert: true },
+              { id: "Pending", label: "Pending", count: pendingRecords.length },
             ]
               .map(
                 (tab) => `
@@ -245,34 +214,52 @@ const TransactionsView = {
             `
                 : filtered
                     .map((t) => {
-                      const isSuccess = t.status === "SETTLED" || t.status === "COMPLETED" || !t.isBlockedAttack;
-                      const statusClass = isSuccess
-                        ? "bg-tertiary/15 text-tertiary border-tertiary/40"
-                        : "bg-error/15 text-error border-error/40";
-                      const statusLabel = isSuccess ? "SUCCESS" : "BLOCKED";
+                      const isSuccess = t.isSettled || t.status === "SETTLED";
+                      const isCapped = t.status === "CAPPED" || t.isCapped;
+                      const isRejected = t.status === "REJECTED" || t.isRejected;
+
+                      let statusClass = "bg-tertiary/15 text-tertiary border-tertiary/40";
+                      let statusLabel = "SETTLED";
+                      if (isCapped) {
+                        statusClass = "bg-rose-500/15 text-rose-300 border-rose-500/40";
+                        statusLabel = "CAPPED";
+                      } else if (isRejected || !isSuccess) {
+                        statusClass = "bg-amber-500/15 text-amber-300 border-amber-500/40";
+                        statusLabel = "REJECTED";
+                      }
+
+                      const subNotice = isCapped
+                        ? `<span class="text-[10px] text-rose-400 font-mono flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>Blocked: Exceeds spending cap (ZERO tokens moved)</span>`
+                        : isRejected
+                        ? `<span class="text-[10px] text-amber-400 font-mono flex items-center gap-1"><span>⚠</span>${t.intent || "Intercepted by security protocol"}</span>`
+                        : `<span class="text-[10px] text-on-surface-variant font-mono">Verified SHA-256 Content Delivery</span>`;
 
                       return `
                         <div
-                          onclick="App.showTransactionDrawer('${t.reqId}')"
+                          onclick="App.openTransactionDetail('${t.reqId}')"
                           class="p-4 sm:p-5 rounded-2xl bg-surface-low border border-outline-variant/30 hover:border-secondary/60 hover:bg-surface-container transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm group"
                         >
-                          <div class="flex items-center gap-4">
-                            <span class="px-2.5 py-1 rounded-md text-xs font-mono font-extrabold border ${statusClass}">
+                          <div class="flex items-start sm:items-center gap-4">
+                            <span class="px-2.5 py-1 rounded-md text-xs font-mono font-extrabold border shrink-0 mt-0.5 sm:mt-0 ${statusClass}">
                               ${statusLabel}
                             </span>
                             <div>
                               <h3 class="font-headline text-base font-bold text-white group-hover:text-secondary transition-colors">
                                 ${t.serviceName || t.serviceId || "Autonomous Service"}
                               </h3>
-                              <p class="text-xs font-mono text-outline mt-0.5">
-                                ${t.providerName || t.provider || "Decentralized Provider"}
-                              </p>
+                              <div class="flex flex-wrap items-center gap-2 mt-0.5">
+                                <span class="text-xs font-mono text-outline">
+                                  ${t.providerName || t.provider || "Decentralized Provider"}
+                                </span>
+                                <span class="text-outline text-xs">&bull;</span>
+                                ${subNotice}
+                              </div>
                             </div>
                           </div>
 
-                          <div class="flex items-center justify-between sm:justify-end gap-6 font-mono text-xs">
+                          <div class="flex items-center justify-between sm:justify-end gap-6 font-mono text-xs shrink-0">
                             <div class="text-left sm:text-right">
-                              <span class="text-white font-bold text-sm block">$${t.amountUSD} USDC</span>
+                              <span class="text-white font-bold text-sm block">${t.amountUSD} USDC</span>
                               <span class="text-[11px] text-outline">${UIFormatter.formatRelativeTime(t.timestamp)}</span>
                             </div>
                             <span class="material-symbols-outlined text-sm text-outline group-hover:text-white group-hover:translate-x-1 transition-all">
@@ -304,21 +291,37 @@ const TransactionsView = {
                 </thead>
                 <tbody class="divide-y divide-outline-variant/20">
                   ${filtered
-                    .map((t) => `
-                    <tr class="hover:bg-surface-high/40 transition-colors cursor-pointer" onclick="App.showTransactionDrawer('${t.reqId}')">
-                      <td class="py-3 px-3">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.isBlockedAttack ? 'bg-error/15 text-error border border-error/30' : 'bg-tertiary/15 text-tertiary border border-tertiary/30'}">
-                          ${t.isBlockedAttack ? 'BLOCKED' : 'SUCCESS'}
-                        </span>
-                      </td>
-                      <td class="py-3 px-3 text-white font-bold font-sans">${t.serviceName || t.serviceId}</td>
-                      <td class="py-3 px-3 text-outline">${t.providerName}</td>
-                      <td class="py-3 px-3 text-white font-bold">$${t.amountUSD} USDC</td>
-                      <td class="py-3 px-3 text-secondary font-mono">${UIFormatter.formatHash(t.txHash, 4)}</td>
-                      <td class="py-3 px-3 text-outline">${UIFormatter.formatRelativeTime(t.timestamp)}</td>
-                      <td class="py-3 px-3 text-right text-secondary hover:text-white font-bold">Inspect &rarr;</td>
-                    </tr>
-                  `)
+                    .map((t) => {
+                      const isSuccess = t.isSettled || t.status === "SETTLED";
+                      const isCapped = t.status === "CAPPED" || t.isCapped;
+                      const isRejected = t.status === "REJECTED" || t.isRejected;
+
+                      let badgeClass = "bg-tertiary/15 text-tertiary border border-tertiary/30";
+                      let badgeLabel = "SETTLED";
+                      if (isCapped) {
+                        badgeClass = "bg-rose-500/15 text-rose-300 border border-rose-500/40";
+                        badgeLabel = "CAPPED";
+                      } else if (isRejected || !isSuccess) {
+                        badgeClass = "bg-amber-500/15 text-amber-300 border border-amber-500/40";
+                        badgeLabel = "REJECTED";
+                      }
+
+                      return `
+                        <tr class="hover:bg-surface-high/40 transition-colors cursor-pointer" onclick="App.openTransactionDetail('${t.reqId}')">
+                          <td class="py-3 px-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">
+                              ${badgeLabel}
+                            </span>
+                          </td>
+                          <td class="py-3 px-3 text-white font-bold font-sans">${t.serviceName || t.serviceId}</td>
+                          <td class="py-3 px-3 text-outline">${t.providerName}</td>
+                          <td class="py-3 px-3 text-white font-bold">${t.amountUSD} USDC</td>
+                          <td class="py-3 px-3 text-secondary font-mono">${UIFormatter.formatHash(t.txHash, 4)}</td>
+                          <td class="py-3 px-3 text-outline">${UIFormatter.formatRelativeTime(t.timestamp)}</td>
+                          <td class="py-3 px-3 text-right text-secondary hover:text-white font-bold">Inspect &rarr;</td>
+                        </tr>
+                      `;
+                    })
                     .join("")}
                 </tbody>
               </table>

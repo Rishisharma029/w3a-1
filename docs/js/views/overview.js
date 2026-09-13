@@ -16,6 +16,17 @@
 
 const OverviewView = {
   initialized: false,
+  activeLedgerTab: "all",
+
+  setLedgerTab(tab) {
+    this.activeLedgerTab = tab;
+    if (typeof document !== "undefined" && typeof AppState !== "undefined" && AppState.currentView === "overview") {
+      const root = document.getElementById("mainContent") || document.getElementById("main-content");
+      if (root && root.querySelector("#overview-view-root")) {
+        root.innerHTML = this.render();
+      }
+    }
+  },
 
   init() {
     if (this.initialized) return;
@@ -46,12 +57,28 @@ const OverviewView = {
   render() {
     this.init();
     const normBudget = BudgetAdapter.normalize(AppState.budget);
-    const normTxs = TransactionAdapter.normalizeList(AppState.transactions);
+    const unifiedTxs = typeof TransactionAdapter !== "undefined" && typeof TransactionAdapter.getUnifiedHistory === "function"
+      ? TransactionAdapter.getUnifiedHistory(AppState.transactions, AppState.alerts, AppState.providerSelectionState)
+      : (typeof TransactionAdapter !== "undefined" ? TransactionAdapter.normalizeList(AppState.transactions || []) : []);
+    const normTxs = unifiedTxs;
     const secStats = SecurityAdapter.computeStats(AppState.alerts);
     const isFrozen = normBudget.isFrozen;
 
-    // Latest transaction for dynamic pipeline binding
-    const latestTx = normTxs.length > 0 ? normTxs[0] : TransactionAdapter.fallbackTransaction();
+    const settledTxs = unifiedTxs.filter((t) => t.isSettled || t.status === "SETTLED");
+    const blockedTxs = unifiedTxs.filter((t) => t.isBlocked || t.status === "CAPPED" || t.status === "BLOCKED" || t.status === "REJECTED");
+
+    const currentTab = this.activeLedgerTab || "all";
+    const displayedLedgerTxs = currentTab === "settled"
+      ? settledTxs
+      : currentTab === "blocked"
+      ? blockedTxs
+      : unifiedTxs;
+
+    const preventedOverspendSum = blockedTxs.reduce((sum, t) => sum + (parseFloat(t.amountUSD) || 0), 0);
+    const formattedPreventedOverspend = `${preventedOverspendSum.toFixed(2)} USDC`;
+
+    // Latest transaction for dynamic pipeline binding (prefer latest settled or recent attempt)
+    const latestTx = settledTxs.length > 0 ? settledTxs[0] : (unifiedTxs.length > 0 ? unifiedTxs[0] : TransactionAdapter.fallbackTransaction());
 
     const liveEvents = AppState.liveEvents || [];
     const liveEventsRows = liveEvents.length > 0
@@ -659,7 +686,7 @@ const OverviewView = {
         </section>
 
         <!-- ===================================================================
-             4. BOTTOM SECTION: SETTLED AUTONOMOUS PURCHASE LEDGER TABLE
+             4. BOTTOM SECTION: AUTONOMOUS PURCHASE & SECURITY LEDGER TABLE
              =================================================================== -->
         <section class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 flex flex-col gap-4">
           <!-- Table Header & Controls -->
@@ -667,16 +694,50 @@ const OverviewView = {
             <div class="flex items-center gap-2.5">
               <div class="w-2 h-5 bg-tertiary rounded-sm glow-emerald"></div>
               <div>
-                <h2 class="font-headline text-base font-bold text-white tracking-tight">Settled Autonomous Purchase Ledger</h2>
-                <span class="font-mono text-xs text-on-surface-variant">On-chain cryptographically verifiable record</span>
+                <h2 class="font-headline text-base font-bold text-white tracking-tight">Autonomous Purchase &amp; Security Ledger</h2>
+                <span class="font-mono text-xs text-on-surface-variant">On-chain settlements, budget caps &amp; cryptographic security intercepts</span>
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-2">
+              <!-- Filter Tabs -->
+              <div class="flex items-center gap-1 bg-surface-lowest p-1 rounded-xl border border-outline-variant/30 text-xs font-mono">
+                <button
+                  onclick="OverviewView.setLedgerTab('all')"
+                  class="px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    currentTab === 'all'
+                      ? 'bg-secondary/20 text-secondary font-bold border border-secondary/30'
+                      : 'text-outline hover:text-white'
+                  }"
+                >
+                  <span>All (${unifiedTxs.length})</span>
+                </button>
+                <button
+                  onclick="OverviewView.setLedgerTab('settled')"
+                  class="px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    currentTab === 'settled'
+                      ? 'bg-tertiary/20 text-tertiary font-bold border border-tertiary/40'
+                      : 'text-outline hover:text-white'
+                  }"
+                >
+                  <span>Settled (${settledTxs.length})</span>
+                </button>
+                <button
+                  onclick="OverviewView.setLedgerTab('blocked')"
+                  class="px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    currentTab === 'blocked'
+                      ? 'bg-error/20 text-error font-bold border border-error/40'
+                      : 'text-outline hover:text-white'
+                  }"
+                >
+                  <span>Capped / Blocked (${blockedTxs.length})</span>
+                </button>
+              </div>
+
               <button
                 onclick="AppState.setView('transactions')"
-                class="px-3 py-1.5 rounded-lg bg-surface-high hover:bg-surface-highest text-secondary border border-outline-variant/40 font-mono text-xs font-semibold transition"
+                class="px-3 py-1.5 rounded-lg bg-surface-high hover:bg-surface-highest text-secondary border border-outline-variant/40 font-mono text-xs font-semibold transition cursor-pointer"
               >
-                View Full Explorer (${normTxs.length}) &rarr;
+                View Full Explorer (${unifiedTxs.length}) &rarr;
               </button>
             </div>
           </div>
@@ -686,76 +747,126 @@ const OverviewView = {
             <table class="w-full text-left font-mono text-xs">
               <thead>
                 <tr class="border-b border-outline-variant/30 text-outline text-[11px]">
-                  <th class="pb-3 font-medium">TX HASH</th>
+                  <th class="pb-3 font-medium">TX HASH / REQ</th>
                   <th class="pb-3 font-medium">AGENT / SERVICE TARGET</th>
                   <th class="pb-3 font-medium">AMOUNT</th>
                   <th class="pb-3 font-medium">EIP-712 SIGNATURE</th>
-                  <th class="pb-3 font-medium">EVM BLOCK</th>
+                  <th class="pb-3 font-medium">EVM / PROTOCOL</th>
                   <th class="pb-3 font-medium">STATUS</th>
                   <th class="pb-3 font-medium text-right">PROOF COMMITMENT</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-outline-variant/15 text-on-surface">
                 ${
-                  normTxs.length > 0
-                    ? normTxs
-                        .slice(0, 5)
+                  displayedLedgerTxs.length > 0
+                    ? displayedLedgerTxs
+                        .slice(0, 6)
                         .map(
-                          (t) => `
-                        <tr
-                          onclick="App.openTransactionDetail('${t.reqId}')"
-                          class="hover:bg-surface-high/40 transition-colors cursor-pointer group"
-                        >
-                          <td class="py-3 font-medium text-secondary flex items-center gap-1.5">
-                            <span>${UIFormatter.formatHash(t.txHash, 6)}</span>
-                            <button
-                              onclick="event.stopPropagation(); App.copyText('${t.txHash}')"
-                              class="text-outline hover:text-secondary opacity-0 group-hover:opacity-100 transition-opacity"
-                              title="Copy Hash"
-                            >
-                              <span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
-                            </button>
-                          </td>
-                          <td class="py-3">
-                            <div class="flex items-center gap-1.5">
-                              <span class="w-2 h-2 rounded-full bg-secondary"></span>
-                              <span class="font-semibold text-white font-sans">${t.providerName}</span>
-                            </div>
-                            <span class="text-[10px] text-outline font-sans">${t.serviceName}</span>
-                          </td>
-                          <td class="py-3 font-bold text-white font-mono text-sm">
-                            ${t.formattedAmount} <span class="text-xs font-normal text-on-surface-variant">USDC</span>
-                          </td>
-                          <td class="py-3 text-outline">
-                            ${UIFormatter.formatHash(t.reqId, 4)}
-                          </td>
-                          <td class="py-3">
-                            <div>Block #${t.blockNumber}</div>
-                            <span class="text-[10px] text-outline">EVM Settled</span>
-                          </td>
-                          <td class="py-3">
-                            <span class="px-2.5 py-0.5 rounded-full bg-tertiary/15 text-tertiary border border-tertiary/40 text-[10px] font-bold inline-flex items-center gap-1">
-                              <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-                              Settled On-Chain
-                            </span>
-                          </td>
-                          <td class="py-3 text-right">
-                            <button
-                              onclick="event.stopPropagation(); App.openTransactionDetail('${t.reqId}')"
-                              class="px-2.5 py-1 rounded-lg bg-surface-lowest border border-outline-variant/30 text-outline hover:text-secondary hover:border-secondary/40 text-[11px] inline-flex items-center gap-1 transition-colors"
-                            >
-                              <span class="material-symbols-outlined text-xs" data-icon="verified">verified</span>
-                              SHA-256 Proof
-                            </button>
-                          </td>
-                        </tr>
-                      `
+                          (t) => {
+                            const isSettled = t.isSettled || t.status === "SETTLED";
+                            const isCapped = t.status === "CAPPED" || t.isCapped;
+                            const isRejected = t.status === "REJECTED" || t.isRejected;
+                            
+                            let statusBadgeHtml = '';
+                            if (isSettled) {
+                              statusBadgeHtml = `
+                                <span class="px-2.5 py-0.5 rounded-full bg-tertiary/15 text-tertiary border border-tertiary/40 text-[10px] font-bold inline-flex items-center gap-1">
+                                  <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                                  Settled On-Chain
+                                </span>`;
+                            } else if (isCapped) {
+                              statusBadgeHtml = `
+                                <span class="px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/40 text-[10px] font-bold inline-flex items-center gap-1">
+                                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
+                                  Budget Capped
+                                </span>`;
+                            } else {
+                              statusBadgeHtml = `
+                                <span class="px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/40 text-[10px] font-bold inline-flex items-center gap-1">
+                                  <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                  Rejected / Revert
+                                </span>`;
+                            }
+
+                            const proofBtnText = isSettled 
+                              ? 'SHA-256 Proof' 
+                              : isCapped 
+                              ? 'Enforcer Intercept' 
+                              : 'Guard Proof';
+                            const proofBtnIcon = isSettled ? 'verified' : isCapped ? 'gavel' : 'shield';
+                            const proofBtnClass = isSettled
+                              ? 'text-outline hover:text-secondary hover:border-secondary/40'
+                              : isCapped
+                              ? 'text-rose-300 hover:text-rose-200 border-rose-500/30 hover:border-rose-500/50 bg-rose-500/5'
+                              : 'text-amber-300 hover:text-amber-200 border-amber-500/30 hover:border-amber-500/50 bg-amber-500/5';
+
+                            const evmColMain = isSettled 
+                              ? `Block #${t.blockNumber}` 
+                              : isCapped 
+                              ? 'TokenBudgetEnforcer' 
+                              : 'Protocol Rule';
+                            const evmColSub = isSettled 
+                              ? 'EVM Settled' 
+                              : isCapped 
+                              ? 'Spending Ceiling' 
+                              : 'Revert Guard';
+                            const evmColSubClass = isSettled ? 'text-outline' : isCapped ? 'text-rose-400' : 'text-amber-400';
+
+                            const dotColor = isSettled ? 'bg-secondary' : isCapped ? 'bg-rose-400' : 'bg-amber-400';
+
+                            return `
+                              <tr
+                                onclick="App.openTransactionDetail('${t.reqId}')"
+                                class="hover:bg-surface-high/40 transition-colors cursor-pointer group"
+                              >
+                                <td class="py-3 font-medium text-secondary flex items-center gap-1.5">
+                                  <span>${UIFormatter.formatHash(t.txHash, 6)}</span>
+                                  <button
+                                    onclick="event.stopPropagation(); App.copyText('${t.txHash}')"
+                                    class="text-outline hover:text-secondary opacity-0 group-hover:opacity-100 transition-opacity"
+                                    title="Copy Hash"
+                                  >
+                                    <span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+                                  </button>
+                                </td>
+                                <td class="py-3">
+                                  <div class="flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full ${dotColor}"></span>
+                                    <span class="font-semibold text-white font-sans">${t.providerName}</span>
+                                  </div>
+                                  <span class="text-[10px] text-outline font-sans">${t.serviceName}</span>
+                                </td>
+                                <td class="py-3 font-bold text-white font-mono text-sm">
+                                  ${t.formattedAmount} <span class="text-xs font-normal text-on-surface-variant">USDC</span>
+                                </td>
+                                <td class="py-3 text-outline">
+                                  ${UIFormatter.formatHash(t.reqId, 4)}
+                                </td>
+                                <td class="py-3">
+                                  <div class="truncate max-w-[140px]">${evmColMain}</div>
+                                  <span class="text-[10px] ${evmColSubClass}">${evmColSub}</span>
+                                </td>
+                                <td class="py-3">
+                                  ${statusBadgeHtml}
+                                </td>
+                                <td class="py-3 text-right">
+                                  <button
+                                    onclick="event.stopPropagation(); App.openTransactionDetail('${t.reqId}')"
+                                    class="px-2.5 py-1 rounded-lg bg-surface-lowest border border-outline-variant/30 ${proofBtnClass} text-[11px] inline-flex items-center gap-1 transition-colors"
+                                  >
+                                    <span class="material-symbols-outlined text-xs" data-icon="${proofBtnIcon}">${proofBtnIcon}</span>
+                                    ${proofBtnText}
+                                  </button>
+                                </td>
+                              </tr>
+                            `;
+                          }
                         )
                         .join("")
                     : `
                       <tr>
                         <td colspan="7" class="py-8 text-center text-outline">
-                          No transactions settled in current epoch. Click 'Run Autonomous Purchase' to trigger an authentic live purchase flow.
+                          No transactions found for the selected filter.
                         </td>
                       </tr>
                     `
@@ -765,10 +876,11 @@ const OverviewView = {
           </div>
 
           <!-- Ledger Summary Footer -->
-          <div class="flex flex-col sm:flex-row items-center justify-between text-xs text-on-surface-variant pt-2 border-t border-outline-variant/30 font-mono">
-            <div>Showing ${Math.min(normTxs.length, 5)} of ${normTxs.length} settled transactions</div>
-            <div class="flex items-center gap-4 mt-2 sm:mt-0">
+          <div class="flex flex-col sm:flex-row items-center justify-between text-xs text-on-surface-variant pt-2 border-t border-outline-variant/30 font-mono gap-2">
+            <div>Showing ${Math.min(displayedLedgerTxs.length, 6)} of ${displayedLedgerTxs.length} items (${settledTxs.length} settled, ${blockedTxs.length} capped/blocked)</div>
+            <div class="flex flex-wrap items-center gap-4 mt-2 sm:mt-0">
               <span>Total Settled: <strong class="text-white font-bold">${normBudget.formattedSpent}</strong></span>
+              <span>Prevented Overspend: <strong class="text-rose-400 font-bold">${formattedPreventedOverspend}</strong></span>
               <span>Available Allowance: <strong class="text-tertiary font-bold">${normBudget.formattedRemaining}</strong></span>
             </div>
           </div>
