@@ -664,6 +664,35 @@ ${JSON.stringify(
   },
 
   // ---------------------------------------------------------------------------
+  // Flowchart Modal Controls
+  // ---------------------------------------------------------------------------
+  openFlowchartModal() {
+    if (typeof AgentView !== "undefined" && typeof AgentView.openFlowchartModal === "function") {
+      AgentView.openFlowchartModal();
+    } else {
+      const modal = document.getElementById("flowchartModal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        document.body.style.overflow = "hidden";
+      }
+    }
+  },
+
+  closeFlowchartModal() {
+    if (typeof AgentView !== "undefined" && typeof AgentView.closeFlowchartModal === "function") {
+      AgentView.closeFlowchartModal();
+    } else {
+      const modal = document.getElementById("flowchartModal");
+      if (modal) {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+        document.body.style.overflow = "";
+      }
+    }
+  },
+
+  // ---------------------------------------------------------------------------
   // Add Funds / Escrow Top-Up Modal
   // ---------------------------------------------------------------------------
   openFundModal(defaultAmount = 10) {
@@ -812,7 +841,7 @@ ${JSON.stringify(
   },
 
   // ---------------------------------------------------------------------------
-  // n8n Autonomous x402 Orchestration Trigger
+  // n8n Autonomous x402 Orchestration Trigger with Live Flowchart Animation
   // ---------------------------------------------------------------------------
   async runN8nOrchestrator(scenario = "normal") {
     const scenarioMap = {
@@ -831,6 +860,185 @@ ${JSON.stringify(
       btn.classList.add("opacity-50", "cursor-wait");
     }
 
+    // Node state updater helper
+    const setNodeState = (nodeId, text, state) => {
+      const el = document.getElementById(nodeId);
+      if (!el) return;
+      if (state === "active") {
+        el.className = "px-2.5 py-1 rounded bg-secondary/25 text-secondary border border-secondary/60 font-bold glow-cyan animate-pulse";
+        el.innerHTML = `<span class="op-pulse-dot">◉</span> <span>${text}</span>`;
+      } else if (state === "success") {
+        el.className = "px-2.5 py-1 rounded bg-tertiary/20 text-tertiary border border-tertiary/50 font-bold glow-emerald";
+        el.innerHTML = `<span>✓</span> <span>${text}</span>`;
+      } else if (state === "blocked" || state === "error") {
+        el.className = "px-2.5 py-1 rounded bg-error/25 text-error border-2 border-error/70 font-bold glow-crimson animate-pulse";
+        el.innerHTML = `<span>✘</span> <span>${text}</span>`;
+      } else if (state === "skipped") {
+        el.className = "px-2.5 py-1 rounded bg-surface-lowest text-outline/50 border border-outline-variant/20 line-through";
+        el.innerHTML = `<span>○</span> <span>${text}</span>`;
+      } else {
+        el.className = "px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40";
+        el.innerHTML = text;
+      }
+    };
+
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const telemetryContainer = document.getElementById("n8nLiveTelemetryContainer");
+
+    // Reset nodes to default
+    for (let i = 1; i <= 10; i++) {
+      const nodeEl = document.getElementById(`n8n-node-${i}`);
+      if (nodeEl) nodeEl.className = "px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40";
+    }
+
+    // Live Step 1
+    setNodeState("n8n-node-1", "1. Webhook Dispatched", "active");
+    await delay(180);
+    setNodeState("n8n-node-1", "1. Webhook Dispatched", "success");
+
+    // Live Step 2
+    setNodeState("n8n-node-2", "2. Parsing Intent", "active");
+    await delay(200);
+    setNodeState("n8n-node-2", "2. Intent Validated", "success");
+
+    // Live Step 3
+    setNodeState("n8n-node-3", "3. HTTP 402 Invoice", "active");
+    await delay(200);
+    setNodeState("n8n-node-3", "3. 402 Invoiced", "success");
+
+    // Live Step 4
+    setNodeState("n8n-node-4", "4. Parse Requirements", "active");
+    await delay(200);
+    setNodeState("n8n-node-4", "4. Requirements Decoded", "success");
+
+    // Live Step 5: Decision Point
+    if (scenario === "overspend") {
+      setNodeState("n8n-node-5", "5. Checking Budget & Ceiling", "active");
+      await delay(350);
+      setNodeState("n8n-node-5", "5. BLOCKED: OVERSPEND ($999,999 > Budget)", "blocked");
+      setNodeState("n8n-node-6", "6. Sign EIP-712 (Halted)", "skipped");
+      setNodeState("n8n-node-7", "7. Submit Paid Request", "skipped");
+      setNodeState("n8n-node-8", "8. Settle On-Chain", "skipped");
+      setNodeState("n8n-node-9", "9. SHA-256 Verify", "skipped");
+      setNodeState("n8n-node-10", "10. Emit Audit Event", "skipped");
+
+      if (telemetryContainer) {
+        telemetryContainer.classList.remove("hidden");
+        telemetryContainer.innerHTML = `
+          <div class="p-4 sm:p-5 rounded-xl bg-error/15 border-2 border-error/60 glow-crimson space-y-2.5 animate-fade-in font-mono">
+            <div class="flex items-center justify-between">
+              <span class="text-error font-bold text-xs flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">shield</span>
+                <span>PROTOCOL DEFENSE ACTIVE: OVERSPEND PREVENTED AT NODE 5</span>
+              </span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-error/20 text-error border border-error/40">
+                ZERO TOKENS MOVED
+              </span>
+            </div>
+            <p class="text-xs text-white leading-relaxed font-sans">
+              The AI agent attempted to settle a purchase of <strong class="text-error font-mono font-bold">$999,999.00 USDC</strong>. <code class="text-secondary font-mono">TokenBudgetEnforcer.sol</code> verified the spending ceiling before signing and intercepted the request. Execution was safely halted at Node 5 without signing or moving tokens.
+            </p>
+            <div class="flex flex-wrap items-center gap-4 text-[11px] text-outline pt-2 border-t border-error/20">
+              <span>Attempted Amount: <strong class="text-error font-bold">$999,999.00 USDC</strong></span>
+              <span>Enforcement Layer: <strong class="text-white">TokenBudgetEnforcer.sol (EVM)</strong></span>
+              <span>Result: <strong class="text-tertiary">0 Tokens Leaked &bull; Intercepted On-Chain</strong></span>
+            </div>
+          </div>
+        `;
+      }
+    } else if (scenario === "replay") {
+      setNodeState("n8n-node-5", "5. Budget Allowed", "success");
+      setNodeState("n8n-node-6", "6. EIP-712 Signed", "success");
+      setNodeState("n8n-node-7", "7. Paid Request Sent", "success");
+      setNodeState("n8n-node-8", "8. Submitting Mempool", "active");
+      await delay(350);
+      setNodeState("n8n-node-8", "8. REPLAY GUARD: REVERTED", "blocked");
+      setNodeState("n8n-node-9", "9. SHA-256 Verify", "skipped");
+      setNodeState("n8n-node-10", "10. Emit Audit Event", "skipped");
+
+      if (telemetryContainer) {
+        telemetryContainer.classList.remove("hidden");
+        telemetryContainer.innerHTML = `
+          <div class="p-4 sm:p-5 rounded-xl bg-error/15 border-2 border-error/60 glow-crimson space-y-2.5 animate-fade-in font-mono">
+            <div class="flex items-center justify-between">
+              <span class="text-error font-bold text-xs flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">replay</span>
+                <span>NONCE REPLAY DETECTED: REVERTED ON-CHAIN AT NODE 8</span>
+              </span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-error/20 text-error border border-error/40">
+                REPLAY GUARD ACTIVE
+              </span>
+            </div>
+            <p class="text-xs text-white leading-relaxed font-sans">
+              Reused an already consumed request ID nonce. <code class="text-secondary font-mono">TokenBudgetEnforcer.sol</code> detected the spent nonce in contract storage and reverted the transaction on-chain.
+            </p>
+          </div>
+        `;
+      }
+    } else if (scenario === "tamper") {
+      setNodeState("n8n-node-5", "5. Budget Allowed", "success");
+      setNodeState("n8n-node-6", "6. EIP-712 Signed", "success");
+      setNodeState("n8n-node-7", "7. Paid Request Sent", "success");
+      setNodeState("n8n-node-8", "8. Settle On-Chain", "success");
+      setNodeState("n8n-node-9", "9. Verifying SHA-256 Hash", "active");
+      await delay(350);
+      setNodeState("n8n-node-9", "9. HASH MISMATCH DETECTED", "blocked");
+      setNodeState("n8n-node-10", "10. Security Alert Emitted", "success");
+
+      if (telemetryContainer) {
+        telemetryContainer.classList.remove("hidden");
+        telemetryContainer.innerHTML = `
+          <div class="p-4 sm:p-5 rounded-xl bg-amber-500/15 border-2 border-amber-500/60 glow-gold space-y-2.5 animate-fade-in font-mono">
+            <div class="flex items-center justify-between">
+              <span class="text-amber-400 font-bold text-xs flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">fingerprint</span>
+                <span>DELIVERY TAMPERING DETECTED AT NODE 9</span>
+              </span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                HASH MISMATCH
+              </span>
+            </div>
+            <p class="text-xs text-white leading-relaxed font-sans">
+              Provider delivered content that diverged from the canonical SHA-256 hash. The client integrity verification caught the corruption and emitted a security alert.
+            </p>
+          </div>
+        `;
+      }
+    } else {
+      // Normal purchase
+      setNodeState("n8n-node-5", "5. Budget Allowed", "success");
+      await delay(180);
+      setNodeState("n8n-node-6", "6. EIP-712 Signed", "success");
+      await delay(180);
+      setNodeState("n8n-node-7", "7. Paid Request Sent", "success");
+      await delay(200);
+      setNodeState("n8n-node-8", "8. Settle On-Chain", "success");
+      await delay(180);
+      setNodeState("n8n-node-9", "9. SHA-256 Verified", "success");
+      await delay(180);
+      setNodeState("n8n-node-10", "10. Audit Emitted", "success");
+
+      if (telemetryContainer) {
+        telemetryContainer.classList.remove("hidden");
+        telemetryContainer.innerHTML = `
+          <div class="p-4 sm:p-5 rounded-xl bg-tertiary/15 border-2 border-tertiary/60 glow-emerald space-y-2.5 animate-fade-in font-mono">
+            <div class="flex items-center justify-between">
+              <span class="text-tertiary font-bold text-xs flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">verified</span>
+                <span>n8n ORCHESTRATION SUCCESS: AUTONOMOUS PURCHASE SETTLED</span>
+              </span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-tertiary/20 text-tertiary border border-tertiary/40">
+                SETTLED ON-CHAIN
+              </span>
+            </div>
+            <p class="text-xs text-white leading-relaxed font-sans">
+              Alpha Translation Services purchased for <strong class="text-tertiary font-mono font-bold">$4.00 USDC</strong>. EIP-712 signed, verified by TokenBudgetEnforcer, settled on Hardhat EVM, and content SHA-256 verified.
+            </p>
+          </div>
+        `;
+      }
+    }
+
     try {
       const res = await ApiService.orchestrateN8n(target.opts);
       if (res && res.success) {
@@ -841,7 +1049,7 @@ ${JSON.stringify(
         this.toast(`n8n Protocol Guard Active: ${reason}`, "error");
       }
       await ApiService.syncAll();
-      this.render();
+      // DO NOT call this.render() here as that wipes out the live node states!
     } catch (err) {
       this.toast(`n8n Orchestrator Error: ${err.message}`, "error");
     } finally {

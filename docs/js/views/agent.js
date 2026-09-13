@@ -16,6 +16,24 @@ const AgentView = {
   activeResult: null,
   isExecuting: false,
 
+  openFlowchartModal() {
+    const modal = document.getElementById("flowchartModal");
+    if (modal) {
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      document.body.style.overflow = "hidden";
+    }
+  },
+
+  closeFlowchartModal() {
+    const modal = document.getElementById("flowchartModal");
+    if (modal) {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      document.body.style.overflow = "";
+    }
+  },
+
   init() {
     if (this.initialized) return;
     this.initialized = true;
@@ -723,9 +741,20 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
                 What should I buy?
               </p>
             </div>
-            <div class="text-xs font-mono text-outline bg-surface-lowest px-3 py-2 rounded-lg border border-outline-variant/30 max-w-sm">
-              <span class="text-white font-bold">⚡ Dynamic Market Search:</span>
-              <span class="block text-on-surface-variant text-[11px] mt-0.5">The AI doesn't get a predefined provider. It queries and evaluates your live marketplace candidates.</span>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+              <button
+                type="button"
+                onclick="AgentView.openFlowchartModal()"
+                class="px-4 py-2.5 rounded-xl bg-secondary/15 hover:bg-secondary/25 text-secondary border border-secondary/50 font-mono text-xs font-bold flex items-center gap-2 transition glow-cyan cursor-pointer shrink-0 shadow-lg active:scale-95"
+                title="Open interactive execution flowchart"
+              >
+                <span class="material-symbols-outlined text-base">account_tree</span>
+                <span>HOW IT WORKS (FLOWCHART)</span>
+              </button>
+              <div class="text-xs font-mono text-outline bg-surface-lowest px-3 py-2 rounded-lg border border-outline-variant/30 max-w-xs">
+                <span class="text-white font-bold">⚡ Dynamic Market Search:</span>
+                <span class="block text-on-surface-variant text-[11px] mt-0.5">Autonomous query and scoring of live marketplace candidates.</span>
+              </div>
             </div>
           </div>
 
@@ -791,6 +820,51 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
           </div>
         </div>
 
+        <!-- ================================================================= -->
+        <!-- IN FRONT: HOW IT WORKS — LIVE x402 WIRE PROTOCOL FLOWCHART -->
+        <!-- ================================================================= -->
+        <div class="rounded-2xl bg-surface-low border-2 border-secondary/50 p-6 space-y-5 shadow-2xl relative overflow-hidden">
+          <div class="absolute -right-16 -top-16 w-64 h-64 bg-secondary/15 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-outline-variant/30 pb-4">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-secondary/20 border border-secondary/50 flex items-center justify-center glow-cyan shrink-0">
+                <span class="material-symbols-outlined text-secondary text-2xl animate-pulse">account_tree</span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2 mb-0.5">
+                  <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-secondary">HOW IT WORKS</span>
+                  <span class="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-tertiary/20 text-tertiary border border-tertiary/40 glow-emerald">
+                    LIVE FLOWCHART &amp; PROTOCOL STEPPER
+                  </span>
+                </div>
+                <h2 class="font-headline text-xl md:text-2xl font-bold text-white tracking-tight">
+                  Autonomous x402 Execution Pipeline
+                </h2>
+                <p class="text-xs text-on-surface-variant font-mono mt-0.5">
+                  Task Intent &rarr; AI Pareto Selection &rarr; HTTP 402 Negotiation &rarr; EIP-712 Signer &rarr; EVM Settlement &rarr; Delivery Proof
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                onclick="AgentView.openFlowchartModal()"
+                class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold bg-secondary/20 hover:bg-secondary/30 text-secondary border border-secondary/50 flex items-center gap-2 transition glow-cyan cursor-pointer active:scale-95 shadow-md"
+              >
+                <span class="material-symbols-outlined text-sm">open_in_full</span>
+                <span>Open Full Flowchart (Independent View)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Embedded Wire Protocol Stepper -->
+          <div class="x402-visualizer-container">
+            ${typeof X402ProtocolVisualizer !== "undefined" ? X402ProtocolVisualizer.render() : ""}
+          </div>
+        </div>
+
         <!-- Header: Profile & Controls -->
         <div class="rounded-2xl bg-surface-low/90 border border-outline-variant/40 p-6 backdrop-blur-md">
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -811,7 +885,16 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
               </p>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+              <button
+                type="button"
+                onclick="AgentView.openFlowchartModal()"
+                class="px-3.5 py-2.5 text-xs font-mono font-bold rounded-xl transition shadow-lg bg-surface-high hover:bg-surface-highest text-secondary border border-secondary/40 flex items-center gap-1.5 cursor-pointer active:scale-95"
+                title="View multi-step protocol flowchart"
+              >
+                <span class="material-symbols-outlined text-sm">account_tree</span>
+                <span>FLOWCHART</span>
+              </button>
               <button
                 onclick="App.openFundModal()"
                 class="px-4 py-2.5 text-xs font-mono font-bold rounded-xl transition shadow-lg bg-tertiary/20 hover:bg-tertiary/30 text-tertiary border border-tertiary/50 glow-emerald flex items-center gap-1.5 cursor-pointer active:scale-95"
@@ -884,90 +967,7 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
           </div>
         </div>
 
-        <!-- Central Thesis: AI DECISION vs PROTOCOL AUTHORITY -->
-        <div class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 space-y-5">
-          <div class="flex items-center gap-2.5">
-            <div class="w-2 h-5 bg-secondary rounded-sm glow-cyan"></div>
-            <div>
-              <h2 class="font-headline text-base font-bold text-white tracking-tight">Core Security Model: Responsibility Separation</h2>
-              <span class="font-mono text-xs text-on-surface-variant">The AI agent reasons about services, but smart contracts enforce settlement</span>
-            </div>
-          </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <!-- Left: AI Decides -->
-            <div class="rounded-xl bg-surface-container p-5 space-y-3 border border-outline-variant/30">
-              <div class="flex items-center gap-2 text-secondary font-bold font-mono text-xs uppercase tracking-wider">
-                <span class="material-symbols-outlined text-base" data-icon="psychology">psychology</span>
-                <span>AI Decides (Autonomous Reasoning)</span>
-              </div>
-              <ul class="space-y-2 text-xs text-on-surface-variant">
-                <li class="flex items-start gap-2">
-                  <span class="text-secondary mt-0.5">&bull;</span>
-                  <span>Formulates purchasing intent from user task requirements</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-secondary mt-0.5">&bull;</span>
-                  <span>Queries service registry and scores candidate providers</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-secondary mt-0.5">&bull;</span>
-                  <span>Selects Pareto-optimal provider based on quality, latency, and price</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-secondary mt-0.5">&bull;</span>
-                  <span>Initiates HTTP 402 challenge negotiation with chosen endpoint</span>
-                </li>
-              </ul>
-            </div>
-
-            <!-- Right: Protocol Enforces -->
-            <div class="rounded-xl bg-surface-container p-5 space-y-3 border border-outline-variant/30">
-              <div class="flex items-center gap-2 text-tertiary font-bold font-mono text-xs uppercase tracking-wider">
-                <span class="material-symbols-outlined text-base" data-icon="shield">shield</span>
-                <span>Protocol Enforces (On-Chain Invariants)</span>
-              </div>
-              <ul class="space-y-2 text-xs text-on-surface-variant">
-                <li class="flex items-start gap-2">
-                  <span class="text-tertiary mt-0.5">&bull;</span>
-                  <span>TokenBudgetEnforcer contract strictly checks ceiling before token transfer</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-tertiary mt-0.5">&bull;</span>
-                  <span>EIP-712 signature binds amount, provider address, and non-fungible reqId</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-tertiary mt-0.5">&bull;</span>
-                  <span>Replay attacks mathematically impossible via on-chain nonce state mapping</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-tertiary mt-0.5">&bull;</span>
-                  <span>Human owner holds emergency freeze authority that permanently halts execution</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <!-- In-Flight Prompt Intent -->
-        <div class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-mono font-bold uppercase tracking-wider text-outline">Current Agent Intent Payload</span>
-            <span class="text-[10px] font-mono text-tertiary bg-tertiary/10 border border-tertiary/30 px-2 py-0.5 rounded">Active Intent</span>
-          </div>
-          <div class="p-4 rounded-xl bg-surface-lowest border border-outline-variant/30 text-sm font-mono text-on-surface">
-            "${latestTx.intent}"
-          </div>
-          <div class="flex items-center justify-between text-xs font-mono text-outline pt-2">
-            <span>Target Provider: <strong class="text-secondary">${latestTx.providerName}</strong></span>
-            <span>Allocated: <strong class="text-tertiary">${latestTx.formattedAmount}</strong></span>
-          </div>
-        </div>
-
-        <!-- Live x402 Protocol Stepper & 402 Requirements Card -->
-        <div class="x402-visualizer-container">
-          ${typeof X402ProtocolVisualizer !== "undefined" ? X402ProtocolVisualizer.render() : ""}
-        </div>
 
         <!-- n8n Autonomous x402 Purchase Orchestrator Panel -->
         <div class="rounded-2xl bg-surface-low border border-secondary/40 p-6 space-y-6 shadow-2xl relative overflow-hidden">
@@ -992,6 +992,15 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
             </div>
 
             <div class="flex items-center gap-2">
+              <button
+                type="button"
+                onclick="AgentView.openFlowchartModal()"
+                class="px-3.5 py-1.5 text-[11px] font-mono font-bold rounded-lg bg-secondary/20 hover:bg-secondary/30 text-secondary border border-secondary/50 flex items-center gap-1.5 transition glow-cyan cursor-pointer active:scale-95 shadow-sm"
+                title="View full interactive flowchart in front"
+              >
+                <span class="material-symbols-outlined text-xs">account_tree</span>
+                <span>Open Flowchart in Front &rarr;</span>
+              </button>
               <a
                 href="https://rishisharma029.app.n8n.cloud/workflow/cveIFBZn9aM1CNLF"
                 target="_blank"
@@ -1006,30 +1015,42 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
 
           <!-- Flowchart Nodes Sequence -->
           <div class="p-4 rounded-xl bg-surface-lowest border border-outline-variant/30 space-y-3">
-            <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-outline block">
-              13-Node Verified Execution Pipeline:
-            </span>
-            <div class="flex flex-wrap items-center gap-2 text-[10px] font-mono">
-              <span class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40">1. Purchase Webhook</span>
-              <span class="text-outline">&rarr;</span>
-              <span class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40">2. Validate Intent</span>
-              <span class="text-outline">&rarr;</span>
-              <span class="px-2.5 py-1 rounded bg-secondary/10 text-secondary border border-secondary/30">3. Request Resource (402)</span>
-              <span class="text-outline">&rarr;</span>
-              <span class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40">4. Parse PAYMENT-REQUIRED</span>
-              <span class="text-outline">&rarr;</span>
-              <span class="px-2.5 py-1 rounded bg-tertiary/10 text-tertiary border border-tertiary/30">5. Check Budget & Freeze</span>
-              <span class="text-outline">&rarr;</span>
-              <span class="px-2.5 py-1 rounded bg-tertiary/10 text-tertiary border border-tertiary/30">6. Sign EIP-712</span>
-              <span class="text-outline">&rarr;</span>
-              <span class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40">7. Submit Paid Request</span>
-              <span class="text-outline">&rarr;</span>
-              <span class="px-2.5 py-1 rounded bg-tertiary/10 text-tertiary border border-tertiary/30">8. Settle On-Chain</span>
-              <span class="text-outline">&rarr;</span>
-              <span class="px-2.5 py-1 rounded bg-secondary/10 text-secondary border border-secondary/30">9. SHA-256 Verify</span>
-              <span class="text-outline">&rarr;</span>
-              <span class="px-2.5 py-1 rounded bg-primary/10 text-primary border border-primary/30">10. Emit Audit Event</span>
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-outline block">
+                13-Node Verified Execution Pipeline:
+              </span>
+              <button
+                type="button"
+                onclick="AgentView.openFlowchartModal()"
+                class="text-[10px] font-mono text-secondary hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <span>View Full Architecture Flowchart &rarr;</span>
+              </button>
             </div>
+            <div class="flex flex-wrap items-center gap-2 text-[10px] font-mono">
+              <span id="n8n-node-1" class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40 transition-all">1. Purchase Webhook</span>
+              <span class="text-outline">&rarr;</span>
+              <span id="n8n-node-2" class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40 transition-all">2. Validate Intent</span>
+              <span class="text-outline">&rarr;</span>
+              <span id="n8n-node-3" class="px-2.5 py-1 rounded bg-secondary/10 text-secondary border border-secondary/30 transition-all">3. Request Resource (402)</span>
+              <span class="text-outline">&rarr;</span>
+              <span id="n8n-node-4" class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40 transition-all">4. Parse PAYMENT-REQUIRED</span>
+              <span class="text-outline">&rarr;</span>
+              <span id="n8n-node-5" class="px-2.5 py-1 rounded bg-tertiary/10 text-tertiary border border-tertiary/30 transition-all">5. Check Budget & Freeze</span>
+              <span class="text-outline">&rarr;</span>
+              <span id="n8n-node-6" class="px-2.5 py-1 rounded bg-tertiary/10 text-tertiary border border-tertiary/30 transition-all">6. Sign EIP-712</span>
+              <span class="text-outline">&rarr;</span>
+              <span id="n8n-node-7" class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40 transition-all">7. Submit Paid Request</span>
+              <span class="text-outline">&rarr;</span>
+              <span id="n8n-node-8" class="px-2.5 py-1 rounded bg-tertiary/10 text-tertiary border border-tertiary/30 transition-all">8. Settle On-Chain</span>
+              <span class="text-outline">&rarr;</span>
+              <span id="n8n-node-9" class="px-2.5 py-1 rounded bg-secondary/10 text-secondary border border-secondary/30 transition-all">9. SHA-256 Verify</span>
+              <span class="text-outline">&rarr;</span>
+              <span id="n8n-node-10" class="px-2.5 py-1 rounded bg-primary/10 text-primary border border-primary/30 transition-all">10. Emit Audit Event</span>
+            </div>
+
+            <!-- Dynamic Live Execution Telemetry Display right below flowchart -->
+            <div id="n8nLiveTelemetryContainer" class="pt-2 hidden animate-fade-in"></div>
           </div>
 
           <!-- Trigger Scenarios Grid -->
@@ -1117,6 +1138,255 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
           </div>
         </div>
 
+
+        <!-- ================================================================= -->
+        <!-- LAST: CORE SECURITY MODEL & CURRENT AGENT INTENT PAYLOAD -->
+        <!-- ================================================================= -->
+<!-- Central Thesis: AI DECISION vs PROTOCOL AUTHORITY -->
+        <div class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 space-y-5">
+          <div class="flex items-center gap-2.5">
+            <div class="w-2 h-5 bg-secondary rounded-sm glow-cyan"></div>
+            <div>
+              <h2 class="font-headline text-base font-bold text-white tracking-tight">Core Security Model: Responsibility Separation</h2>
+              <span class="font-mono text-xs text-on-surface-variant">The AI agent reasons about services, but smart contracts enforce settlement</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Left: AI Decides -->
+            <div class="rounded-xl bg-surface-container p-5 space-y-3 border border-outline-variant/30">
+              <div class="flex items-center gap-2 text-secondary font-bold font-mono text-xs uppercase tracking-wider">
+                <span class="material-symbols-outlined text-base" data-icon="psychology">psychology</span>
+                <span>AI Decides (Autonomous Reasoning)</span>
+              </div>
+              <ul class="space-y-2 text-xs text-on-surface-variant">
+                <li class="flex items-start gap-2">
+                  <span class="text-secondary mt-0.5">&bull;</span>
+                  <span>Formulates purchasing intent from user task requirements</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-secondary mt-0.5">&bull;</span>
+                  <span>Queries service registry and scores candidate providers</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-secondary mt-0.5">&bull;</span>
+                  <span>Selects Pareto-optimal provider based on quality, latency, and price</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-secondary mt-0.5">&bull;</span>
+                  <span>Initiates HTTP 402 challenge negotiation with chosen endpoint</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Right: Protocol Enforces -->
+            <div class="rounded-xl bg-surface-container p-5 space-y-3 border border-outline-variant/30">
+              <div class="flex items-center gap-2 text-tertiary font-bold font-mono text-xs uppercase tracking-wider">
+                <span class="material-symbols-outlined text-base" data-icon="shield">shield</span>
+                <span>Protocol Enforces (On-Chain Invariants)</span>
+              </div>
+              <ul class="space-y-2 text-xs text-on-surface-variant">
+                <li class="flex items-start gap-2">
+                  <span class="text-tertiary mt-0.5">&bull;</span>
+                  <span>TokenBudgetEnforcer contract strictly checks ceiling before token transfer</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-tertiary mt-0.5">&bull;</span>
+                  <span>EIP-712 signature binds amount, provider address, and non-fungible reqId</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-tertiary mt-0.5">&bull;</span>
+                  <span>Replay attacks mathematically impossible via on-chain nonce state mapping</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-tertiary mt-0.5">&bull;</span>
+                  <span>Human owner holds emergency freeze authority that permanently halts execution</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- In-Flight Prompt Intent -->
+        <div class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-outline">Current Agent Intent Payload</span>
+            <span class="text-[10px] font-mono text-tertiary bg-tertiary/10 border border-tertiary/30 px-2 py-0.5 rounded">Active Intent</span>
+          </div>
+          <div class="p-4 rounded-xl bg-surface-lowest border border-outline-variant/30 text-sm font-mono text-on-surface">
+            "${latestTx.intent}"
+          </div>
+          <div class="flex items-center justify-between text-xs font-mono text-outline pt-2">
+            <span>Target Provider: <strong class="text-secondary">${latestTx.providerName}</strong></span>
+            <span>Allocated: <strong class="text-tertiary">${latestTx.formattedAmount}</strong></span>
+          </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- INDEPENDENT HOW IT WORKS FLOWCHART MODAL (IN FRONT) -->
+        <!-- ================================================================= -->
+        <div
+          id="flowchartModal"
+          class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto"
+          onclick="if (event.target === this) AgentView.closeFlowchartModal()"
+        >
+          <div class="relative w-full max-w-5xl rounded-2xl bg-surface-lowest border-2 border-secondary/60 shadow-2xl p-6 md:p-8 space-y-6 max-h-[90vh] overflow-y-auto font-mono">
+            
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between border-b border-outline-variant/30 pb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-secondary/20 border border-secondary/50 flex items-center justify-center glow-cyan shrink-0">
+                  <span class="material-symbols-outlined text-secondary text-xl">account_tree</span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 mb-0.5">
+                    <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-secondary">Architecture &amp; Wire Protocol</span>
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-tertiary/20 text-tertiary border border-tertiary/40">INDEPENDENT VIEW</span>
+                  </div>
+                  <h2 class="font-headline text-xl md:text-2xl font-bold text-white tracking-tight">
+                    How Autonomous x402 Purchasing Works
+                  </h2>
+                  <p class="text-xs text-on-surface-variant font-sans mt-0.5">
+                    End-to-end execution flow: from human prompt through AI discovery, wire 402 challenge, and smart contract settlement.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onclick="AgentView.closeFlowchartModal()"
+                class="text-outline hover:text-white p-2 rounded-xl hover:bg-surface-high transition cursor-pointer"
+                title="Close Flowchart"
+              >
+                <span class="material-symbols-outlined text-xl">close</span>
+              </button>
+            </div>
+
+            <!-- Simulation Controls -->
+            <div class="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-surface-low border border-outline-variant/30">
+              <div>
+                <span class="text-xs font-bold text-white block">Step-By-Step Wire Simulation</span>
+                <span class="text-[11px] text-outline font-sans">Watch the machine state transition in real-time with authentic x402 V2 headers</span>
+              </div>
+              <button
+                type="button"
+                onclick="if (typeof X402ProtocolVisualizer !== 'undefined') X402ProtocolVisualizer.simulateLiveStepByStep()"
+                class="px-4 py-2 rounded-xl text-xs font-bold bg-secondary hover:bg-secondary/90 text-black font-headline transition flex items-center gap-2 glow-cyan cursor-pointer active:scale-95"
+              >
+                <span class="material-symbols-outlined text-base">play_arrow</span>
+                <span>Run Live Flow Simulation &rarr;</span>
+              </button>
+            </div>
+
+            <!-- 4-Layer Architecture Diagram Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+              <!-- Layer 1 -->
+              <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2">
+                <div class="flex items-center gap-2 text-secondary font-bold text-[11px] uppercase">
+                  <span class="w-2 h-2 rounded-full bg-secondary"></span>
+                  <span>1. Intent Formulation</span>
+                </div>
+                <h4 class="font-bold text-white text-xs">Human &rarr; Agent Prompt</h4>
+                <p class="text-[11px] text-on-surface-variant leading-relaxed">
+                  User specifies task and constraints (e.g. "Highest quality under $5"). Agent formats task into objective utility function.
+                </p>
+                <div class="text-[10px] text-outline pt-2 border-t border-outline-variant/20">
+                  Ceiling Guard: $5.00 Hard-Cap
+                </div>
+              </div>
+
+              <!-- Layer 2 -->
+              <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2">
+                <div class="flex items-center gap-2 text-primary font-bold text-[11px] uppercase">
+                  <span class="w-2 h-2 rounded-full bg-primary"></span>
+                  <span>2. Dynamic Discovery</span>
+                </div>
+                <h4 class="font-bold text-white text-xs">Marketplace Catalog</h4>
+                <p class="text-[11px] text-on-surface-variant leading-relaxed">
+                  AI scans candidate providers, evaluates latency and quality, and selects Pareto-optimal provider under the budget ceiling.
+                </p>
+                <div class="text-[10px] text-outline pt-2 border-t border-outline-variant/20">
+                  Scoring: Quality (0.92) &bull; $4.00
+                </div>
+              </div>
+
+              <!-- Layer 3 -->
+              <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2">
+                <div class="flex items-center gap-2 text-amber-400 font-bold text-[11px] uppercase">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <span>3. x402 V2 Wire Handshake</span>
+                </div>
+                <h4 class="font-bold text-white text-xs">HTTP 402 &amp; EIP-712</h4>
+                <p class="text-[11px] text-on-surface-variant leading-relaxed">
+                  Provider returns HTTP 402 with PAYMENT-REQUIRED header. Agent signs structured payment authorization envelope.
+                </p>
+                <div class="text-[10px] text-outline pt-2 border-t border-outline-variant/20">
+                  Header: PAYMENT-SIGNATURE
+                </div>
+              </div>
+
+              <!-- Layer 4 -->
+              <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2">
+                <div class="flex items-center gap-2 text-tertiary font-bold text-[11px] uppercase">
+                  <span class="w-2 h-2 rounded-full bg-tertiary"></span>
+                  <span>4. EVM Settlement</span>
+                </div>
+                <h4 class="font-bold text-white text-xs">TokenBudgetEnforcer.sol</h4>
+                <p class="text-[11px] text-on-surface-variant leading-relaxed">
+                  Smart contract verifies signature, checks remaining allowance, executes atomic ERC-20 transfer, and verifies SHA-256 hash.
+                </p>
+                <div class="text-[10px] text-outline pt-2 border-t border-outline-variant/20">
+                  On-Chain Settlement Confirmed
+                </div>
+              </div>
+            </div>
+
+            <!-- 13-Node Detailed Execution Pipeline Sequence -->
+            <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-3">
+              <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-outline block">
+                13-Node Verified Execution Pipeline:
+              </span>
+              <div class="flex flex-wrap items-center gap-2 text-[10px] font-mono">
+                <span class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40">1. Purchase Webhook</span>
+                <span class="text-outline">&rarr;</span>
+                <span class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40">2. Validate Intent</span>
+                <span class="text-outline">&rarr;</span>
+                <span class="px-2.5 py-1 rounded bg-secondary/10 text-secondary border border-secondary/30">3. Request Resource (402)</span>
+                <span class="text-outline">&rarr;</span>
+                <span class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40">4. Parse PAYMENT-REQUIRED</span>
+                <span class="text-outline">&rarr;</span>
+                <span class="px-2.5 py-1 rounded bg-tertiary/10 text-tertiary border border-tertiary/30">5. Check Budget & Freeze</span>
+                <span class="text-outline">&rarr;</span>
+                <span class="px-2.5 py-1 rounded bg-tertiary/10 text-tertiary border border-tertiary/30">6. Sign EIP-712</span>
+                <span class="text-outline">&rarr;</span>
+                <span class="px-2.5 py-1 rounded bg-surface-container text-white border border-outline-variant/40">7. Submit Paid Request</span>
+                <span class="text-outline">&rarr;</span>
+                <span class="px-2.5 py-1 rounded bg-tertiary/10 text-tertiary border border-tertiary/30">8. Settle On-Chain</span>
+                <span class="text-outline">&rarr;</span>
+                <span class="px-2.5 py-1 rounded bg-secondary/10 text-secondary border border-secondary/30">9. SHA-256 Verify</span>
+                <span class="text-outline">&rarr;</span>
+                <span class="px-2.5 py-1 rounded bg-primary/10 text-primary border border-primary/30">10. Emit Audit Event</span>
+              </div>
+            </div>
+
+            <!-- Embedded Live Visualizer in Modal -->
+            <div class="rounded-xl border border-outline-variant/30 p-2 bg-surface-low/50">
+              ${typeof X402ProtocolVisualizer !== "undefined" ? X402ProtocolVisualizer.render() : ""}
+            </div>
+
+            <!-- Footer Close -->
+            <div class="flex items-center justify-between pt-2 border-t border-outline-variant/20">
+              <span class="text-xs text-outline">Autonomous Safe-Spend Protocol Deck</span>
+              <button
+                type="button"
+                onclick="AgentView.closeFlowchartModal()"
+                class="px-5 py-2 rounded-xl bg-surface-high hover:bg-surface-highest text-white border border-outline-variant/40 font-mono text-xs font-bold transition cursor-pointer"
+              >
+                Close Flowchart
+              </button>
+            </div>
+
+          </div>
+        </div>
       </div>
     `;
   },
