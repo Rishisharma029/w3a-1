@@ -373,3 +373,176 @@ spline-viewer::part(watermark) {
   transform: translateY(-3px) scale(1.02);
   box-shadow: 0 12px 30px rgba(6, 182, 212, 0.25);
 }
+
+
+/* =========================================================================
+   3D AGENT PAYMENT CREDENTIAL FLIP-CARD
+   ========================================================================= */
+.flip-card {
+  background-color: transparent;
+  width: 240px;
+  height: 154px;
+  perspective: 1000px;
+  color: white;
+  font-size: 16px;
+  user-select: none;
+  cursor: pointer;
+}
+
+.heading_8264 {
+  position: absolute;
+  letter-spacing: .2em;
+  font-size: 0.5em;
+  top: 2em;
+  left: 18.6em;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+}
+
+.logo {
+  position: absolute;
+  top: 6.8em;
+  left: 11.7em;
+}
+
+.chip {
+  position: absolute;
+  top: 2.3em;
+  left: 1.5em;
+}
+
+.contactless {
+  position: absolute;
+  top: 3.5em;
+  left: 12.4em;
+}
+
+.number {
+  position: absolute;
+  font-weight: bold;
+  font-size: .6em;
+  top: 8.3em;
+  left: 1.6em;
+  font-family: "Courier New", Courier, monospace;
+  letter-spacing: 1.5px;
+  margin: 0;
+}
+
+.valid_thru {
+  position: absolute;
+  font-weight: bold;
+  top: 635.8em;
+  font-size: .01em;
+  left: 140.3em;
+  margin: 0;
+}
+
+.date_8264 {
+  position: absolute;
+  font-weight: bold;
+  font-size: 0.5em;
+  top: 13.6em;
+  left: 3.2em;
+  font-family: "Courier New", Courier, monospace;
+  margin: 0;
+}
+
+.name {
+  position: absolute;
+  font-weight: bold;
+  font-size: 0.5em;
+  top: 16.1em;
+  left: 2em;
+  letter-spacing: 1px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+}
+
+.strip {
+  position: absolute;
+  background-color: black;
+  width: 15em;
+  height: 1.5em;
+  top: 2.4em;
+  left: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    #303030,
+    #303030 10px,
+    #202020 10px,
+    #202020 20px
+  );
+}
+
+.mstrip {
+  position: absolute;
+  background-color: rgb(255, 255, 255);
+  width: 8em;
+  height: 0.8em;
+  top: 5em;
+  left: .8em;
+  border-radius: 2.5px;
+}
+
+.sstrip {
+  position: absolute;
+  background-color: rgb(255, 255, 255);
+  width: 4.1em;
+  height: 0.8em;
+  top: 5em;
+  left: 10em;
+  border-radius: 2.5px;
+}
+
+.code {
+  font-weight: bold;
+  text-align: center;
+  margin: .2em;
+  color: black;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-style: preserve-3d;
+}
+
+.flip-card:hover .flip-card-inner,
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front, .flip-card-back {
+  box-shadow: 0 8px 14px 0 rgba(0,0,0,0.4);
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 1rem;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+.flip-card-front {
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 2px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -1px 0px inset, 0 0 15px rgba(6, 182, 212, 0.15);
+  background-color: #171717;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.flip-card-back {
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 2px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -1px 0px inset;
+  background-color: #171717;
+  transform: rotateY(180deg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}

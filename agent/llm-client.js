@@ -160,20 +160,21 @@ async function selectProvider(providers, requirements) {
     };
   }
 
-  const geminiResult = await callGemini(
-    SELECTION_SYSTEM,
-    SELECTION_USER_TMPL(providers, requirements)
-  );
+  if (geminiModel) {
+    const geminiResult = await callGemini(
+      SELECTION_SYSTEM,
+      SELECTION_USER_TMPL(providers, requirements)
+    );
 
-  if (
-    geminiResult &&
-    geminiResult.selectedProviderId &&
-    providers.some((p) => p.providerId === geminiResult.selectedProviderId)
-  ) {
-    return geminiResult;
+    if (
+      geminiResult &&
+      geminiResult.selectedProviderId &&
+      providers.some((p) => p.providerId === geminiResult.selectedProviderId)
+    ) {
+      return geminiResult;
+    }
   }
 
-  console.warn("[LLM] Falling back to deterministic scoring.");
   return deterministicSelect(providers, requirements);
 }
 

@@ -40,6 +40,27 @@ const N8N_WEBHOOK_URL = "https://rishisharma029.app.n8n.cloud/webhook/w3a1/purch
 const N8N_BEARER_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MDZiMmZhYy1iZmU4LTQzZDMtYjNlNS0wZmQzNjczNWQxMTUiLCJpc3MiOiJuOG4iLCJhdWQiOiJtY3Atc2VydmVyLWFwaSIsImp0aSI6ImZlMWFkODQ2LTk5YWEtNDhhMS1iZGNlLTVhNmU2MjdlOWQ2YSIsImlhdCI6MTc4OTE1MzAzNX0.UyHX5sQcxeWc1XUOvqCXAUZ2OBidEKc5gDCFY9Uw5uo";
 const ACTIVE_TUNNEL_URL = process.env.TUNNEL_URL || "https://angeles-featuring-vip-display.trycloudflare.com";
 
+
+let tunnelCheckCached = null;
+let tunnelCheckExpiry = 0;
+
+async function checkTunnelAvailability(tunnelUrl) {
+  if (Date.now() < tunnelCheckExpiry) return tunnelCheckCached;
+  if (!tunnelUrl || tunnelUrl.includes("localhost") || tunnelUrl.includes("127.0.0.1")) {
+    tunnelCheckCached = false;
+    tunnelCheckExpiry = Date.now() + 60000;
+    return false;
+  }
+  try {
+    const res = await axios.get(`${tunnelUrl}/api/orchestrate/n8n/status`, { timeout: 2000 });
+    tunnelCheckCached = res.status === 200;
+  } catch (e) {
+    tunnelCheckCached = false;
+  }
+  tunnelCheckExpiry = Date.now() + 60000;
+  return tunnelCheckCached;
+}
+
 const EIP712_DOMAIN_NAME = "TokenBudgetEnforcer";
 const EIP712_DOMAIN_VERSION = "1";
 const EIP712_TYPES = {
@@ -925,13 +946,16 @@ function createN8nRouter({
       };
 
       let n8nExecution = null;
-      try {
-        const n8nResp = await axios.post(N8N_WEBHOOK_URL, webhookPayload, { timeout: 15000 });
-        if (n8nResp.status === 200 && n8nResp.data) {
-          n8nExecution = n8nResp.data;
+      const isTunnelLive = await checkTunnelAvailability(tunnelBase);
+      if (isTunnelLive) {
+        try {
+          const n8nResp = await axios.post(N8N_WEBHOOK_URL, webhookPayload, { timeout: 5000 });
+          if (n8nResp.status === 200 && n8nResp.data) {
+            n8nExecution = n8nResp.data;
+          }
+        } catch (n8nErr) {
+          // Tunnel was responsive but workflow returned error; cleanly use local orchestrator
         }
-      } catch (n8nErr) {
-        console.warn("[AiPurchase] n8n Cloud webhook error/timeout:", n8nErr.message);
       }
 
       let txHash = n8nExecution && n8nExecution.txHash ? n8nExecution.txHash : null;
