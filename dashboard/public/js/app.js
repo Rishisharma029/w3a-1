@@ -11,6 +11,7 @@ const App = {
   views: {
     overview: OverviewView,
     current: CurrentTransactionView,
+    execution: CurrentTransactionView,
     agent: AgentView,
     transactions: TransactionsView,
     providers: ProvidersView,

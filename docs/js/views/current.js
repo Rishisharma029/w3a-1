@@ -205,7 +205,7 @@ const CurrentTransactionView = {
             </div>
 
             <!-- Wire Protocol Details & 3D Interactive Payment Card -->
-            <div class="flex flex-col xl:flex-row items-center justify-between gap-5">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
               <!-- Simple Clean Key-Value Grid for Judges -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs flex-1 w-full">
                 <div class="p-3 rounded-lg bg-surface-low border border-outline-variant/30 flex items-center justify-between">
