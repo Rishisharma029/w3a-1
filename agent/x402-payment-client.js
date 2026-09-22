@@ -124,7 +124,7 @@ class X402PaymentClient {
     const providerAddress = overrides.provider || acceptedReq.payTo;
     const amount = overrides.amount || acceptedReq.amount;
     const nowSec = Math.floor(Date.now() / 1000);
-    const validBefore = overrides.validBefore || (nowSec + (acceptedReq.maxTimeoutSeconds || 300));
+    const validBefore = overrides.validBefore || (nowSec + (acceptedReq.maxTimeoutSeconds || 3600));
 
     // Sign EIP-712 PaymentAuthorization
     const domain = this.getDomain();

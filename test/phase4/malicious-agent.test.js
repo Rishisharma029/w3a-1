@@ -141,7 +141,7 @@ describe("Phase 4 — Malicious Agent Attack Scenarios", function () {
   // MA-04: Agent cannot replay an old reqId to double-charge
   it("MA-04 — agent CANNOT reuse a settled reqId (on-chain replay protection)", async function () {
     const reqId = ethers.id("ma-04-replay-" + Date.now());
-    const validBefore = Math.floor(Date.now() / 1000) + 300;
+    const validBefore = Math.floor(Date.now() / 1000) + 3600;
     const amount = 3n * ONE_USDC;
 
     const domain = {
@@ -176,7 +176,7 @@ describe("Phase 4 — Malicious Agent Attack Scenarios", function () {
   // MA-05: Agent cannot alter provider address after signing
   it("MA-05 — altered provider address causes EIP-712 signature verification to fail", async function () {
     const reqId = ethers.id("ma-05-wrong-provider-" + Date.now());
-    const validBefore = Math.floor(Date.now() / 1000) + 300;
+    const validBefore = Math.floor(Date.now() / 1000) + 3600;
     const amount = 3n * ONE_USDC;
 
     const domain = {
@@ -212,7 +212,7 @@ describe("Phase 4 — Malicious Agent Attack Scenarios", function () {
   // MA-06: Agent cannot alter the amount after signing
   it("MA-06 — altered payment amount causes EIP-712 signature verification to fail", async function () {
     const reqId = ethers.id("ma-06-wrong-amount-" + Date.now());
-    const validBefore = Math.floor(Date.now() / 1000) + 300;
+    const validBefore = Math.floor(Date.now() / 1000) + 3600;
     const signedAmount = 3n * ONE_USDC;
     const tamperedAmount = 1n * ONE_USDC; // Lower amount — provider tries to front-run
 

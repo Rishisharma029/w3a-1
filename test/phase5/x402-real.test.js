@@ -271,7 +271,7 @@ describe("Phase 5 — Official x402 V2 Protocol Integration", function () {
       reqId: req.extra.reqId,
       provider: req.payTo,
       amount: BigInt(req.amount),
-      validBefore: BigInt(Math.floor(Date.now() / 1000) + 300),
+      validBefore: BigInt(Math.floor(Date.now() / 1000) + 3600),
     };
     const signature = await agentSigner.signTypedData(domain, types, value);
 
@@ -483,7 +483,7 @@ describe("Phase 5 — Official x402 V2 Protocol Integration", function () {
     const overspendAmount = remainingBudget + 10n * ONE_USDC;
 
     const fakeReqId = ethers.id("overspend-x402-" + Date.now());
-    const validBefore = Math.floor(Date.now() / 1000) + 300;
+    const validBefore = Math.floor(Date.now() / 1000) + 3600;
 
     // Agent signs overspend authorization
     const domain = {
@@ -518,7 +518,7 @@ describe("Phase 5 — Official x402 V2 Protocol Integration", function () {
         amount: overspendAmount.toString(),
         asset: tokenAddress,
         payTo: providerSigner.address,
-        maxTimeoutSeconds: 300,
+        maxTimeoutSeconds: 3600,
         extra: { reqId: fakeReqId },
       },
       payload: {

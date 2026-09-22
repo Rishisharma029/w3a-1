@@ -137,6 +137,11 @@ class EventIndexer {
         isFrozen: args.isFrozen,
         txHash,
       });
+    } else if (name === "AuthorizationCancelled" || name === "AuthorizationExpired") {
+      const existing = this.transactions.find((t) => t.reqId === args.reqId);
+      if (existing) {
+        existing.status = name === "AuthorizationCancelled" ? "CANCELLED" : "EXPIRED";
+      }
     }
 
     this._save();

@@ -39,6 +39,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
         uint256 validBefore;
         bytes32 deliveryHash;
         bool settled;
+        bool cancelled;
     }
 
     // -------------------------------------------------------------------------
@@ -52,6 +53,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
     uint256 public totalFunded;
     uint256 public authorizedBudget;
     uint256 public settledSpend;
+    uint256 public reservedSpend;
     uint256 public totalWithdrawn;
 
     mapping(bytes32 => bool) private _usedRequests;
@@ -68,6 +70,8 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
     event PaymentAuthorized(bytes32 indexed reqId, address indexed provider, uint256 amount, uint256 validBefore);
     event PaymentSettled(bytes32 indexed reqId, address indexed provider, uint256 amount, bytes32 deliveryHash);
     event PaymentRejected(bytes32 indexed reqId, address indexed provider, uint256 amount, string reason);
+    event AuthorizationCancelled(bytes32 indexed reqId, uint256 amount);
+    event AuthorizationExpired(bytes32 indexed reqId, uint256 amount);
 
     // -------------------------------------------------------------------------
     // Modifiers
@@ -130,7 +134,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
      * @notice Adjust authorized spending cap. Must be >= settled spend and <= total unwithdrawn.
      */
     function setAuthorizedBudget(uint256 newBudget) external onlyOwner {
-        require(newBudget >= settledSpend, "TokenBudgetEnforcer: budget cannot be below settled spend");
+        require(newBudget >= settledSpend + reservedSpend, "TokenBudgetEnforcer: budget cannot be below committed spend");
         require(newBudget <= totalFunded - totalWithdrawn, "TokenBudgetEnforcer: budget exceeds funded balance");
 
         authorizedBudget = newBudget;
@@ -144,7 +148,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
         require(amount > 0, "TokenBudgetEnforcer: amount must be > 0");
         uint256 unspent = token.balanceOf(address(this));
         require(amount <= unspent, "TokenBudgetEnforcer: insufficient escrow balance");
-        require(authorizedBudget - amount >= settledSpend, "TokenBudgetEnforcer: withdrawal breaches settled spend");
+        require(authorizedBudget - amount >= settledSpend + reservedSpend, "TokenBudgetEnforcer: withdrawal breaches committed spend");
 
         authorizedBudget -= amount;
         totalWithdrawn += amount;
@@ -193,7 +197,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
             revert("TokenBudgetEnforcer: request ID already used");
         }
 
-        if (settledSpend + amount > authorizedBudget) {
+        if (settledSpend + reservedSpend + amount > authorizedBudget) {
             emit PaymentRejected(reqId, provider, amount, "Spending cap exceeded");
             revert("TokenBudgetEnforcer: spending cap exceeded");
         }
@@ -204,8 +208,10 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
             amount: amount,
             validBefore: validBefore,
             deliveryHash: bytes32(0),
-            settled: false
+            settled: false,
+            cancelled: false
         });
+        reservedSpend += amount;
 
         emit PaymentAuthorized(reqId, provider, amount, validBefore);
     }
@@ -220,6 +226,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
         Authorization storage auth = _authorizations[reqId];
         require(auth.amount > 0, "TokenBudgetEnforcer: authorization not found");
         require(!auth.settled, "TokenBudgetEnforcer: payment already settled");
+        require(!auth.cancelled, "TokenBudgetEnforcer: authorization cancelled");
         require(block.timestamp <= auth.validBefore, "TokenBudgetEnforcer: authorization expired");
         require(deliveryHash != bytes32(0), "TokenBudgetEnforcer: invalid delivery hash");
 
@@ -227,11 +234,44 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
 
         auth.settled = true;
         auth.deliveryHash = deliveryHash;
+        reservedSpend -= auth.amount;
         settledSpend += auth.amount;
 
         token.safeTransfer(auth.provider, auth.amount);
 
         emit PaymentSettled(reqId, auth.provider, auth.amount, deliveryHash);
+    }
+
+    /**
+     * @notice Agent or owner cancels an active pending authorization, releasing reserved capital.
+     */
+    function cancelAuthorization(bytes32 reqId) external whenNotFrozen nonReentrant {
+        require(msg.sender == owner || msg.sender == agent, "TokenBudgetEnforcer: unauthorized caller");
+        Authorization storage auth = _authorizations[reqId];
+        require(auth.amount > 0, "TokenBudgetEnforcer: authorization not found");
+        require(!auth.settled, "TokenBudgetEnforcer: payment already settled");
+        require(!auth.cancelled, "TokenBudgetEnforcer: authorization already cancelled");
+
+        auth.cancelled = true;
+        reservedSpend -= auth.amount;
+
+        emit AuthorizationCancelled(reqId, auth.amount);
+    }
+
+    /**
+     * @notice Permissionlessly releases reserved capital for an authorization whose validBefore has passed.
+     */
+    function releaseExpiredAuthorization(bytes32 reqId) external whenNotFrozen nonReentrant {
+        Authorization storage auth = _authorizations[reqId];
+        require(auth.amount > 0, "TokenBudgetEnforcer: authorization not found");
+        require(!auth.settled, "TokenBudgetEnforcer: payment already settled");
+        require(!auth.cancelled, "TokenBudgetEnforcer: authorization already cancelled");
+        require(block.timestamp > auth.validBefore, "TokenBudgetEnforcer: authorization not expired");
+
+        auth.cancelled = true;
+        reservedSpend -= auth.amount;
+
+        emit AuthorizationExpired(reqId, auth.amount);
     }
 
     // -------------------------------------------------------------------------
@@ -260,7 +300,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
             revert("TokenBudgetEnforcer: request ID already used");
         }
 
-        if (settledSpend + amount > authorizedBudget) {
+        if (settledSpend + reservedSpend + amount > authorizedBudget) {
             emit PaymentRejected(reqId, provider, amount, "Spending cap exceeded");
             revert("TokenBudgetEnforcer: spending cap exceeded");
         }
@@ -280,7 +320,8 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
             amount: amount,
             validBefore: validBefore,
             deliveryHash: deliveryHash,
-            settled: true
+            settled: true,
+            cancelled: false
         });
         settledSpend += amount;
 
@@ -295,10 +336,21 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
     // -------------------------------------------------------------------------
 
     /**
-     * @notice Remaining authorized spend. Always equals authorizedBudget - settledSpend.
+     * @notice Available budget that can be allocated to new authorizations or settlements.
+     *         Always equals authorizedBudget - settledSpend - reservedSpend.
+     */
+    function availableBudget() public view returns (uint256) {
+        if (settledSpend + reservedSpend >= authorizedBudget) {
+            return 0;
+        }
+        return authorizedBudget - settledSpend - reservedSpend;
+    }
+
+    /**
+     * @notice Remaining authorized spend. Equals availableBudget().
      */
     function remainingBudget() public view returns (uint256) {
-        return authorizedBudget - settledSpend;
+        return availableBudget();
     }
 
     /**
@@ -306,6 +358,13 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
      */
     function isRequestUsed(bytes32 reqId) external view returns (bool) {
         return _usedRequests[reqId];
+    }
+
+    /**
+     * @notice True if an authorization has been cancelled or expired.
+     */
+    function isAuthorizationCancelled(bytes32 reqId) external view returns (bool) {
+        return _authorizations[reqId].cancelled;
     }
 
     /**

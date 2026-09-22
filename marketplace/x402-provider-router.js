@@ -40,7 +40,7 @@ const { makeDeliveryReceipt, computeContentHash } = require("../shared/types");
 const { AuditEvent } = require("../shared/events");
 const { globalEventBus } = require("../shared/event-bus");
 
-const QUOTE_TTL_SECONDS = 300; // 5 minutes
+const QUOTE_TTL_SECONDS = 3600; // 1 hour
 
 function generateReqId() {
   const raw = uuid().replace(/-/g, "");

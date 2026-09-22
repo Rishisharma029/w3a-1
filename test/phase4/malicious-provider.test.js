@@ -211,7 +211,7 @@ describe("Phase 4 — Malicious Provider Attack Scenarios", function () {
         reqId: result.reqId,
         provider: providerSigner.address,
         amount: (3n * ONE_USDC).toString(),
-        validBefore: Math.floor(Date.now() / 1000) + 300,
+        validBefore: Math.floor(Date.now() / 1000) + 3600,
         signature: "0x" + "00".repeat(65),
       },
       deliveryHash
@@ -251,7 +251,7 @@ describe("Phase 4 — Malicious Provider Attack Scenarios", function () {
           // reqId deliberately missing
           provider: providerSigner.address,
           amount: (4n * ONE_USDC).toString(),
-          validBefore: Math.floor(Date.now() / 1000) + 300,
+          validBefore: Math.floor(Date.now() / 1000) + 3600,
         },
       },
       { validateStatus: () => true }
@@ -262,7 +262,7 @@ describe("Phase 4 — Malicious Provider Attack Scenarios", function () {
   // MP-08: Provider cannot submit zero/invalid delivery hash
   it("MP-08 — zero delivery hash in settleWithSignature is rejected by contract", async function () {
     const reqId = ethers.id("mp-08-" + Date.now());
-    const validBefore = Math.floor(Date.now() / 1000) + 300;
+    const validBefore = Math.floor(Date.now() / 1000) + 3600;
     const amount = 3n * ONE_USDC;
 
     const domain = {

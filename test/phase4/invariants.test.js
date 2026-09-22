@@ -55,7 +55,7 @@ describe("Phase 4 — System Invariants & Property Tests", function () {
   }
 
   async function settle(reqId, amount, providerAddr) {
-    const validBefore = Math.floor(Date.now() / 1000) + 300;
+    const validBefore = Math.floor(Date.now() / 1000) + 3600;
     const domain = await getDomain();
     const value = { reqId, provider: providerAddr, amount, validBefore };
     const signature = await agentSigner.signTypedData(domain, EIP712_TYPES, value);
@@ -151,7 +151,7 @@ describe("Phase 4 — System Invariants & Property Tests", function () {
     const remaining = await enforcer.remainingBudget();
     const overspendAmt = remaining + 1n * ONE_USDC;
     const reqId = ethers.id("inv04-overspend-" + Date.now());
-    const validBefore = Math.floor(Date.now() / 1000) + 300;
+    const validBefore = Math.floor(Date.now() / 1000) + 3600;
     const domain = await getDomain();
     const value = { reqId, provider: providerSigner.address, amount: overspendAmt, validBefore };
     const sig = await agentSigner.signTypedData(domain, EIP712_TYPES, value);
@@ -200,7 +200,7 @@ describe("Phase 4 — System Invariants & Property Tests", function () {
     await enforcer.connect(ownerSigner).freezeAgent(true);
 
     const frozenReqId = ethers.id("inv07-frozen-" + Date.now());
-    const validBefore = Math.floor(Date.now() / 1000) + 300;
+    const validBefore = Math.floor(Date.now() / 1000) + 3600;
     const domain = await getDomain();
     const value = { reqId: frozenReqId, provider: providerSigner.address, amount: 3n * ONE_USDC, validBefore };
     const sig = await agentSigner.signTypedData(domain, EIP712_TYPES, value);
@@ -229,7 +229,7 @@ describe("Phase 4 — System Invariants & Property Tests", function () {
   // INV-08: Delivery hash stored on-chain matches computed content hash
   it("INV-08 — delivery hash recorded on-chain is exactly the hash of delivered content", async function () {
     const reqId = ethers.id("inv08-" + Date.now());
-    const validBefore = Math.floor(Date.now() / 1000) + 300;
+    const validBefore = Math.floor(Date.now() / 1000) + 3600;
     const amount = 3n * ONE_USDC;
     const domain = await getDomain();
     const value = { reqId, provider: providerSigner.address, amount, validBefore };
@@ -251,7 +251,7 @@ describe("Phase 4 — System Invariants & Property Tests", function () {
   // INV-09: PaymentSettled event amount matches actual token transfer
   it("INV-09 — PaymentSettled event amount equals actual ERC-20 tokens transferred to provider", async function () {
     const reqId = ethers.id("inv09-" + Date.now());
-    const validBefore = Math.floor(Date.now() / 1000) + 300;
+    const validBefore = Math.floor(Date.now() / 1000) + 3600;
     const amount = 3n * ONE_USDC;
     const domain = await getDomain();
     const value = { reqId, provider: providerSigner.address, amount, validBefore };

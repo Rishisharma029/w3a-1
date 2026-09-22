@@ -14,7 +14,7 @@ const { v4: uuid } = require("uuid");
 const { makeDeliveryReceipt } = require("../shared/types");
 const { AuditEvent } = require("../shared/events");
 
-const QUOTE_TTL_SECONDS = 300; // 5 minutes
+const QUOTE_TTL_SECONDS = 3600; // 1 hour
 
 function generateReqId() {
   const raw = uuid().replace(/-/g, "");

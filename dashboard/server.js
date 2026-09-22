@@ -121,10 +121,23 @@ function createDashboardServer({
       const spentNum = Number(settledSpend) / 1e6;
       const utilization = authNum > 0 ? ((spentNum / authNum) * 100).toFixed(1) : 0;
 
+      let reservedSpendVal = 0n;
+      let availableBudgetVal = authorizedBudget - settledSpend;
+      try {
+        if (typeof enforcerContract.reservedSpend === "function") {
+          reservedSpendVal = await enforcerContract.reservedSpend();
+        }
+        if (typeof enforcerContract.availableBudget === "function") {
+          availableBudgetVal = await enforcerContract.availableBudget();
+        }
+      } catch (_) {}
+
       res.json({
         totalFunded: (Number(totalFunded) / 1e6).toFixed(2),
         authorizedBudget: authNum.toFixed(2),
         settledSpend: spentNum.toFixed(2),
+        reservedSpend: (Number(reservedSpendVal) / 1e6).toFixed(2),
+        availableBudget: (Number(availableBudgetVal) / 1e6).toFixed(2),
         remaining: (Number(remaining) / 1e6).toFixed(2),
         unspentEscrow: (Number(unspentEscrow) / 1e6).toFixed(2),
         isFrozen,
