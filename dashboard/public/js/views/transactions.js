@@ -13,6 +13,7 @@ const TransactionsView = {
   activeFilter: "All Purchases",
   searchQuery: "",
   viewMode: "cards", // "cards" | "table"
+  isLoading: false,
   initialized: false,
 
   init() {
@@ -40,8 +41,14 @@ const TransactionsView = {
   },
 
   setFilter(filterId) {
+    if (this.activeFilter === filterId) return;
     this.activeFilter = filterId;
+    this.isLoading = true;
     this.reRender();
+    setTimeout(() => {
+      this.isLoading = false;
+      this.reRender();
+    }, 200);
   },
 
   setSearch(query) {
@@ -61,6 +68,27 @@ const TransactionsView = {
     }
   },
 
+    renderSkeletonCards(count = 5) {
+    return `
+      <div class="space-y-3">
+        ${Array.from({ length: count }).map(() => `
+          <div class="p-4 sm:p-5 rounded-2xl bg-surface-low border border-outline-variant/30 skeleton-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+            <div class="flex items-center gap-3.5 flex-1">
+              <div class="w-10 h-10 rounded-xl skeleton-shimmer shrink-0"></div>
+              <div class="space-y-2 flex-1">
+                <div class="h-4 w-48 skeleton-shimmer rounded"></div>
+                <div class="h-3 w-64 skeleton-shimmer-cyan rounded"></div>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="h-7 w-24 rounded-lg skeleton-shimmer-emerald"></div>
+              <div class="h-8 w-24 rounded-xl skeleton-shimmer"></div>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  },
   exportCSV() {
     const allRecords = typeof TransactionAdapter !== "undefined" && typeof TransactionAdapter.getUnifiedHistory === "function"
       ? TransactionAdapter.getUnifiedHistory(AppState.transactions, AppState.alerts, AppState.providerSelectionState)
@@ -202,8 +230,7 @@ const TransactionsView = {
 
         <!-- 6. Item 6: PURCHASE HISTORY CARDS (User-Friendly Stream) -->
         ${
-          this.viewMode === 'cards'
-            ? `
+          this.isLoading ? this.renderSkeletonCards(5) : this.viewMode === 'cards' ? `
           <div class="space-y-3">
             ${
               filtered.length === 0

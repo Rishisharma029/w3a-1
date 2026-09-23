@@ -97,7 +97,7 @@ function createX402ProviderRouter({
     if (!paymentSignatureHeader) {
       const reqId = generateReqId();
       const expiresAt = Math.floor(Date.now() / 1000) + QUOTE_TTL_SECONDS;
-      const tokenAmount = BigInt(service.price) * 1_000_000n; // 6 decimals atomic units
+      const tokenAmount = BigInt(Math.round(Number(service.price) * 1_000_000)); // 6 decimals atomic units
 
       // Store pending quote in provider quoteStore
       quoteStore.set(reqId, {
@@ -212,7 +212,7 @@ function createX402ProviderRouter({
     }
 
     // 2. Validate accepted requirements match provider configuration
-    const expectedAmount = (BigInt(service.price) * 1_000_000n).toString();
+    const expectedAmount = (BigInt(Math.round(Number(service.price) * 1_000_000))).toString();
     const expectedRequirements = {
       scheme: "exact",
       network,

@@ -546,3 +546,160 @@ spline-viewer::part(watermark) {
   transform: rotateY(180deg);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+/* ==========================================================================
+   SKEUOMORPHIC THERMAL RECEIPT PRINTER STYLES & MECHANICAL KEYFRAMES
+   ========================================================================== */
+
+/* Sawtooth / Jagged top edge mimicking torn thermal paper */
+.jagged-top {
+  clip-path: polygon(
+    0% 0px,
+    2.5% 6px, 5% 0px, 7.5% 6px, 10% 0px, 12.5% 6px, 15% 0px, 17.5% 6px, 20% 0px,
+    22.5% 6px, 25% 0px, 27.5% 6px, 30% 0px, 32.5% 6px, 35% 0px, 37.5% 6px, 40% 0px,
+    42.5% 6px, 45% 0px, 47.5% 6px, 50% 0px, 52.5% 6px, 55% 0px, 57.5% 6px, 60% 0px,
+    62.5% 6px, 65% 0px, 67.5% 6px, 70% 0px, 72.5% 6px, 75% 0px, 77.5% 6px, 80% 0px,
+    82.5% 6px, 85% 0px, 87.5% 6px, 90% 0px, 92.5% 6px, 95% 0px, 97.5% 6px, 100% 0px,
+    100% 100%, 0% 100%
+  );
+}
+
+/* Sawtooth bottom edge */
+.jagged-bottom {
+  clip-path: polygon(
+    0% 0%, 100% 0%,
+    100% calc(100% - 6px),
+    97.5% 100%, 95% calc(100% - 6px), 92.5% 100%, 90% calc(100% - 6px), 87.5% 100%, 85% calc(100% - 6px),
+    82.5% 100%, 80% calc(100% - 6px), 77.5% 100%, 75% calc(100% - 6px), 72.5% 100%, 70% calc(100% - 6px),
+    67.5% 100%, 65% calc(100% - 6px), 62.5% 100%, 60% calc(100% - 6px), 57.5% 100%, 55% calc(100% - 6px),
+    52.5% 100%, 50% calc(100% - 6px), 47.5% 100%, 45% calc(100% - 6px), 42.5% 100%, 40% calc(100% - 6px),
+    37.5% 100%, 35% calc(100% - 6px), 32.5% 100%, 30% calc(100% - 6px), 27.5% 100%, 25% calc(100% - 6px),
+    22.5% 100%, 20% calc(100% - 6px), 17.5% 100%, 15% calc(100% - 6px), 12.5% 100%, 10% calc(100% - 6px),
+    7.5% 100%, 5% calc(100% - 6px), 2.5% 100%, 0% calc(100% - 6px)
+  );
+}
+
+/* Skeuomorphic Thermal Stepper Motor Animation */
+/* Simulates realistic ratchet-wheel mechanical bursts of a point-of-sale thermal head */
+@keyframes thermalPrintFeed {
+  0% {
+    transform: translateY(-98%);
+    opacity: 0.1;
+  }
+  5% {
+    transform: translateY(-98%);
+    opacity: 1;
+  }
+  18% {
+    transform: translateY(-78%);
+  }
+  22% {
+    transform: translateY(-78%);
+  }
+  36% {
+    transform: translateY(-56%);
+  }
+  40% {
+    transform: translateY(-56%);
+  }
+  55% {
+    transform: translateY(-34%);
+  }
+  60% {
+    transform: translateY(-34%);
+  }
+  75% {
+    transform: translateY(-16%);
+  }
+  79% {
+    transform: translateY(-16%);
+  }
+  93% {
+    transform: translateY(0%);
+  }
+  97% {
+    transform: translateY(-2px);
+  }
+  100% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+}
+
+.animate-print-feed {
+  animation: thermalPrintFeed 2.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  will-change: transform;
+}
+
+/* Mechanical indicator pulse */
+@keyframes printerLed {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 6px rgba(16,185,129,0.9)); }
+  50% { opacity: 0.35; filter: drop-shadow(0 0 1px rgba(16,185,129,0.3)); }
+}
+.printer-led-active {
+  animation: printerLed 0.4s ease-in-out infinite;
+}
+
+/* Subtle paper texture */
+.receipt-paper {
+  background-color: #fafaf8;
+  background-image: radial-gradient(#ebeae6 0.75px, transparent 0.75px);
+  background-size: 8px 8px;
+}
+
+/* ==========================================================================
+   Cybernetic Loading Skeletons & Shimmer Animation
+   ========================================================================== */
+@keyframes cyber-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(22, 27, 41, 0.7) 0%,
+    rgba(48, 52, 67, 0.95) 50%,
+    rgba(22, 27, 41, 0.7) 100%
+  );
+  background-size: 200% 100%;
+  animation: cyber-shimmer 1.8s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+.skeleton-shimmer-cyan {
+  background: linear-gradient(
+    90deg,
+    rgba(14, 19, 32, 0.85) 0%,
+    rgba(93, 230, 255, 0.15) 50%,
+    rgba(14, 19, 32, 0.85) 100%
+  );
+  background-size: 200% 100%;
+  animation: cyber-shimmer 1.8s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+.skeleton-shimmer-emerald {
+  background: linear-gradient(
+    90deg,
+    rgba(14, 19, 32, 0.85) 0%,
+    rgba(78, 222, 163, 0.15) 50%,
+    rgba(14, 19, 32, 0.85) 100%
+  );
+  background-size: 200% 100%;
+  animation: cyber-shimmer 1.8s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+.skeleton-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(144, 143, 160, 0.18);
+  background: rgba(14, 19, 32, 0.7);
+  backdrop-filter: blur(8px);
+}
+

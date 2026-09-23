@@ -60,7 +60,7 @@ function createTokenProviderRouter({
 
     const reqId = generateReqId();
     const expiresAt = Math.floor(Date.now() / 1000) + QUOTE_TTL_SECONDS;
-    const tokenAmount = BigInt(service.price) * 1_000_000n; // 6 decimals (e.g. 4 -> 4,000,000)
+    const tokenAmount = BigInt(Math.round(Number(service.price) * 1_000_000)); // 6 decimals (e.g. 4.5 -> 4,500,000)
 
     // Store pending quote
     quoteStore.set(reqId, {
@@ -148,7 +148,7 @@ function createTokenProviderRouter({
     const expectedRequirements = {
       reqId,
       recipient,
-      amount: (BigInt(service.price) * 1_000_000n).toString(),
+      amount: (BigInt(Math.round(Number(service.price) * 1_000_000))).toString(),
     };
 
     const verifyResult = await facilitator.verify(paymentPayload, expectedRequirements);

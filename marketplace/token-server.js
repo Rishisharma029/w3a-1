@@ -102,7 +102,7 @@ function createTokenMarketplace({
         disc.services = disc.services.map((s) => ({
           ...s,
           currency: "MockUSDC",
-          amountUnits: (BigInt(s.price) * 1_000_000n).toString(),
+          amountUnits: (BigInt(Math.round(Number(s.price) * 1_000_000))).toString(),
         }));
         return disc;
       }),

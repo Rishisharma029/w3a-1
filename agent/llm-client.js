@@ -187,13 +187,19 @@ function keywordParseIntent(text) {
 
   // Service type
   let serviceType = null;
-  if (/translat|hindi|spanish|french|german|language/.test(lower)) serviceType = "translation";
-  else if (/compute|calculat|process|data|analyz/.test(lower))      serviceType = "compute";
-  else if (/image|vision|photo|picture|detect/.test(lower))         serviceType = "image-analysis";
+  if (/translat|hindi|spanish|french|german|language/.test(lower))                   serviceType = "translation";
+  else if (/compute|calculat|matrix|statist|anomal|risk|monte/.test(lower))         serviceType = "data-compute";
+  else if (/ocr|image.analyz|vision|photo|picture|detect|receipt|invoice|face/.test(lower)) serviceType = "vision-ocr";
+  else if (/reason|llm|generat|story|plan|schema|json|summar|tldr|distill/.test(lower))   serviceType = "text-generation";
+  else if (/speech|audio|voice|stt|tts|whisper|diariz|noise/.test(lower))           serviceType = "speech-audio";
+  else if (/diffus|image.gen|upscal|video|matting|background/.test(lower))          serviceType = "image-video";
+  else if (/code|sandbox|audit|eval|sql|mock|ast|syntax/.test(lower))               serviceType = "code-dev";
+  else if (/embed|vector|rag|retriev|knowledge|chunk|citation/.test(lower))         serviceType = "rag-embeddings";
+  else if (/moderat|toxic|safety|pii|redact|academic|scholar|sentiment/.test(lower)) serviceType = "document-research";
 
   // Priority
   let priority = "balanced";
-  if (/best.quality|highest.quality|premium|accurate|precision|gamma/.test(lower)) {
+  if (/best.quality|highest.quality|premium|accurate|precision|gamma|expert/.test(lower)) {
     priority = "quality";
   } else if (/cheap|cheapest|lowest.cost|minimize.cost|low.cost|\bbudget\b(?!\s*(?:limit|exceed|cap))/.test(lower)) {
     priority = "cost";
@@ -216,11 +222,20 @@ function keywordParseIntent(text) {
 
   // preferredProvider or preferredService
   let preferredProvider = null;
-  if (/alpha/i.test(lower)) preferredProvider = "alpha-translate";
-  else if (/beta/i.test(lower)) preferredProvider = "beta-translate";
-  else if (/gamma/i.test(lower)) preferredProvider = "gamma-translate";
-  else if (/delta/i.test(lower)) preferredProvider = "delta-compute";
+  if (/alpha/i.test(lower))        preferredProvider = "alpha-translate";
+  else if (/beta/i.test(lower))    preferredProvider = "beta-translate";
+  else if (/gamma/i.test(lower))   preferredProvider = "gamma-translate";
+  else if (/delta/i.test(lower))   preferredProvider = "delta-compute";
   else if (/epsilon/i.test(lower)) preferredProvider = "epsilon-vision";
+  else if (/zeta/i.test(lower))    preferredProvider = "zeta-llm";
+  else if (/eta/i.test(lower))     preferredProvider = "eta-summarize";
+  else if (/theta/i.test(lower))   preferredProvider = "theta-audio";
+  else if (/iota/i.test(lower))    preferredProvider = "iota-diffusion";
+  else if (/kappa/i.test(lower))   preferredProvider = "kappa-data";
+  else if (/lambda/i.test(lower))  preferredProvider = "lambda-code";
+  else if (/mu/i.test(lower))      preferredProvider = "mu-embeddings";
+  else if (/nu/i.test(lower))      preferredProvider = "nu-rag";
+  else if (/xi/i.test(lower))      preferredProvider = "xi-compliance";
 
   return { serviceType, priority, minQuality, maxPrice, targetLanguage, preferredProvider, payload: targetLanguage ? { targetLanguage } : null };
 }

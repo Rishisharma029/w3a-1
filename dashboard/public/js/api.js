@@ -17,8 +17,58 @@
  * is offline or when the user explicitly enables "DEMO DATA" mode.
  */
 
+// ---------------------------------------------------------------------------
+// Client-Side In-Memory Query Cache with In-Flight Deduplication & TTL
+// ---------------------------------------------------------------------------
+const ClientQueryCache = {
+  cache: new Map(),
+  inFlight: new Map(),
+
+  async fetch(url, options = {}, ttlMs = 4000) {
+    const method = (options.method || "GET").toUpperCase();
+    if (method !== "GET") {
+      return fetch(url, options).then((r) => (r.ok ? r.json() : Promise.reject(r)));
+    }
+
+    const key = url;
+    const now = Date.now();
+    const cached = this.cache.get(key);
+    if (cached && now < cached.expiresAt) {
+      return cached.data;
+    }
+
+    if (this.inFlight.has(key)) {
+      return this.inFlight.get(key);
+    }
+
+    const promise = (async () => {
+      try {
+        const res = await fetch(url, options);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        this.cache.set(key, { data, expiresAt: Date.now() + ttlMs });
+        return data;
+      } finally {
+        this.inFlight.delete(key);
+      }
+    })();
+
+    this.inFlight.set(key, promise);
+    return promise;
+  },
+
+  invalidate(pattern) {
+    for (const key of this.cache.keys()) {
+      if (!pattern || key.includes(pattern)) {
+        this.cache.delete(key);
+      }
+    }
+  },
+};
+
 const ApiService = {
   baseUrl: "",
+  queryCache: ClientQueryCache,
 
   async init() {
     await this.syncAll();
@@ -31,13 +81,13 @@ const ApiService = {
 
     try {
       const [bRes, tRes, xRes, sRes, pRes, cRes, svcRes] = await Promise.allSettled([
-        fetch(`${this.baseUrl}/api/budget`).then((r) => (r.ok ? r.json() : Promise.reject(r))),
-        fetch(`${this.baseUrl}/api/transactions`).then((r) => (r.ok ? r.json() : Promise.reject(r))),
-        fetch(`${this.baseUrl}/api/x402/transactions`).then((r) => (r.ok ? r.json() : Promise.reject(r))),
-        fetch(`${this.baseUrl}/api/security`).then((r) => (r.ok ? r.json() : Promise.reject(r))),
-        fetch(`${this.baseUrl}/api/providers`).then((r) => (r.ok ? r.json() : Promise.reject(r))),
-        fetch(`${this.baseUrl}/api/config`).then((r) => (r.ok ? r.json() : Promise.reject(r))),
-        fetch(`${this.baseUrl}/api/services`).then((r) => (r.ok ? r.json() : Promise.reject(r))),
+        ClientQueryCache.fetch(`${this.baseUrl}/api/budget`, {}, 3000),
+        ClientQueryCache.fetch(`${this.baseUrl}/api/transactions`, {}, 3000),
+        ClientQueryCache.fetch(`${this.baseUrl}/api/x402/transactions`, {}, 4000),
+        ClientQueryCache.fetch(`${this.baseUrl}/api/security`, {}, 5000),
+        ClientQueryCache.fetch(`${this.baseUrl}/api/providers`, {}, 15000),
+        ClientQueryCache.fetch(`${this.baseUrl}/api/config`, {}, 60000),
+        ClientQueryCache.fetch(`${this.baseUrl}/api/services`, {}, 15000),
       ]);
 
       const isOnline = bRes.status === "fulfilled";
@@ -87,6 +137,7 @@ const ApiService = {
       throw new Error(err.error || "Freeze request failed");
     }
 
+    ClientQueryCache.invalidate("budget");
     const data = await res.json();
     await this.syncAll();
     return data;
@@ -115,6 +166,7 @@ const ApiService = {
       throw new Error(err.error || "Funding request failed");
     }
 
+    ClientQueryCache.invalidate("budget");
     const data = await res.json();
     await this.syncAll();
     return data;
@@ -151,11 +203,12 @@ const ApiService = {
 
   async getServices() {
     try {
-      const res = await fetch(`${this.baseUrl}/api/services`);
-      if (res.ok) {
-        const data = await res.json();
-        return data.services || [];
-      }
+      const data = await ClientQueryCache.fetch("services", 15000, async () => {
+        const res = await fetch(`${this.baseUrl}/api/services`);
+        if (!res.ok) throw new Error("Failed to fetch services");
+        return await res.json();
+      });
+      return data.services || [];
     } catch (_) {}
     return AppState.services || [];
   },
@@ -199,6 +252,8 @@ const ApiService = {
       throw new Error(err.error || "Service publication failed");
     }
 
+    ClientQueryCache.invalidate("services");
+    ClientQueryCache.invalidate("providers");
     const data = await res.json();
     await this.syncAll();
     return data;
@@ -317,8 +372,28 @@ const ApiService = {
     }
 
     const data = await res.json();
+    ClientQueryCache.invalidate("budget");
+    ClientQueryCache.invalidate("transactions");
+    ClientQueryCache.invalidate("sepolia");
     await this.syncAll();
     return data;
+  },
+
+  async getSepoliaTransactions() {
+    try {
+      const data = await ClientQueryCache.fetch(`${this.baseUrl}/api/sepolia/transactions`, {}, 5000);
+      return data.transactions || [];
+    } catch (_) {
+      return [];
+    }
+  },
+
+  async verifySepoliaTx(txHash) {
+    try {
+      return await ClientQueryCache.fetch(`${this.baseUrl}/api/sepolia/verify?txHash=${encodeURIComponent(txHash)}`, {}, 10000);
+    } catch (err) {
+      return { verified: false, error: err.message };
+    }
   },
 };
 

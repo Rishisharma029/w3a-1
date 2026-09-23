@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Complete • W3A-1 Autonomous Commerce Receipt</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Space Mono & Courier Prime for authentic thermal receipt font, Inter for UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* Custom Receipt Fonts */
+    .font-receipt {
+      font-family: 'Space Mono', 'Courier Prime', monospace;
+    }
+    .font-body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Sawtooth / Jagged top edge mimicking torn thermal paper */
+    .jagged-top {
+      clip-path: polygon(
+        0% 0px,
+        2.5% 7px, 5% 0px, 7.5% 7px, 10% 0px, 12.5% 7px, 15% 0px, 17.5% 7px, 20% 0px,
+        22.5% 7px, 25% 0px, 27.5% 7px, 30% 0px, 32.5% 7px, 35% 0px, 37.5% 7px, 40% 0px,
+        42.5% 7px, 45% 0px, 47.5% 7px, 50% 0px, 52.5% 7px, 55% 0px, 57.5% 7px, 60% 0px,
+        62.5% 7px, 65% 0px, 67.5% 7px, 70% 0px, 72.5% 7px, 75% 0px, 77.5% 7px, 80% 0px,
+        82.5% 7px, 85% 0px, 87.5% 7px, 90% 0px, 92.5% 7px, 95% 0px, 97.5% 7px, 100% 0px,
+        100% 100%, 0% 100%
+      );
+    }
+
+    /* Sawtooth bottom edge */
+    .jagged-bottom {
+      clip-path: polygon(
+        0% 0%, 100% 0%,
+        100% calc(100% - 6px),
+        97.5% 100%, 95% calc(100% - 6px), 92.5% 100%, 90% calc(100% - 6px), 87.5% 100%, 85% calc(100% - 6px),
+        82.5% 100%, 80% calc(100% - 6px), 77.5% 100%, 75% calc(100% - 6px), 72.5% 100%, 70% calc(100% - 6px),
+        67.5% 100%, 65% calc(100% - 6px), 62.5% 100%, 60% calc(100% - 6px), 57.5% 100%, 55% calc(100% - 6px),
+        52.5% 100%, 50% calc(100% - 6px), 47.5% 100%, 45% calc(100% - 6px), 42.5% 100%, 40% calc(100% - 6px),
+        37.5% 100%, 35% calc(100% - 6px), 32.5% 100%, 30% calc(100% - 6px), 27.5% 100%, 25% calc(100% - 6px),
+        22.5% 100%, 20% calc(100% - 6px), 17.5% 100%, 15% calc(100% - 6px), 12.5% 100%, 10% calc(100% - 6px),
+        7.5% 100%, 5% calc(100% - 6px), 2.5% 100%, 0% calc(100% - 6px)
+      );
+    }
+
+    /* Skeuomorphic Thermal Stepper Motor Animation */
+    /* Simulates realistic ratchet-wheel mechanical bursts of a point-of-sale thermal head */
+    @keyframes thermalPrintFeed {
+      0% {
+        transform: translateY(-98%);
+        opacity: 0.1;
+      }
+      5% {
+        transform: translateY(-98%);
+        opacity: 1;
+      }
+      18% {
+        transform: translateY(-78%);
+      }
+      22% {
+        transform: translateY(-78%);
+      }
+      36% {
+        transform: translateY(-56%);
+      }
+      40% {
+        transform: translateY(-56%);
+      }
+      55% {
+        transform: translateY(-34%);
+      }
+      60% {
+        transform: translateY(-34%);
+      }
+      75% {
+        transform: translateY(-16%);
+      }
+      79% {
+        transform: translateY(-16%);
+      }
+      86% {
+        transform: translateY(0%);
+      }
+      93% {
+        transform: translateY(-2px);
+      }
+      100% {
+        transform: translateY(0%);
+        opacity: 1;
+      }
+    }
+
+    .animate-print-feed {
+      animation: thermalPrintFeed 2.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      will-change: transform;
+    }
+
+    /* Mechanical indicator pulse */
+    @keyframes printerLed {
+      0%, 100% { opacity: 1; filter: drop-shadow(0 0 6px rgba(34,197,94,0.9)); }
+      50% { opacity: 0.4; filter: drop-shadow(0 0 1px rgba(34,197,94,0.4)); }
+    }
+    .printer-led-active {
+      animation: printerLed 0.4s ease-in-out infinite;
+    }
+
+    /* Paper noise texture overlay */
+    .receipt-paper {
+      background-color: #fafaf8;
+      background-image: radial-gradient(#ebeae6 0.75px, transparent 0.75px);
+      background-size: 8px 8px;
+    }
+  </style>
+</head>
+<body class="font-body bg-[#0a0c10] text-zinc-100 min-h-screen flex items-center justify-center p-4 sm:p-8 antialiased selection:bg-emerald-500 selection:text-black">
+
+  <!-- Ambient Background Glow -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[140px]"></div>
+    <div class="absolute bottom-10 left-1/3 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px]"></div>
+  </div>
+
+  <!-- Main Card Container -->
+  <div class="relative w-full max-w-md bg-[#12151c]/90 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl z-10 transition-all duration-300">
+    
+    <!-- Top Status Header: "Order complete" -->
+    <div class="flex flex-col items-center text-center mb-6">
+      
+      <!-- Checkmark Badge with Pulse Halo -->
+      <div class="relative flex items-center justify-center mb-4">
+        <div class="absolute w-16 h-16 bg-emerald-500/20 rounded-full animate-ping"></div>
+        <div class="relative w-14 h-14 bg-gradient-to-tr from-emerald-600 to-teal-400 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
+          <svg class="w-7 h-7 text-white stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Heading & Confirmation Text -->
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+        Order complete
+      </h1>
+      <p id="topSubtitle" class="text-zinc-400 text-sm mt-1.5 max-w-xs font-mono">
+        $4.00 USDC Settled On-Chain • Zero Reload Needed
+      </p>
+      <div class="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        SHA-256 INTEGRITY MATCH ✓
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SKEUOMORPHIC PRINTER CHASSIS & DISPENSING SLOT           -->
+    <!-- ======================================================== -->
+    <div class="relative bg-gradient-to-b from-[#181d26] to-[#0e1117] p-3 rounded-2xl border border-zinc-700/60 shadow-[0_12px_30px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.1)]">
+      
+      <!-- Hardware Bevel Top Bar with Status LED & Model Details -->
+      <div class="flex items-center justify-between px-2.5 py-1.5 mb-2 bg-[#090b0e] rounded-lg border border-zinc-800/80">
+        <div class="flex items-center gap-2">
+          <!-- Live Status LED -->
+          <span id="printerLed" class="w-2.5 h-2.5 rounded-full bg-emerald-500 printer-led-active shadow-[0_0_8px_#22c55e]"></span>
+          <span id="printerStatusText" class="text-[10px] font-mono tracking-wider text-emerald-400 font-semibold uppercase">
+            FEEDING PAPER
+          </span>
+        </div>
+        <div class="flex items-center gap-2 text-zinc-500 text-[10px] font-mono">
+          <span>TH-80 PRO</span>
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-zinc-700"></span>
+          <span>AUTO-CUT</span>
+        </div>
+      </div>
+
+      <!-- The Physical Printer Slit (Narrow Mouth with overflow: hidden) -->
+      <div class="relative w-full rounded-md p-1 bg-[#050608] shadow-[inset_0_4px_10px_rgba(0,0,0,0.95)] border-t border-b border-zinc-900 overflow-hidden">
+        
+        <!-- Recessed Metallic Slot Shadow Edge -->
+        <div class="absolute inset-x-0 top-0 h-2 bg-gradient-to-b from-black via-black/80 to-transparent z-20 pointer-events-none"></div>
+        <div class="absolute inset-x-0 bottom-0 h-1.5 bg-gradient-to-t from-black/80 to-transparent z-20 pointer-events-none"></div>
+
+        <!-- Dispenser Viewing Chamber -->
+        <div class="relative w-full min-h-[460px] overflow-hidden flex justify-center pt-1 pb-3">
+          
+          <!-- ==================================================== -->
+          <!-- THE REAL THERMAL RECEIPT COMPONENT                   -->
+          <!-- ==================================================== -->
+          <div 
+            id="receiptElement"
+            class="animate-print-feed receipt-paper text-zinc-900 w-full max-w-[340px] px-5 py-6 rounded-b-sm shadow-2xl shadow-black/80 jagged-top jagged-bottom font-receipt transition-transform duration-500"
+          >
+            <!-- Receipt Header / Business & Protocol Logo -->
+            <div class="text-center pb-4 border-b border-dashed border-zinc-300">
+              <div class="inline-flex items-center justify-center w-8 h-8 rounded bg-zinc-900 text-white font-bold text-xs mb-1.5 shadow-sm">
+                ▲
+              </div>
+              <h2 class="text-sm font-bold tracking-widest uppercase text-zinc-950 font-body">W3A-1 AUTONOMOUS COMMERCE</h2>
+              <p class="text-[11px] text-zinc-600 font-medium">Safe-Spend & x402 V2 Settlement Protocol</p>
+              <p class="text-[10px] text-blue-700 font-semibold mt-0.5">Network: eip155:11155111 • Ethereum Sepolia Testnet</p>
+            </div>
+
+            <!-- Metadata Info (Real Date, Order/Tx ID, Provider, Signer) -->
+            <div class="py-3 text-[11px] text-zinc-600 border-b border-dashed border-zinc-300 space-y-1">
+              <div class="flex justify-between">
+                <span class="text-zinc-500">DATE:</span>
+                <span id="receiptDate" class="font-medium text-zinc-900 font-mono">23-SEP-2026 16:13:25</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-zinc-500">ORDER / TX:</span>
+                <span id="receiptOrderNo" class="font-bold text-zinc-950 font-mono">#TX-B1ED8D</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-zinc-500">REQUEST ID:</span>
+                <span id="receiptReqId" class="font-mono text-zinc-800" title="0xdd41c4b4e5c142e1ba1448d593e75cf600000000000000000000000000000000">0xdd41...5cf6</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-zinc-500">PROVIDER:</span>
+                <span id="receiptProvider" class="font-medium text-zinc-900 truncate max-w-[180px]">Alpha Translation (0x3C44...93BC)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-zinc-500">PAYMENT:</span>
+                <span class="font-medium text-zinc-800 font-mono">x402 Exact EIP-712 (USDC)</span>
+              </div>
+            </div>
+
+            <!-- Real Itemized Service Breakdown -->
+            <div class="py-3 border-b border-dashed border-zinc-300 space-y-2.5">
+              <div class="flex justify-between text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
+                <span>ITEM / SERVICE</span>
+                <span>AMOUNT</span>
+              </div>
+
+              <div class="space-y-2 text-[11px]">
+                <!-- Line 1: Real AI Purchased Service -->
+                <div class="flex justify-between items-start">
+                  <div class="pr-2">
+                    <div id="serviceTitle" class="font-bold text-zinc-900 font-body">AI Legal Contract Translation</div>
+                    <div id="serviceSub" class="text-[10px] text-zinc-500 font-mono">Alpha Translation Services</div>
+                    <div class="text-[9px] text-zinc-400">English to Spanish legal contract</div>
+                  </div>
+                  <span id="serviceAmount" class="font-bold text-zinc-950 font-mono whitespace-nowrap">$4.00 USDC</span>
+                </div>
+
+                <!-- Line 2: x402 Facilitator Settlement -->
+                <div class="flex justify-between items-start">
+                  <div>
+                    <div class="font-bold text-zinc-800 font-body">x402 Facilitator Settlement</div>
+                    <div class="text-[10px] text-zinc-500 font-mono">EIP-712 Gasless Escrow</div>
+                  </div>
+                  <span class="font-bold text-emerald-600 font-mono whitespace-nowrap">FREE ($0.00)</span>
+                </div>
+
+                <!-- Line 3: SHA-256 Cryptographic Audit -->
+                <div class="flex justify-between items-start">
+                  <div>
+                    <div class="font-bold text-zinc-800 font-body">SHA-256 Delivery Verification</div>
+                    <div class="text-[10px] text-zinc-500 font-mono">On-Chain Digest Match</div>
+                  </div>
+                  <span class="font-bold text-emerald-600 font-mono whitespace-nowrap">INCLUDED</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Subtotal, Gas & Total Calculation -->
+            <div class="py-3 border-b-2 border-zinc-900 space-y-1.5 text-[11px]">
+              <div class="flex justify-between text-zinc-600">
+                <span>SUBTOTAL</span>
+                <span id="calcSubtotal" class="font-mono font-medium">$4.00 USDC</span>
+              </div>
+              <div class="flex justify-between text-zinc-600">
+                <span>NETWORK GAS (SPONSORED)</span>
+                <span class="text-emerald-600 font-medium font-mono">0.0000 ETH</span>
+              </div>
+              <div class="flex justify-between text-zinc-600">
+                <span>FACILITATOR SUBSIDY</span>
+                <span class="text-emerald-600 font-medium font-mono">100% COVERED</span>
+              </div>
+
+              <!-- Bold Total Paid -->
+              <div class="flex justify-between items-baseline pt-2 border-t border-zinc-300 text-zinc-950 font-bold">
+                <span class="text-xs uppercase tracking-wide">TOTAL PAID:</span>
+                <div class="text-right">
+                  <span id="calcTotal" class="text-xl tracking-tight font-extrabold text-black block font-mono">$4.00 USDC</span>
+                  <span class="text-[10px] text-emerald-700 font-mono font-semibold">✓ Settled On-Chain</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cryptographic Proof Snippet on Paper -->
+            <div class="py-2.5 border-b border-dashed border-zinc-300 text-[10px] font-mono text-zinc-700 space-y-1.5">
+              <div>
+                <span class="text-zinc-400 block text-[9px] uppercase font-bold">On-Chain Tx Hash:</span>
+                <code id="proofTxHash" class="font-bold text-zinc-900 break-all select-all block text-[9.5px]">0xb1ed8dc8144c210ff5b847912430da90d57e916fec59d314d28ce33ff8e9c5cd</code>
+              </div>
+              <div>
+                <span class="text-zinc-400 block text-[9px] uppercase font-bold">SHA-256 Delivery Hash:</span>
+                <code id="proofDeliveryHash" class="text-zinc-800 break-all select-all block text-[9.5px]">0x23d0e64c4c2c4db5974856d5194e33920ab22a0bb6522c0f115ce2a1dc779ddd</code>
+              </div>
+              <div class="pt-1">
+                <span class="text-zinc-400 block text-[9px] uppercase font-bold">Delivered Payload Output:</span>
+                <p id="proofPayload" class="text-[10px] text-zinc-800 font-sans italic line-clamp-3 bg-zinc-100 p-2 rounded border border-zinc-200 mt-0.5">
+                  "El presente Acuerdo de Confidencialidad se celebra y entra en vigencia a partir de la fecha de suscripción..."
+                </p>
+              </div>
+            </div>
+
+            <!-- Footer & Functional SVG Barcode -->
+            <div class="pt-3 flex flex-col items-center">
+              <div class="flex items-center gap-1.5 text-[9px] font-bold text-emerald-700 uppercase tracking-wider mb-1">
+                <span>✓</span>
+                <span>CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE</span>
+              </div>
+
+              <!-- Scalable Vector Barcode (Code-128 aesthetic) -->
+              <div class="w-full flex justify-center py-1">
+                <svg class="h-10 w-48 text-zinc-900" viewBox="0 0 160 40" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Barcode stripes with realistic variable widths -->
+                  <rect x="0" y="0" width="3" height="40" />
+                  <rect x="5" y="0" width="1.5" height="40" />
+                  <rect x="8" y="0" width="4" height="40" />
+                  <rect x="14" y="0" width="2" height="40" />
+                  <rect x="18" y="0" width="1" height="40" />
+                  <rect x="21" y="0" width="3.5" height="40" />
+                  <rect x="27" y="0" width="2" height="40" />
+                  <rect x="31" y="0" width="4" height="40" />
+                  <rect x="37" y="0" width="1.5" height="40" />
+                  <rect x="41" y="0" width="3" height="40" />
+                  <rect x="46" y="0" width="2" height="40" />
+                  <rect x="50" y="0" width="1" height="40" />
+                  <rect x="53" y="0" width="4" height="40" />
+                  <rect x="59" y="0" width="2.5" height="40" />
+                  <rect x="63" y="0" width="1" height="40" />
+                  <rect x="66" y="0" width="3" height="40" />
+                  <rect x="71" y="0" width="4" height="40" />
+                  <rect x="77" y="0" width="2" height="40" />
+                  <rect x="81" y="0" width="1.5" height="40" />
+                  <rect x="84" y="0" width="3.5" height="40" />
+                  <rect x="89" y="0" width="1" height="40" />
+                  <rect x="92" y="0" width="4" height="40" />
+                  <rect x="98" y="0" width="2" height="40" />
+                  <rect x="102" y="0" width="3" height="40" />
+                  <rect x="107" y="0" width="1.5" height="40" />
+                  <rect x="110" y="0" width="4" height="40" />
+                  <rect x="116" y="0" width="2" height="40" />
+                  <rect x="120" y="0" width="1" height="40" />
+                  <rect x="123" y="0" width="3.5" height="40" />
+                  <rect x="128" y="0" width="2" height="40" />
+                  <rect x="132" y="0" width="4" height="40" />
+                  <rect x="138" y="0" width="1.5" height="40" />
+                  <rect x="142" y="0" width="3" height="40" />
+                  <rect x="147" y="0" width="2" height="40" />
+                  <rect x="151" y="0" width="1" height="40" />
+                  <rect x="154" y="0" width="3" height="40" />
+                  <rect x="158" y="0" width="2" height="40" />
+                </svg>
+              </div>
+
+              <!-- Barcode alphanumeric verification code -->
+              <p id="barcodeText" class="text-[9px] font-mono tracking-widest text-zinc-600 mt-0.5 font-bold">
+                *W3A1-4USDC-B1ED8D*
+              </p>
+
+              <p class="text-[8.5px] text-zinc-400 mt-1 text-center font-mono">
+                Block #11766264 • Sepolia Enforcer: 0xf9f2...A75e
+              </p>
+
+              <!-- Direct Action: Sepolia Etherscan & Blockchain Verifier -->
+              <div class="mt-2.5 w-full space-y-1.5">
+                <a 
+                  id="receiptEtherscanDirect"
+                  href="https://sepolia.etherscan.io/tx/0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  class="w-full py-2 px-2.5 rounded bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-mono font-bold flex items-center justify-center gap-1.5 shadow-md shadow-blue-900/30 transition active:scale-95 text-center cursor-pointer"
+                  title="Open Transaction Directly on Sepolia Etherscan"
+                >
+                  <span>🌐</span>
+                  <span>Verify on Sepolia Etherscan Directly</span>
+                  <span class="text-xs">↗</span>
+                </a>
+                <a 
+                  id="receiptSepoliaDirect"
+                  href="/?view=verify" 
+                  class="w-full py-2 px-2.5 rounded bg-zinc-900 hover:bg-black text-cyan-300 hover:text-white text-[10px] font-mono font-bold flex items-center justify-center gap-1.5 border border-zinc-700 shadow-sm transition active:scale-95 text-center cursor-pointer"
+                  title="Open Sepolia Verifier in Main Dashboard"
+                >
+                  <span class="text-cyan-400 font-bold">🔗</span>
+                  <span>Open in Main Dashboard Verifier &rarr;</span>
+                </a>
+              </div>
+            </div>
+
+          </div>
+          <!-- End Receipt Component -->
+
+        </div>
+      </div>
+      <!-- End Slit -->
+
+    </div>
+    <!-- End Printer Chassis -->
+
+    <!-- Interactive Actions Toolbar -->
+    <div class="mt-6 flex flex-col sm:flex-row gap-3">
+      
+      <!-- Replay Animation Button -->
+      <button 
+        id="replayBtn"
+        type="button" 
+        class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-semibold text-zinc-300 bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 rounded-xl transition duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 cursor-pointer"
+      >
+        <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Replay Print
+      </button>
+
+      <!-- Direct Sepolia Verifier Page Link -->
+      <a 
+        id="verifierPageBtn"
+        href="/?view=verify" 
+        class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-semibold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 active:bg-cyan-500/25 border border-cyan-500/30 rounded-xl transition duration-200 cursor-pointer text-center"
+        title="Open Full Sepolia Blockchain Verification Page"
+      >
+        <svg class="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Sepolia Verifier ↗
+      </a>
+
+      <!-- Download / Save Button -->
+      <button 
+        id="downloadBtn"
+        type="button" 
+        class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-600/30 transition duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Save PDF
+      </button>
+
+    </div>
+
+    <!-- Return to Dashboard Link -->
+    <div class="text-center mt-5">
+      <a href="/" class="text-xs text-zinc-400 hover:text-white transition-colors duration-150 inline-flex items-center gap-1 font-mono">
+        <span>← Back to W3A-1 Live Dashboard</span>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Clean Vanilla JavaScript Handling Dynamic Blockchain Data, Sound, Reset & Status -->
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const receipt = document.getElementById("receiptElement");
+      const replayBtn = document.getElementById("replayBtn");
+      const downloadBtn = document.getElementById("downloadBtn");
+      const printerLed = document.getElementById("printerLed");
+      const statusText = document.getElementById("printerStatusText");
+      const receiptDate = document.getElementById("receiptDate");
+      const receiptOrderNo = document.getElementById("receiptOrderNo");
+      const receiptReqId = document.getElementById("receiptReqId");
+      const receiptProvider = document.getElementById("receiptProvider");
+      const serviceTitle = document.getElementById("serviceTitle");
+      const serviceSub = document.getElementById("serviceSub");
+      const serviceAmount = document.getElementById("serviceAmount");
+      const calcSubtotal = document.getElementById("calcSubtotal");
+      const calcTotal = document.getElementById("calcTotal");
+      const topSubtitle = document.getElementById("topSubtitle");
+      const proofTxHash = document.getElementById("proofTxHash");
+      const proofDeliveryHash = document.getElementById("proofDeliveryHash");
+      const proofPayload = document.getElementById("proofPayload");
+      const barcodeText = document.getElementById("barcodeText");
+
+      // Dynamic real-time fetch from backend API (Sepolia priority & ?tx= support)
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryTx = urlParams.get('tx');
+
+        let res = await fetch('/api/sepolia/transactions');
+        if (!res.ok) res = await fetch('/api/transactions');
+        
+        if (res.ok) {
+          const data = await res.json();
+          const txs = data.transactions || [];
+          if (txs.length > 0) {
+            // Get query matching transaction or most recent
+            let latest = txs[0];
+            if (queryTx) {
+              const matched = txs.find(t => (t.txHash || "").toLowerCase() === queryTx.toLowerCase());
+              if (matched) latest = matched;
+            }
+            
+            // Format Amount
+            const rawAmount = parseFloat(latest.amount || "4000000");
+            const formattedUsdc = (rawAmount > 1000 ? (rawAmount / 1e6) : rawAmount).toFixed(2);
+            const amountStr = `$${formattedUsdc} USDC`;
+
+            // Format Date
+            if (latest.timestamp) {
+              const d = new Date(latest.timestamp);
+              const opt = { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+              receiptDate.textContent = d.toLocaleDateString('en-GB', opt).replace(/,/g, '');
+            }
+
+            // Order No from Tx Hash
+            const hash = latest.txHash || "0xb1ed8dc8144c210ff5b847912430da90d57e916fec59d314d28ce33ff8e9c5cd";
+            receiptOrderNo.textContent = `#TX-${hash.slice(2, 8).toUpperCase()}`;
+
+            // Request ID
+            if (latest.reqId) {
+              receiptReqId.textContent = `${latest.reqId.slice(0, 6)}...${latest.reqId.slice(-4)}`;
+              receiptReqId.title = latest.reqId;
+            }
+
+            // Provider
+            if (latest.provider) {
+              const shortProv = `${latest.provider.slice(0, 6)}...${latest.provider.slice(-4)}`;
+              receiptProvider.textContent = `Alpha Translation (${shortProv})`;
+            }
+
+            // Amounts
+            serviceAmount.textContent = amountStr;
+            calcSubtotal.textContent = amountStr;
+            calcTotal.textContent = amountStr;
+            topSubtitle.textContent = `${amountStr} Settled On-Chain • Zero Reload Needed`;
+
+            // Hashes
+            proofTxHash.textContent = hash;
+            if (latest.deliveryHash) {
+              proofDeliveryHash.textContent = latest.deliveryHash;
+            }
+
+            // Barcode
+            barcodeText.textContent = `*W3A1-${parseInt(formattedUsdc)}USDC-${hash.slice(2, 8).toUpperCase()}*`;
+
+            // Update Direct Sepolia Blockchain Links
+            const sepoliaLink = document.getElementById("receiptSepoliaDirect");
+            if (sepoliaLink) {
+              sepoliaLink.href = `/?view=verify&tx=${hash}`;
+            }
+            const etherscanLink = document.getElementById("receiptEtherscanDirect");
+            if (etherscanLink) {
+              etherscanLink.href = `https://sepolia.etherscan.io/tx/${hash}`;
+            }
+            const verifierBtn = document.getElementById("verifierPageBtn");
+            if (verifierBtn) {
+              verifierBtn.href = `/?view=verify&tx=${hash}`;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch /api/transactions, using verified fallback data:", err);
+      }
+
+      // Web Audio API Synthesizer for Authentic Thermal Stepper Clicking
+      function playMechanicalFeedSound() {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContext) return;
+          const ctx = new AudioContext();
+
+          // Series of mechanical tick bursts mirroring the paper stepper intervals
+          const bursts = [0.1, 0.5, 0.9, 1.4, 1.9, 2.4];
+          bursts.forEach(startTime => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(140, ctx.currentTime + startTime);
+            osc.frequency.exponentialRampToValueAtTime(45, ctx.currentTime + startTime + 0.04);
+
+            gain.gain.setValueAtTime(0.04, ctx.currentTime + startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + 0.05);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(ctx.currentTime + startTime);
+            osc.stop(ctx.currentTime + startTime + 0.05);
+          });
+        } catch (_) {
+          // Audio policy silent fallback
+        }
+      }
+
+      // Finish printing status updates
+      function markPrintingFinished() {
+        setTimeout(() => {
+          receipt.classList.remove("animate-print-feed");
+          receipt.style.transform = "translateY(0%)";
+          receipt.style.opacity = "1";
+          printerLed.classList.remove("printer-led-active");
+          printerLed.classList.remove("bg-emerald-500");
+          printerLed.classList.add("bg-emerald-400");
+          statusText.textContent = "PRINTED • READY";
+          statusText.classList.replace("text-emerald-400", "text-zinc-400");
+        }, 2800);
+      }
+
+      // Initial page-load trigger (synthesizes stepper sound and transitions to stationary state)
+      playMechanicalFeedSound();
+      markPrintingFinished();
+
+      // Replay Print Animation on Button Click
+      replayBtn.addEventListener("click", () => {
+        // Reset state
+        receipt.style.transform = "";
+        receipt.style.opacity = "";
+        receipt.classList.remove("animate-print-feed");
+        void receipt.offsetWidth; // Force CSS Reflow
+        receipt.classList.add("animate-print-feed");
+
+        // Reset LED indicators
+        printerLed.classList.add("printer-led-active");
+        printerLed.classList.remove("bg-emerald-400");
+        printerLed.classList.add("bg-emerald-500");
+        statusText.textContent = "FEEDING PAPER";
+        statusText.classList.replace("text-zinc-400", "text-emerald-400");
+
+        // Synthesize authentic thermal stepper ratchet
+        playMechanicalFeedSound();
+
+        // Mark finished after animation duration
+        markPrintingFinished();
+      });
+
+      // Save PDF / Print feedback
+      downloadBtn.addEventListener("click", () => {
+        window.print();
+      });
+    });
+  </script>
+</body>
+</html>

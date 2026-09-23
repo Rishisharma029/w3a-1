@@ -161,13 +161,14 @@ class W3A1EventBus extends EventEmitter {
   }
 
   _deriveStatus(type, payload) {
-    if (type.includes("BLOCKED") || type.includes("REJECTED") || type.includes("TAMPERED") || type === "FAILED") {
+    const t = String(type || "");
+    if (t.includes("BLOCKED") || t.includes("REJECTED") || t.includes("TAMPERED") || t === "FAILED") {
       return "SECURITY_ALERT";
     }
-    if (type === "SETTLEMENT_CONFIRMED" || type === "HASH_VERIFIED" || type === "DELIVERY_RECEIVED") {
+    if (t === "SETTLEMENT_CONFIRMED" || t === "HASH_VERIFIED" || t === "DELIVERY_RECEIVED") {
       return "SUCCESS";
     }
-    if (type === "AGENT_FROZEN") {
+    if (t === "AGENT_FROZEN") {
       return "CRITICAL";
     }
     return "INFO";

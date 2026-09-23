@@ -58,6 +58,13 @@
       action: () => window.App?.navigate('delivery')
     },
     {
+      id: "dock_verify",
+      title: "Sepolia Verifier (Etherscan)",
+      view: "verify",
+      icon: '<span class="material-symbols-outlined text-[20px] text-cyan-400">link</span>',
+      action: () => window.App?.navigate('verify')
+    },
+    {
       id: "dock_addfunds",
       title: "+ Add Funds (Escrow)",
       icon: '<span class="material-symbols-outlined text-[20px] text-emerald-400">add_circle</span>',

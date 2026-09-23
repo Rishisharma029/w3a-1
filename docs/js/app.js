@@ -18,6 +18,7 @@ const App = {
     security: SecurityView,
     delivery: DeliveryView,
     settings: SettingsView,
+    verify: VerifyView,
   },
 
   pollTimer: null,
@@ -66,6 +67,16 @@ const App = {
         this.closeModal();
       }
     });
+
+    // 6. Support URL query params (?view=verify or ?tx=...) within main app
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const viewParam = urlParams.get("view");
+      const txParam = urlParams.get("tx");
+      if (viewParam === "verify" || txParam) {
+        this.openVerifier(txParam);
+      }
+    } catch (_) {}
   },
 
   navigate(viewName) {
@@ -474,6 +485,19 @@ const App = {
                 <div class="flex justify-between"><span class="text-outline">Contract Call:</span> <span class="text-slate-300">settleWithSignature()</span></div>
                 <div class="flex justify-between"><span class="text-outline">ERC-20 Settlement:</span> <span class="text-tertiary font-bold">$${tx.amountUSD} MockUSDC &rarr; ${UIFormatter.formatAddress(tx.provider)}</span></div>
                 <div class="flex justify-between pt-1 border-t border-outline-variant/15"><span class="text-outline">Escrow Balance After:</span> <span class="text-white font-bold">$${tx.budgetAfter || "26.00"} USDC</span></div>
+                <div class="pt-2 border-t border-outline-variant/15 flex items-center justify-between">
+                  <span class="text-outline">Sepolia Blockchain:</span>
+                  <a 
+                    href="https://sepolia.etherscan.io/tx/${tx.txHash}" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 text-[10.5px] transition"
+                    title="Verify on Sepolia Etherscan Directly"
+                  >
+                    <span>Verify on Sepolia Etherscan Directly</span>
+                    <span class="material-symbols-outlined text-[13px]">open_in_new</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -841,6 +865,66 @@ ${JSON.stringify(
           b.classList.remove("opacity-75", "cursor-wait");
         }
       });
+    }
+  },
+
+  // ---------------------------------------------------------------------------
+  // Settle Directly on Ethereum Sepolia Testnet (Mined on Etherscan)
+  // ---------------------------------------------------------------------------
+  async runSepoliaPurchaseSequence() {
+    const btn = document.getElementById("btnRunSepoliaPurchase");
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add("opacity-75", "cursor-wait");
+    }
+
+    this.toast("Broadcasting autonomous settlement to Ethereum Sepolia Testnet...", "info");
+
+    try {
+      const res = await fetch("/api/sepolia/settle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: "4000000",
+          serviceName: "AI Legal Contract Translation",
+          text: "El presente Acuerdo se celebra y entra en vigencia a partir de la fecha..."
+        })
+      });
+
+      const data = await res.json();
+      if (data.success && data.txHash) {
+        this.toast(`Settled on Sepolia Block #${data.blockNumber}! Opening Etherscan...`, "success");
+        setTimeout(() => {
+          window.open(data.etherscanUrl, "_blank");
+        }, 1000);
+      } else {
+        throw new Error(data.error || "Sepolia broadcast failed");
+      }
+    } catch (err) {
+      console.error("[App] runSepoliaPurchaseSequence failed:", err);
+      this.toast(`Sepolia execution error: ${err.message}`, "error");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove("opacity-75", "cursor-wait");
+      }
+    }
+  },
+
+  // ---------------------------------------------------------------------------
+  // Open Sepolia Blockchain Verifier directly inside Main Page (Zero New Tabs)
+  // ---------------------------------------------------------------------------
+  openVerifier(txHash) {
+    this.navigate("verify");
+    if (typeof VerifyView !== "undefined") {
+      if (txHash) {
+        VerifyView.currentHash = txHash;
+      }
+      setTimeout(() => {
+        if (typeof VerifyView.verifyHash === "function") {
+          VerifyView.verifyHash(txHash);
+        }
+      }, 50);
     }
   },
 

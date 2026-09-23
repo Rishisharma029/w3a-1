@@ -158,7 +158,34 @@ main { max-width: 1380px; margin: 0 auto; padding: clamp(1.5rem, 4vw, 3.5rem) cl
 ::-webkit-scrollbar-thumb { background: rgba(145,170,161,.23); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(118,229,208,.42); }
 
-  </style>
+  
+@keyframes cyber-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(20,42,38,0.7) 0%, rgba(45,85,78,0.95) 50%, rgba(20,42,38,0.7) 100%);
+  background-size: 200% 100%;
+  animation: cyber-shimmer 1.8s ease-in-out infinite;
+  border-radius: 6px;
+}
+.skeleton-shimmer-cyan {
+  background: linear-gradient(90deg, rgba(13,27,24,0.85) 0%, rgba(118,229,208,0.2) 50%, rgba(13,27,24,0.85) 100%);
+  background-size: 200% 100%;
+  animation: cyber-shimmer 1.8s ease-in-out infinite;
+  border-radius: 6px;
+}
+.skeleton-shimmer-emerald {
+  background: linear-gradient(90deg, rgba(13,27,24,0.85) 0%, rgba(182,243,107,0.2) 50%, rgba(13,27,24,0.85) 100%);
+  background-size: 200% 100%;
+  animation: cyber-shimmer 1.8s ease-in-out infinite;
+  border-radius: 6px;
+}
+.skeleton-card {
+  border: 1px solid rgba(118,229,208,0.2) !important;
+  background: rgba(13,27,24,0.7) !important;
+}
+</style>
 </head>
 <body>
 
@@ -238,17 +265,31 @@ Highest quality under $5.</textarea>
 
     <div class="hero-banner">
       <h1>SERVICE MARKETPLACE</h1>
-      <p>Decentralized catalogue of live computational, AI, and data processing services requiring autonomous x402 V2 payment authorization.</p>
+      <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.35rem 0.85rem; border-radius: 9999px; margin-top: 0.5rem;">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+        <span style="font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; color: var(--accent-emerald); letter-spacing: 0.04em;">
+          52 services · 14 provider nodes · 9 categories · x402 enabled
+        </span>
+      </div>
+      <p style="margin-top: 0.6rem; color: var(--text-muted); font-size: 0.9rem;">
+        Decentralized catalogue of live computational, AI, and data processing services requiring autonomous x402 V2 payment authorization.
+      </p>
     </div>
 
     <div class="filter-bar">
-      <div class="categories">
-        <button class="cat-btn active" onclick="filterCategory('all', this)">All Services</button>
-        <button class="cat-btn" onclick="filterCategory('translation', this)">Translation</button>
-        <button class="cat-btn" onclick="filterCategory('compute', this)">Compute</button>
-        <button class="cat-btn" onclick="filterCategory('image-analysis', this)">Image Analysis</button>
+      <div class="categories" style="overflow-x: auto; padding-bottom: 4px;">
+        <button class="cat-btn active" onclick="filterCategory('all', this)">All (52)</button>
+        <button class="cat-btn" onclick="filterCategory('translation', this)">Translation (10)</button>
+        <button class="cat-btn" onclick="filterCategory('data-compute', this)">Compute (8)</button>
+        <button class="cat-btn" onclick="filterCategory('vision-ocr', this)">Vision & OCR (4)</button>
+        <button class="cat-btn" onclick="filterCategory('text-generation', this)">Text Gen (7)</button>
+        <button class="cat-btn" onclick="filterCategory('speech-audio', this)">Speech & Audio (4)</button>
+        <button class="cat-btn" onclick="filterCategory('image-video', this)">Image & Video (4)</button>
+        <button class="cat-btn" onclick="filterCategory('code-dev', this)">Code & Sandbox (4)</button>
+        <button class="cat-btn" onclick="filterCategory('rag-embeddings', this)">RAG & Vector (7)</button>
+        <button class="cat-btn" onclick="filterCategory('document-research', this)">Research & Safety (4)</button>
       </div>
-      <input type="text" class="search-box" placeholder="Search services or providers..." oninput="handleSearch(this.value)">
+      <input type="text" class="search-box" placeholder="Search 52 services or 14 providers..." oninput="handleSearch(this.value)">
     </div>
 
     <div class="services-grid" id="servicesGrid">
@@ -482,71 +523,943 @@ Highest quality under $5.</textarea>
     }
 
     const defaultMarketServices = [
-      {
-        id: "alpha-translate",
-        name: "Translation API",
-        providerName: "Alpha Translate",
-        providerId: "alpha-translate",
-        description: "Translate documents to English with high neural accuracy.",
-        quality: 0.92,
-        latency: "200ms",
-        price: "$4.00 USDC / request",
-        priceNum: 4.0,
-        category: "Translation",
-        endpoint: "/x402/providers/alpha-translate/service",
-        protocol: "x402 V2",
-        status: "AVAILABLE",
-        x402Enabled: true
-      },
-      {
-        id: "beta-translate",
-        name: "Budget Translation API",
-        providerName: "Beta Translate",
-        providerId: "beta-translate",
-        description: "Fast economic multi-lingual translation for high-volume jobs.",
-        quality: 0.78,
-        latency: "100ms",
-        price: "$2.00 USDC / request",
-        priceNum: 2.0,
-        category: "Translation",
-        endpoint: "/x402/providers/beta-translate/service",
-        protocol: "x402 V2",
-        status: "AVAILABLE",
-        x402Enabled: true
-      },
-      {
-        id: "delta-compute",
-        name: "Compute API",
-        providerName: "Delta Compute",
-        providerId: "delta-compute",
-        description: "Process statistical datasets and batch matrix calculations.",
-        quality: 0.88,
-        latency: "150ms",
-        price: "$3.50 USDC / job",
-        priceNum: 3.5,
-        category: "Compute",
-        endpoint: "/x402/providers/delta-compute/service",
-        protocol: "x402 V2",
-        status: "AVAILABLE",
-        x402Enabled: true
-      },
-      {
-        id: "gamma-translate",
-        name: "Gamma Premium Translation",
-        providerName: "Gamma Premium",
-        providerId: "gamma-translate",
-        description: "Enterprise grade translation with 98% linguistic precision.",
-        quality: 0.98,
-        latency: "400ms",
-        price: "$6.00 USDC / request",
-        priceNum: 6.0,
-        category: "Translation",
-        endpoint: "/x402/providers/gamma-translate/service",
-        protocol: "x402 V2",
-        status: "AVAILABLE",
-        x402Enabled: true
-      }
-    ];
+  {
+    "id": "text-translate",
+    "serviceId": "text-translate",
+    "name": "Neural Text Translation",
+    "providerId": "alpha-translate",
+    "providerName": "Alpha Translation Labs",
+    "description": "Accurate multi-language translation with cultural nuance verification.",
+    "quality": 0.92,
+    "latency": "195ms",
+    "latencyMs": 195,
+    "price": "$4.00 USDC / request",
+    "priceNum": 4,
+    "category": "translation",
+    "endpoint": "/x402/providers/alpha-translate/service?serviceId=text-translate",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "legal-translate",
+    "serviceId": "legal-translate",
+    "name": "Certified Legal & Financial Translation",
+    "providerId": "alpha-translate",
+    "providerName": "Alpha Translation Labs",
+    "description": "High-compliance sworn translation for contracts, terms, and cross-border filings.",
+    "quality": 0.96,
+    "latency": "320ms",
+    "latencyMs": 320,
+    "price": "$5.00 USDC / request",
+    "priceNum": 5,
+    "category": "translation",
+    "endpoint": "/x402/providers/alpha-translate/service?serviceId=legal-translate",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "dialect-localize",
+    "serviceId": "dialect-localize",
+    "name": "Dialect & Cultural Localization",
+    "providerId": "alpha-translate",
+    "providerName": "Alpha Translation Labs",
+    "description": "Colloquial and regional dialect adaptation preserving brand voice.",
+    "quality": 0.9,
+    "latency": "180ms",
+    "latencyMs": 180,
+    "price": "$3.50 USDC / request",
+    "priceNum": 3.5,
+    "category": "translation",
+    "endpoint": "/x402/providers/alpha-translate/service?serviceId=dialect-localize",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "bilingual-align",
+    "serviceId": "bilingual-align",
+    "name": "Bilingual Sentence & Corpus Alignment",
+    "providerId": "alpha-translate",
+    "providerName": "Alpha Translation Labs",
+    "description": "Bi-text parallel sentence segmentation and automated translation memory generation.",
+    "quality": 0.89,
+    "latency": "140ms",
+    "latencyMs": 140,
+    "price": "$2.50 USDC / request",
+    "priceNum": 2.5,
+    "category": "translation",
+    "endpoint": "/x402/providers/alpha-translate/service?serviceId=bilingual-align",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "budget-translate",
+    "serviceId": "budget-translate",
+    "name": "High-Throughput Bulk Translation",
+    "providerId": "beta-translate",
+    "providerName": "Beta FastTranslate Engine",
+    "description": "Ultra-fast, cost-effective machine translation optimized for high volume streams.",
+    "quality": 0.83,
+    "latency": "90ms",
+    "latencyMs": 90,
+    "price": "$2.00 USDC / request",
+    "priceNum": 2,
+    "category": "translation",
+    "endpoint": "/x402/providers/beta-translate/service?serviceId=budget-translate",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "glossary-translate",
+    "serviceId": "glossary-translate",
+    "name": "Terminology-Constrained Translation",
+    "providerId": "beta-translate",
+    "providerName": "Beta FastTranslate Engine",
+    "description": "Enforces strict custom entity mappings and terminology glossaries.",
+    "quality": 0.86,
+    "latency": "110ms",
+    "latencyMs": 110,
+    "price": "$2.50 USDC / request",
+    "priceNum": 2.5,
+    "category": "translation",
+    "endpoint": "/x402/providers/beta-translate/service?serviceId=glossary-translate",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "streaming-translate",
+    "serviceId": "streaming-translate",
+    "name": "Real-Time Low-Latency Translation",
+    "providerId": "beta-translate",
+    "providerName": "Beta FastTranslate Engine",
+    "description": "Sub-100ms chunked token translation for real-time live captions and voice bots.",
+    "quality": 0.85,
+    "latency": "80ms",
+    "latencyMs": 80,
+    "price": "$3.00 USDC / request",
+    "priceNum": 3,
+    "category": "translation",
+    "endpoint": "/x402/providers/beta-translate/service?serviceId=streaming-translate",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "expert-translate",
+    "serviceId": "expert-translate",
+    "name": "Expert Human-in-the-Loop Translation",
+    "providerId": "gamma-translate",
+    "providerName": "Gamma Enterprise Localization",
+    "description": "Double-blind reviewed enterprise translation with 98% linguistic guarantee.",
+    "quality": 0.98,
+    "latency": "450ms",
+    "latencyMs": 450,
+    "price": "$7.00 USDC / request",
+    "priceNum": 7,
+    "category": "translation",
+    "endpoint": "/x402/providers/gamma-translate/service?serviceId=expert-translate",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "patents-translate",
+    "serviceId": "patents-translate",
+    "name": "Multilingual Patent & IP Translation",
+    "providerId": "gamma-translate",
+    "providerName": "Gamma Enterprise Localization",
+    "description": "WIPO / PCT compliant patent claim translation with technical fidelity.",
+    "quality": 0.97,
+    "latency": "400ms",
+    "latencyMs": 400,
+    "price": "$6.50 USDC / request",
+    "priceNum": 6.5,
+    "category": "translation",
+    "endpoint": "/x402/providers/gamma-translate/service?serviceId=patents-translate",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "medical-translate",
+    "serviceId": "medical-translate",
+    "name": "Clinical & Medical Protocol Translation",
+    "providerId": "gamma-translate",
+    "providerName": "Gamma Enterprise Localization",
+    "description": "FDA / EMA trial protocol translations with MeSH and SNOMED vocabulary checking.",
+    "quality": 0.97,
+    "latency": "380ms",
+    "latencyMs": 380,
+    "price": "$6.00 USDC / request",
+    "priceNum": 6,
+    "category": "translation",
+    "endpoint": "/x402/providers/gamma-translate/service?serviceId=medical-translate",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "data-process",
+    "serviceId": "data-process",
+    "name": "Statistical Dataset Aggregation",
+    "providerId": "delta-compute",
+    "providerName": "Delta Distributed Compute",
+    "description": "Deterministic statistical summary, moments calculation, and distribution analysis.",
+    "quality": 0.88,
+    "latency": "140ms",
+    "latencyMs": 140,
+    "price": "$3.00 USDC / job",
+    "priceNum": 3,
+    "category": "data-compute",
+    "endpoint": "/x402/providers/delta-compute/service?serviceId=data-process",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "matrix-compute",
+    "serviceId": "matrix-compute",
+    "name": "High-Performance Matrix Operations",
+    "providerId": "delta-compute",
+    "providerName": "Delta Distributed Compute",
+    "description": "BLAS/LAPACK accelerated GPU matrix multiplication and Eigenvalue decomposition.",
+    "quality": 0.93,
+    "latency": "210ms",
+    "latencyMs": 210,
+    "price": "$4.50 USDC / job",
+    "priceNum": 4.5,
+    "category": "data-compute",
+    "endpoint": "/x402/providers/delta-compute/service?serviceId=matrix-compute",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "monte-carlo",
+    "serviceId": "monte-carlo",
+    "name": "Monte Carlo Risk Simulation",
+    "providerId": "delta-compute",
+    "providerName": "Delta Distributed Compute",
+    "description": "100,000-path stochastic probability modeling and value-at-risk (VaR) estimation.",
+    "quality": 0.94,
+    "latency": "290ms",
+    "latencyMs": 290,
+    "price": "$5.00 USDC / job",
+    "priceNum": 5,
+    "category": "data-compute",
+    "endpoint": "/x402/providers/delta-compute/service?serviceId=monte-carlo",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "time-series-calc",
+    "serviceId": "time-series-calc",
+    "name": "Time-Series Anomaly Detection",
+    "providerId": "delta-compute",
+    "providerName": "Delta Distributed Compute",
+    "description": "Real-time STL seasonal decomposition and statistical outlier pinpointing.",
+    "quality": 0.9,
+    "latency": "160ms",
+    "latencyMs": 160,
+    "price": "$3.50 USDC / job",
+    "priceNum": 3.5,
+    "category": "data-compute",
+    "endpoint": "/x402/providers/delta-compute/service?serviceId=time-series-calc",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "image-analyze",
+    "serviceId": "image-analyze",
+    "name": "Multimodal Object & Scene Detection",
+    "providerId": "epsilon-vision",
+    "providerName": "Epsilon Vision & OCR Systems",
+    "description": "Zero-shot visual segment labeling, bounding box regression, and scene categorization.",
+    "quality": 0.94,
+    "latency": "380ms",
+    "latencyMs": 380,
+    "price": "$4.50 USDC / request",
+    "priceNum": 4.5,
+    "category": "vision-ocr",
+    "endpoint": "/x402/providers/epsilon-vision/service?serviceId=image-analyze",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "ocr-document",
+    "serviceId": "ocr-document",
+    "name": "Multi-Language Document OCR",
+    "providerId": "epsilon-vision",
+    "providerName": "Epsilon Vision & OCR Systems",
+    "description": "Layout-aware character recognition with font hierarchy and reading-order recovery.",
+    "quality": 0.92,
+    "latency": "250ms",
+    "latencyMs": 250,
+    "price": "$3.50 USDC / request",
+    "priceNum": 3.5,
+    "category": "vision-ocr",
+    "endpoint": "/x402/providers/epsilon-vision/service?serviceId=ocr-document",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "receipt-invoice-ocr",
+    "serviceId": "receipt-invoice-ocr",
+    "name": "Structured Invoice & Receipt Table Parser",
+    "providerId": "epsilon-vision",
+    "providerName": "Epsilon Vision & OCR Systems",
+    "description": "Extract line items, tax IDs, invoice dates, and totals into normalized JSON schemas.",
+    "quality": 0.95,
+    "latency": "290ms",
+    "latencyMs": 290,
+    "price": "$4.00 USDC / request",
+    "priceNum": 4,
+    "category": "vision-ocr",
+    "endpoint": "/x402/providers/epsilon-vision/service?serviceId=receipt-invoice-ocr",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "facial-landmark",
+    "serviceId": "facial-landmark",
+    "name": "Biometric Facial Landmark & Pose Detection",
+    "providerId": "epsilon-vision",
+    "providerName": "Epsilon Vision & OCR Systems",
+    "description": "468-point 3D facial mesh geometry and head pose orientation calculation.",
+    "quality": 0.91,
+    "latency": "200ms",
+    "latencyMs": 200,
+    "price": "$3.00 USDC / request",
+    "priceNum": 3,
+    "category": "vision-ocr",
+    "endpoint": "/x402/providers/epsilon-vision/service?serviceId=facial-landmark",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "deep-reasoning",
+    "serviceId": "deep-reasoning",
+    "name": "Chain-of-Thought Logical Reasoning",
+    "providerId": "zeta-llm",
+    "providerName": "Zeta Foundation Models",
+    "description": "Multi-step analytical reasoning and mathematical deduction with step-by-step verification.",
+    "quality": 0.96,
+    "latency": "420ms",
+    "latencyMs": 420,
+    "price": "$5.50 USDC / request",
+    "priceNum": 5.5,
+    "category": "text-generation",
+    "endpoint": "/x402/providers/zeta-llm/service?serviceId=deep-reasoning",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "creative-writing",
+    "serviceId": "creative-writing",
+    "name": "Dynamic Copywriting & Creative Storytelling",
+    "providerId": "zeta-llm",
+    "providerName": "Zeta Foundation Models",
+    "description": "High-engagement narrative generation, marketing slogans, and technical prose.",
+    "quality": 0.91,
+    "latency": "230ms",
+    "latencyMs": 230,
+    "price": "$3.50 USDC / request",
+    "priceNum": 3.5,
+    "category": "text-generation",
+    "endpoint": "/x402/providers/zeta-llm/service?serviceId=creative-writing",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "agent-planner",
+    "serviceId": "agent-planner",
+    "name": "Autonomous Subtask Decomposition & Planning",
+    "providerId": "zeta-llm",
+    "providerName": "Zeta Foundation Models",
+    "description": "Breaks high-level user goals into structured dependency graphs and execution actions.",
+    "quality": 0.93,
+    "latency": "280ms",
+    "latencyMs": 280,
+    "price": "$4.00 USDC / request",
+    "priceNum": 4,
+    "category": "text-generation",
+    "endpoint": "/x402/providers/zeta-llm/service?serviceId=agent-planner",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "json-structured",
+    "serviceId": "json-structured",
+    "name": "Strict JSON Schema Extraction",
+    "providerId": "zeta-llm",
+    "providerName": "Zeta Foundation Models",
+    "description": "Zero-hallucination structured entity parsing strictly validated against JSONSchema.",
+    "quality": 0.94,
+    "latency": "180ms",
+    "latencyMs": 180,
+    "price": "$3.00 USDC / request",
+    "priceNum": 3,
+    "category": "text-generation",
+    "endpoint": "/x402/providers/zeta-llm/service?serviceId=json-structured",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "tldr-summary",
+    "serviceId": "tldr-summary",
+    "name": "Executive Briefing & Key Takeaway Generator",
+    "providerId": "eta-summarize",
+    "providerName": "Eta Synthesis & Summarization",
+    "description": "Distills complex technical documentation into 3 concise executive bullet points.",
+    "quality": 0.91,
+    "latency": "150ms",
+    "latencyMs": 150,
+    "price": "$2.50 USDC / request",
+    "priceNum": 2.5,
+    "category": "text-generation",
+    "endpoint": "/x402/providers/eta-summarize/service?serviceId=tldr-summary",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "longdoc-distill",
+    "serviceId": "longdoc-distill",
+    "name": "100+ Page Recursive Document Distiller",
+    "providerId": "eta-summarize",
+    "providerName": "Eta Synthesis & Summarization",
+    "description": "Recursive hierarchical map-reduce summarization for technical whitepapers and books.",
+    "quality": 0.95,
+    "latency": "360ms",
+    "latencyMs": 360,
+    "price": "$5.00 USDC / request",
+    "priceNum": 5,
+    "category": "text-generation",
+    "endpoint": "/x402/providers/eta-summarize/service?serviceId=longdoc-distill",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "meeting-action-items",
+    "serviceId": "meeting-action-items",
+    "name": "Multi-Speaker Meeting Action Item Extractor",
+    "providerId": "eta-summarize",
+    "providerName": "Eta Synthesis & Summarization",
+    "description": "Identifies deliverables, assignees, deadlines, and unassigned commitments from transcripts.",
+    "quality": 0.92,
+    "latency": "210ms",
+    "latencyMs": 210,
+    "price": "$3.50 USDC / request",
+    "priceNum": 3.5,
+    "category": "text-generation",
+    "endpoint": "/x402/providers/eta-summarize/service?serviceId=meeting-action-items",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "whisper-stt",
+    "serviceId": "whisper-stt",
+    "name": "Whisper Multilingual Speech-to-Text",
+    "providerId": "theta-audio",
+    "providerName": "Theta Voice & Speech AI",
+    "description": "High-accuracy audio transcription with word-level timestamps and punctuation.",
+    "quality": 0.94,
+    "latency": "240ms",
+    "latencyMs": 240,
+    "price": "$3.50 USDC / request",
+    "priceNum": 3.5,
+    "category": "speech-audio",
+    "endpoint": "/x402/providers/theta-audio/service?serviceId=whisper-stt",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "neural-tts",
+    "serviceId": "neural-tts",
+    "name": "Expressive Neural Voice Synthesis (TTS)",
+    "providerId": "theta-audio",
+    "providerName": "Theta Voice & Speech AI",
+    "description": "Natural prosody neural speech generator supporting 40+ lifelike speaker voices.",
+    "quality": 0.92,
+    "latency": "190ms",
+    "latencyMs": 190,
+    "price": "$3.00 USDC / request",
+    "priceNum": 3,
+    "category": "speech-audio",
+    "endpoint": "/x402/providers/theta-audio/service?serviceId=neural-tts",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "audio-diarization",
+    "serviceId": "audio-diarization",
+    "name": "Multi-Speaker Audio Separation & Diarization",
+    "providerId": "theta-audio",
+    "providerName": "Theta Voice & Speech AI",
+    "description": "Distinguishes distinct voices and annotates timestamps per individual speaker.",
+    "quality": 0.93,
+    "latency": "290ms",
+    "latencyMs": 290,
+    "price": "$4.00 USDC / request",
+    "priceNum": 4,
+    "category": "speech-audio",
+    "endpoint": "/x402/providers/theta-audio/service?serviceId=audio-diarization",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "audio-noise-filter",
+    "serviceId": "audio-noise-filter",
+    "name": "Neural Audio Noise Reduction & Clean-up",
+    "providerId": "theta-audio",
+    "providerName": "Theta Voice & Speech AI",
+    "description": "Removes background room reverberation, HVAC hum, and street noise from audio feeds.",
+    "quality": 0.89,
+    "latency": "160ms",
+    "latencyMs": 160,
+    "price": "$2.50 USDC / request",
+    "priceNum": 2.5,
+    "category": "speech-audio",
+    "endpoint": "/x402/providers/theta-audio/service?serviceId=audio-noise-filter",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "text-to-image",
+    "serviceId": "text-to-image",
+    "name": "4K Photorealistic Diffusion Generation",
+    "providerId": "iota-diffusion",
+    "providerName": "Iota Media & Diffusion Labs",
+    "description": "State-of-the-art latent diffusion synthesis with precise prompt adherence.",
+    "quality": 0.95,
+    "latency": "520ms",
+    "latencyMs": 520,
+    "price": "$6.00 USDC / request",
+    "priceNum": 6,
+    "category": "image-video",
+    "endpoint": "/x402/providers/iota-diffusion/service?serviceId=text-to-image",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "image-upscaler",
+    "serviceId": "image-upscaler",
+    "name": "4x Super-Resolution Neural Upscaling",
+    "providerId": "iota-diffusion",
+    "providerName": "Iota Media & Diffusion Labs",
+    "description": "Restores textures, sharpens edges, and removes compression artifacts at 4x factor.",
+    "quality": 0.93,
+    "latency": "210ms",
+    "latencyMs": 210,
+    "price": "$2.50 USDC / request",
+    "priceNum": 2.5,
+    "category": "image-video",
+    "endpoint": "/x402/providers/iota-diffusion/service?serviceId=image-upscaler",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "video-frame-tagger",
+    "serviceId": "video-frame-tagger",
+    "name": "Keyframe Extraction & Video Action Tagging",
+    "providerId": "iota-diffusion",
+    "providerName": "Iota Media & Diffusion Labs",
+    "description": "Temporal scene boundary detection and semantic activity labeling in video clips.",
+    "quality": 0.91,
+    "latency": "460ms",
+    "latencyMs": 460,
+    "price": "$5.00 USDC / request",
+    "priceNum": 5,
+    "category": "image-video",
+    "endpoint": "/x402/providers/iota-diffusion/service?serviceId=video-frame-tagger",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "background-remover",
+    "serviceId": "background-remover",
+    "name": "Instant Object Masking & Alpha Matting",
+    "providerId": "iota-diffusion",
+    "providerName": "Iota Media & Diffusion Labs",
+    "description": "Sub-pixel alpha matte foreground segmentation with clean hair and translucent edges.",
+    "quality": 0.94,
+    "latency": "140ms",
+    "latencyMs": 140,
+    "price": "$2.00 USDC / request",
+    "priceNum": 2,
+    "category": "image-video",
+    "endpoint": "/x402/providers/iota-diffusion/service?serviceId=background-remover",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "web-scraper",
+    "serviceId": "web-scraper",
+    "name": "Headless Anti-Bot Web Data Extraction",
+    "providerId": "kappa-data",
+    "providerName": "Kappa Web Intelligence & ETL",
+    "description": "Bypasses bot protections, renders client-side SPAs, and returns DOM snapshots.",
+    "quality": 0.9,
+    "latency": "220ms",
+    "latencyMs": 220,
+    "price": "$3.00 USDC / job",
+    "priceNum": 3,
+    "category": "data-compute",
+    "endpoint": "/x402/providers/kappa-data/service?serviceId=web-scraper",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "html-to-markdown",
+    "serviceId": "html-to-markdown",
+    "name": "Clean Web Article & Table Markdown Parser",
+    "providerId": "kappa-data",
+    "providerName": "Kappa Web Intelligence & ETL",
+    "description": "Strips ads, boilerplate navigation, and converts clean editorial content to Markdown.",
+    "quality": 0.92,
+    "latency": "100ms",
+    "latencyMs": 100,
+    "price": "$1.50 USDC / job",
+    "priceNum": 1.5,
+    "category": "data-compute",
+    "endpoint": "/x402/providers/kappa-data/service?serviceId=html-to-markdown",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "schema-enrichment",
+    "serviceId": "schema-enrichment",
+    "name": "Lead & Entity Graph Enrichment",
+    "providerId": "kappa-data",
+    "providerName": "Kappa Web Intelligence & ETL",
+    "description": "Enriches corporate domains with firmographic metadata, technology stacks, and social IDs.",
+    "quality": 0.91,
+    "latency": "270ms",
+    "latencyMs": 270,
+    "price": "$4.00 USDC / job",
+    "priceNum": 4,
+    "category": "data-compute",
+    "endpoint": "/x402/providers/kappa-data/service?serviceId=schema-enrichment",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "proxy-rotator",
+    "serviceId": "proxy-rotator",
+    "name": "Geotargeted Residential Request Tunnel",
+    "providerId": "kappa-data",
+    "providerName": "Kappa Web Intelligence & ETL",
+    "description": "Rotates residential IPs across 190 countries with 99.9% uptime and zero throttling.",
+    "quality": 0.94,
+    "latency": "180ms",
+    "latencyMs": 180,
+    "price": "$2.50 USDC / job",
+    "priceNum": 2.5,
+    "category": "data-compute",
+    "endpoint": "/x402/providers/kappa-data/service?serviceId=proxy-rotator",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "code-audit",
+    "serviceId": "code-audit",
+    "name": "Automated AST Security & Vulnerability Auditor",
+    "providerId": "lambda-code",
+    "providerName": "Lambda Code & Execution Sandbox",
+    "description": "Static abstract syntax tree inspection for reentrancy, injection, and overflow bugs.",
+    "quality": 0.95,
+    "latency": "310ms",
+    "latencyMs": 310,
+    "price": "$4.50 USDC / job",
+    "priceNum": 4.5,
+    "category": "code-dev",
+    "endpoint": "/x402/providers/lambda-code/service?serviceId=code-audit",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "isolated-eval",
+    "serviceId": "isolated-eval",
+    "name": "Sandboxed Python/Node.js Code Execution",
+    "providerId": "lambda-code",
+    "providerName": "Lambda Code & Execution Sandbox",
+    "description": "gVisor microVM isolated execution with strict memory and CPU quotas.",
+    "quality": 0.97,
+    "latency": "190ms",
+    "latencyMs": 190,
+    "price": "$3.00 USDC / job",
+    "priceNum": 3,
+    "category": "code-dev",
+    "endpoint": "/x402/providers/lambda-code/service?serviceId=isolated-eval",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "sql-optimizer",
+    "serviceId": "sql-optimizer",
+    "name": "SQL Query Analysis & Index Recommendation",
+    "providerId": "lambda-code",
+    "providerName": "Lambda Code & Execution Sandbox",
+    "description": "EXPLAIN plan cost reduction and compound index synthesis for PostgreSQL/MySQL.",
+    "quality": 0.92,
+    "latency": "210ms",
+    "latencyMs": 210,
+    "price": "$3.50 USDC / job",
+    "priceNum": 3.5,
+    "category": "code-dev",
+    "endpoint": "/x402/providers/lambda-code/service?serviceId=sql-optimizer",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "api-mock-gen",
+    "serviceId": "api-mock-gen",
+    "name": "OpenAPI/Swagger Contract to Mock Generator",
+    "providerId": "lambda-code",
+    "providerName": "Lambda Code & Execution Sandbox",
+    "description": "Generates realistic dynamic mock endpoints with faker data from OpenAPI specifications.",
+    "quality": 0.9,
+    "latency": "150ms",
+    "latencyMs": 150,
+    "price": "$2.50 USDC / job",
+    "priceNum": 2.5,
+    "category": "code-dev",
+    "endpoint": "/x402/providers/lambda-code/service?serviceId=api-mock-gen",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "vector-embed-3072",
+    "serviceId": "vector-embed-3072",
+    "name": "Dense 3072-dim Text Vector Embedding",
+    "providerId": "mu-embeddings",
+    "providerName": "Mu Vector & Embeddings Mesh",
+    "description": "MTEB leaderboard-topping dense vector embeddings for semantic retrieval.",
+    "quality": 0.96,
+    "latency": "95ms",
+    "latencyMs": 95,
+    "price": "$2.00 USDC / request",
+    "priceNum": 2,
+    "category": "rag-embeddings",
+    "endpoint": "/x402/providers/mu-embeddings/service?serviceId=vector-embed-3072",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "cross-encoder-rerank",
+    "serviceId": "cross-encoder-rerank",
+    "name": "Semantic Cross-Encoder Passage Reranker",
+    "providerId": "mu-embeddings",
+    "providerName": "Mu Vector & Embeddings Mesh",
+    "description": "Deep attention reranking of top-50 candidate documents with relevance scoring.",
+    "quality": 0.95,
+    "latency": "170ms",
+    "latencyMs": 170,
+    "price": "$3.00 USDC / request",
+    "priceNum": 3,
+    "category": "rag-embeddings",
+    "endpoint": "/x402/providers/mu-embeddings/service?serviceId=cross-encoder-rerank",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "clustering-similarity",
+    "serviceId": "clustering-similarity",
+    "name": "Multi-Vector Cosine Similarity & Clustering",
+    "providerId": "mu-embeddings",
+    "providerName": "Mu Vector & Embeddings Mesh",
+    "description": "HDBSCAN vector clustering and nearest-neighbor graph construction.",
+    "quality": 0.91,
+    "latency": "140ms",
+    "latencyMs": 140,
+    "price": "$2.50 USDC / request",
+    "priceNum": 2.5,
+    "category": "rag-embeddings",
+    "endpoint": "/x402/providers/mu-embeddings/service?serviceId=clustering-similarity",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "rag-search",
+    "serviceId": "rag-search",
+    "name": "Hybrid Vector + BM25 Context Retriever",
+    "providerId": "nu-rag",
+    "providerName": "Nu RAG & Knowledge Graph Engine",
+    "description": "Reciprocal Rank Fusion across dense embeddings and sparse keyword indexes.",
+    "quality": 0.94,
+    "latency": "260ms",
+    "latencyMs": 260,
+    "price": "$4.00 USDC / request",
+    "priceNum": 4,
+    "category": "rag-embeddings",
+    "endpoint": "/x402/providers/nu-rag/service?serviceId=rag-search",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "knowledge-graph",
+    "serviceId": "knowledge-graph",
+    "name": "Unstructured Text to Entity-Relationship Graph",
+    "providerId": "nu-rag",
+    "providerName": "Nu RAG & Knowledge Graph Engine",
+    "description": "Extracts nodes, edges, and triples into Neo4j/Cypher compatible graph structures.",
+    "quality": 0.93,
+    "latency": "390ms",
+    "latencyMs": 390,
+    "price": "$5.50 USDC / request",
+    "priceNum": 5.5,
+    "category": "rag-embeddings",
+    "endpoint": "/x402/providers/nu-rag/service?serviceId=knowledge-graph",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "document-chunker",
+    "serviceId": "document-chunker",
+    "name": "Semantic Chunking with Overlap Optimization",
+    "providerId": "nu-rag",
+    "providerName": "Nu RAG & Knowledge Graph Engine",
+    "description": "Boundary-respecting semantic text splitter maintaining coherent contextual units.",
+    "quality": 0.9,
+    "latency": "120ms",
+    "latencyMs": 120,
+    "price": "$2.00 USDC / request",
+    "priceNum": 2,
+    "category": "rag-embeddings",
+    "endpoint": "/x402/providers/nu-rag/service?serviceId=document-chunker",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "citation-verifier",
+    "serviceId": "citation-verifier",
+    "name": "Source Document Grounding & Citation Verifier",
+    "providerId": "nu-rag",
+    "providerName": "Nu RAG & Knowledge Graph Engine",
+    "description": "Verifies every sentence in generative output against grounding source documents.",
+    "quality": 0.96,
+    "latency": "210ms",
+    "latencyMs": 210,
+    "price": "$3.50 USDC / request",
+    "priceNum": 3.5,
+    "category": "rag-embeddings",
+    "endpoint": "/x402/providers/nu-rag/service?serviceId=citation-verifier",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "content-moderator",
+    "serviceId": "content-moderator",
+    "name": "Multilingual Toxic & Harm Content Classifier",
+    "providerId": "xi-compliance",
+    "providerName": "Xi Moderation & Research Guardrails",
+    "description": "Multi-category safety evaluation covering hate speech, harassment, and security threats.",
+    "quality": 0.95,
+    "latency": "110ms",
+    "latencyMs": 110,
+    "price": "$2.00 USDC / request",
+    "priceNum": 2,
+    "category": "document-research",
+    "endpoint": "/x402/providers/xi-compliance/service?serviceId=content-moderator",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "pii-redactor",
+    "serviceId": "pii-redactor",
+    "name": "Automated GDPR/HIPAA Personal Data Redactor",
+    "providerId": "xi-compliance",
+    "providerName": "Xi Moderation & Research Guardrails",
+    "description": "Named entity recognition masking emails, phone numbers, SSNs, and crypto private keys.",
+    "quality": 0.96,
+    "latency": "170ms",
+    "latencyMs": 170,
+    "price": "$3.00 USDC / request",
+    "priceNum": 3,
+    "category": "document-research",
+    "endpoint": "/x402/providers/xi-compliance/service?serviceId=pii-redactor",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "academic-search",
+    "serviceId": "academic-search",
+    "name": "Semantic Scholar & ArXiv Research Retrieval",
+    "providerId": "xi-compliance",
+    "providerName": "Xi Moderation & Research Guardrails",
+    "description": "Automated literature review extracting peer-reviewed abstracts and citation graphs.",
+    "quality": 0.92,
+    "latency": "240ms",
+    "latencyMs": 240,
+    "price": "$3.50 USDC / request",
+    "priceNum": 3.5,
+    "category": "document-research",
+    "endpoint": "/x402/providers/xi-compliance/service?serviceId=academic-search",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  },
+  {
+    "id": "sentiment-analyzer",
+    "serviceId": "sentiment-analyzer",
+    "name": "Granular Aspect-Based Sentiment Classifier",
+    "providerId": "xi-compliance",
+    "providerName": "Xi Moderation & Research Guardrails",
+    "description": "Measures polarity, subjective tone, and emotional valence across text corpora.",
+    "quality": 0.89,
+    "latency": "130ms",
+    "latencyMs": 130,
+    "price": "$2.00 USDC / request",
+    "priceNum": 2,
+    "category": "document-research",
+    "endpoint": "/x402/providers/xi-compliance/service?serviceId=sentiment-analyzer",
+    "protocol": "x402 V2",
+    "status": "AVAILABLE",
+    "x402Enabled": true
+  }
+];
 
     async function loadServices() {
       // Dynamic link adjustment for GitHub Pages vs localhost
@@ -556,6 +1469,7 @@ Highest quality under $5.</textarea>
         linkOcc.target = '_self';
       }
 
+      renderSkeletonServices(8);
       try {
         const res = await fetch('/api/services');
         if (res.ok) {
@@ -927,12 +1841,47 @@ Highest quality under $5.</textarea>
       refreshMarketBudget();
     }
 
+    
+    function renderSkeletonServices(count = 8) {
+      const grid = document.getElementById('servicesGrid');
+      if (!grid) return;
+      grid.innerHTML = Array.from({ length: count }).map(() => `
+        <div class="service-card skeleton-card">
+          <div>
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
+              <div style="width: 70%;">
+                <div class="skeleton-shimmer" style="height: 18px; width: 85%; margin-bottom: 8px;"></div>
+                <div class="skeleton-shimmer-cyan" style="height: 12px; width: 50%;"></div>
+              </div>
+              <div class="skeleton-shimmer" style="height: 20px; width: 60px; border-radius: 4px;"></div>
+            </div>
+            <div class="card-desc">
+              <div class="skeleton-shimmer" style="height: 13px; width: 95%; margin-bottom: 6px;"></div>
+              <div class="skeleton-shimmer" style="height: 13px; width: 80%;"></div>
+            </div>
+            <div class="metrics-row" style="background: rgba(7,16,15,0.4);">
+              <div class="metric-item"><div class="skeleton-shimmer" style="height: 22px;"></div></div>
+              <div class="metric-item"><div class="skeleton-shimmer-emerald" style="height: 22px;"></div></div>
+              <div class="metric-item"><div class="skeleton-shimmer" style="height: 22px;"></div></div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="skeleton-shimmer" style="height: 20px; width: 100px;"></div>
+            <div class="skeleton-shimmer-cyan" style="height: 28px; width: 70px; border-radius: 9px;"></div>
+          </div>
+        </div>
+      `).join('');
+    }
     function renderServices() {
       const grid = document.getElementById('servicesGrid');
       let filtered = allServices;
 
       if (currentCategory !== 'all') {
-        filtered = filtered.filter(s => (s.category || '').toLowerCase() === currentCategory.toLowerCase());
+        const catFilter = currentCategory.toLowerCase();
+        filtered = filtered.filter(s => {
+          const c = (s.category || '').toLowerCase();
+          return c === catFilter || c.includes(catFilter) || catFilter.includes(c);
+        });
       }
 
       if (searchQuery) {
@@ -940,7 +1889,8 @@ Highest quality under $5.</textarea>
         filtered = filtered.filter(s => 
           s.name.toLowerCase().includes(q) || 
           (s.providerName || '').toLowerCase().includes(q) ||
-          (s.description || '').toLowerCase().includes(q)
+          (s.description || '').toLowerCase().includes(q) ||
+          (s.category || '').toLowerCase().includes(q)
         );
       }
 
@@ -952,9 +1902,14 @@ Highest quality under $5.</textarea>
       grid.innerHTML = filtered.map(s => `
         <div class="service-card">
           <div>
-            <div class="card-header">
-              <div class="card-title">${s.name}</div>
-              <div class="card-provider">by ${s.providerName || s.providerId}</div>
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
+              <div>
+                <div class="card-title">${s.name}</div>
+                <div class="card-provider">by ${s.providerName || s.providerId}</div>
+              </div>
+              <span style="font-family: var(--font-mono); font-size: 0.65rem; text-transform: uppercase; background: rgba(93, 230, 255, 0.1); color: var(--accent-cyan); border: 1px solid rgba(93, 230, 255, 0.25); border-radius: 4px; padding: 0.15rem 0.45rem; white-space: nowrap; font-weight: 600;">
+                ${s.category || 'general'}
+              </span>
             </div>
             <div class="card-desc">${s.description || 'Autonomous computational microservice.'}</div>
             
@@ -989,7 +1944,8 @@ Highest quality under $5.</textarea>
       currentCategory = cat;
       document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      renderServices();
+      renderSkeletonServices(6);
+      setTimeout(renderServices, 180);
     }
 
     function handleSearch(val) {
