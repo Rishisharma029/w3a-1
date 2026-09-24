@@ -2,7 +2,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Live%20Demo-Owner%20Control%20Center-00f2ff?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Live Demo" />
-  <img src="https://img.shields.io/badge/Marketplace-53%20Services%20%E2%80%A2%2014%20Nodes-10b981?style=for-the-badge&logo=fastapi&logoColor=white" alt="Live Marketplace" />
+  <img src="https://img.shields.io/badge/Marketplace-52%20Services%20%E2%80%A2%2014%20Nodes-10b981?style=for-the-badge&logo=fastapi&logoColor=white" alt="Live Marketplace" />
   <img src="https://img.shields.io/badge/Protocol-Official%20x402%20V2-blueviolet?style=for-the-badge&logo=coinbase&logoColor=white" alt="x402 V2" />
   <img src="https://img.shields.io/badge/Settlement-Ethereum%20Sepolia-6366f1?style=for-the-badge&logo=ethereum&logoColor=white" alt="Ethereum Sepolia" />
   <img src="https://img.shields.io/badge/Database-MySQL%208.0%20(InnoDB)-0284c7?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL 8.0" />
@@ -59,7 +59,7 @@ $$\text{Decision Layer (AI + SQL)} \neq \text{Enforcement Layer (Smart Contract)
            │                              │                              │
            │  1. Discovers & Evaluates   │                              │
            │     via PHP 8.3 & MySQL 8.0  │                              │
-           │     Pareto Frontier Query    ├─────────────────────────────►│ (53 Services Across
+           │     Pareto Frontier Query    ├─────────────────────────────►│ (52 Services Across
            │                              │                              │  14 Provider Nodes)
            │                              │                              │
            │  2. HTTP GET /service        │                              │
@@ -213,7 +213,7 @@ W3A-1 replaces volatile mock configurations with a fully normalized, relational 
                    └───────────────────────────────────────────────────────────┘
 ```
 
-### 53 AI Services Across 14 Provider Nodes & 9 Categories
+### 52 AI Services Across 14 Provider Nodes & 9 Categories
 Rather than a toy list of 3 items, the marketplace operates at realistic commercial scale:
 * **AI Services**: Text Generation, Legal Translation, Multi-Language Localization, Summarization, Code Analysis, AI Research.
 * **Vision & Media**: Neural OCR, Image Upscaling, Facial Landmark Detection, Video Transcoding.
@@ -412,7 +412,7 @@ For full threat model, vulnerability disclosures, and security guidelines, see [
 │   ├── php/                          # PHP 8.3 RESTful API & Relational Database Layer
 │   │   ├── schema.sql                # MySQL 8.0 InnoDB schema (7 relational tables)
 │   │   ├── db.php                    # PDO connection bootstrapper
-│   │   ├── seed.php                  # Relational seeder (53 services, 14 nodes, 9 categories)
+│   │   ├── seed.php                  # Relational seeder (52 services, 14 nodes, 9 categories)
 │   │   └── api.php                   # REST API & dynamic Pareto Frontier SQL decision engine
 │   ├── public/                       # Standalone Marketplace web interface
 │   ├── token-server.js               # Multi-provider x402 settlement Express server

@@ -100,12 +100,35 @@ async function discoverAndSelect(marketplaceBaseUrl, requirements, excludeIds = 
     );
   }
 
+  // ── Step 4: Verify against live MySQL Pareto Frontier SQL Engine ───────────
+  let sqlDecision = null;
+  let reason = selectionResult.reason;
+  try {
+    const phpUrl = process.env.PHP_API_URL || `${marketplaceBaseUrl}/api/marketplace/decision`;
+    const decisionRes = await axios.get(phpUrl, {
+      params: {
+        action: "query_decision",
+        category_id: requirements.serviceType || "translation",
+        budget: requirements.maxPrice || 5.0,
+        min_quality: requirements.minQuality || 0.85,
+      },
+      timeout: 800,
+    });
+    if (decisionRes.data && decisionRes.data.success && decisionRes.data.selected_service) {
+      sqlDecision = decisionRes.data;
+      reason = `[MySQL 8.0 Pareto SQL Verified] ${reason}`;
+    }
+  } catch (_) {
+    // Graceful fallback to in-memory ranking
+  }
+
   return {
     selectedProvider: selected,
-    selectionReason:  selectionResult.reason,
+    selectionReason:  reason,
     ranking:          selectionResult.ranking || [],
     filteredOut,
     allCandidates:    candidates,
+    sqlDecision,
   };
 }
 

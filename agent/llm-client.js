@@ -188,8 +188,8 @@ function keywordParseIntent(text) {
   // Service type
   let serviceType = null;
   if (/translat|hindi|spanish|french|german|language/.test(lower))                   serviceType = "translation";
-  else if (/compute|calculat|matrix|statist|anomal|risk|monte/.test(lower))         serviceType = "data-compute";
-  else if (/ocr|image.analyz|vision|photo|picture|detect|receipt|invoice|face/.test(lower)) serviceType = "vision-ocr";
+  else if (/compute|calculat|matrix|statist|anomal|risk|monte|process|data|analyz/.test(lower)) serviceType = "compute";
+  else if (/ocr|image.analyz|vision|photo|picture|detect|receipt|invoice|face/.test(lower)) serviceType = "image-analysis";
   else if (/reason|llm|generat|story|plan|schema|json|summar|tldr|distill/.test(lower))   serviceType = "text-generation";
   else if (/speech|audio|voice|stt|tts|whisper|diariz|noise/.test(lower))           serviceType = "speech-audio";
   else if (/diffus|image.gen|upscal|video|matting|background/.test(lower))          serviceType = "image-video";

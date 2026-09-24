@@ -610,27 +610,63 @@ const CurrentTransactionView = {
       App.navigate("execution");
     }
 
-    // Launch backend execution in parallel
-    const apiPromise = fetch("/api/orchestrate/ai-purchase", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: this.currentPrompt }),
-    })
-      .then((r) => r.json())
-      .catch((err) => ({ error: err.message }));
-
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-    // Progress through the 10-step pipeline
     const delays = [600, 700, 800, 700, 800, 700, 700, 900, 700, 600];
+    let apiPromise = null;
 
+    // Progress through the 10-step pipeline with interactive user confirmation
     for (let step = 1; step <= 10; step++) {
       this.activeStep = step;
       this.expandedStep = step;
       this.stepStates[step] = "active";
       this.reRenderIfMounted();
 
-      if (step === 8) {
+      // Step 4 is 402 PAYMENT REQUIRED. Before Step 5 (SIGNING), AI asks user for confirmation!
+      if (step === 4) {
+        await sleep(delays[step - 1] || 700);
+        this.stepStates[4] = "confirmed";
+        this.reRenderIfMounted();
+
+        // Ask user with popup modal to Accept or Decline payment
+        let userConfirmed = true;
+        if (typeof App !== "undefined" && typeof App.confirmAiPayment === "function") {
+          userConfirmed = await App.confirmAiPayment({
+            provider: "Alpha Translation Labs",
+            service: "Neural Text Translation",
+            amount: "$4.00 USDC",
+            recipient: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            network: "Ethereum Sepolia (eip155:11155111)",
+            reason: "Pareto-optimal provider meeting quality target (0.92) within budget cap.",
+          });
+        }
+
+        if (!userConfirmed) {
+          // User DECLINED payment: Abort cleanly with $0 spent!
+          if (this.timerInterval) clearInterval(this.timerInterval);
+          this.status = "ABORTED";
+          this.isExecuting = false;
+          this.activeStep = 4;
+          this.expandedStep = 4;
+          this.stepStates[5] = "blocked";
+          this.reRenderIfMounted();
+          if (typeof App !== "undefined" && typeof App.toast === "function") {
+            App.toast("Payment Declined by User. Transaction cleanly aborted with $0 spent.", "error");
+          }
+          return false;
+        }
+
+        // User ACCEPTED payment: Launch backend execution on-chain now!
+        apiPromise = fetch("/api/orchestrate/ai-purchase", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: this.currentPrompt }),
+        })
+          .then((r) => r.json())
+          .catch((err) => ({ error: err.message }));
+        continue;
+      }
+
+      if (step === 8 && apiPromise) {
         // Await on-chain settlement result
         const apiResult = await Promise.race([apiPromise, sleep(1200)]);
         if (apiResult && apiResult.trace) {
@@ -660,6 +696,7 @@ const CurrentTransactionView = {
     if (typeof ApiService !== "undefined") {
       await ApiService.syncAll();
     }
+    return true;
   },
 
   audioCtx: null,

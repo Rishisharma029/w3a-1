@@ -49,8 +49,8 @@ function formatUSDC(val) {
 
 async function main() {
   const rpcUrl = process.env.SEPOLIA_RPC_URL;
-  const enforcerAddress = process.env.ENFORCER_ADDRESS;
-  const tokenAddress = process.env.TOKEN_ADDRESS;
+  const enforcerAddress = process.env.SEPOLIA_ENFORCER_ADDRESS || process.env.ENFORCER_ADDRESS;
+  const tokenAddress = process.env.SEPOLIA_TOKEN_ADDRESS || process.env.TOKEN_ADDRESS;
 
   console.log(chalk.bold.cyan("\n╔══════════════════════════════════════════════════════════════╗"));
   console.log(chalk.bold.cyan("║    W3A-1 — Sepolia Testnet Contract Verification (READ-ONLY)  ║"));

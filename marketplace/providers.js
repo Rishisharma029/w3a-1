@@ -24,7 +24,7 @@ const PROVIDERS = [
     providerId:         "alpha-translate",
     name:               "Alpha Translation Labs",
     serviceType:        "translation",
-    qualityScore:       0.94,
+    qualityScore:       0.92,
     estimatedLatencyMs: 195,
     availability:       1.0,
     services: {
@@ -74,7 +74,7 @@ const PROVIDERS = [
       "dialect-localize": {
         id: "dialect-localize",
         name: "Dialect & Cultural Localization",
-        price: 3.5,
+        price: 4,
         category: "translation",
         quality: 0.90,
         latencyMs: 180,
@@ -94,7 +94,7 @@ const PROVIDERS = [
       "bilingual-align": {
         id: "bilingual-align",
         name: "Bilingual Sentence & Corpus Alignment",
-        price: 2.5,
+        price: 4,
         category: "translation",
         quality: 0.89,
         latencyMs: 140,
@@ -124,10 +124,29 @@ const PROVIDERS = [
     estimatedLatencyMs: 90,
     availability:       1.0,
     services: {
+      "text-translate": {
+        id: "text-translate",
+        name: "Text Translation",
+        price: 3,
+        description: "Fast, cost-effective translation.",
+        generate(reqId, payload = {}) {
+          return {
+            provider: "beta-translate",
+            service: "text-translate",
+            reqId,
+            sourceText: payload.text || "The quick brown fox",
+            targetLanguage: payload.targetLanguage || "English",
+            translatedText: `[Beta] ${payload.text || "The quick brown fox"} → (translated to ${payload.targetLanguage || "English"})`,
+            qualityConfidence: 0.84,
+            wordCount: (payload.text || "The quick brown fox").split(" ").length,
+            generatedAt: new Date().toISOString(),
+          };
+        },
+      },
       "budget-translate": {
         id: "budget-translate",
         name: "High-Throughput Bulk Translation",
-        price: 2.0,
+        price: 3,
         category: "translation",
         quality: 0.83,
         latencyMs: 90,
@@ -147,7 +166,7 @@ const PROVIDERS = [
       "glossary-translate": {
         id: "glossary-translate",
         name: "Terminology-Constrained Translation",
-        price: 2.5,
+        price: 3,
         category: "translation",
         quality: 0.86,
         latencyMs: 110,
@@ -192,10 +211,30 @@ const PROVIDERS = [
     providerId:         "gamma-translate",
     name:               "Gamma Enterprise Localization",
     serviceType:        "translation",
-    qualityScore:       0.98,
+    qualityScore:       0.97,
     estimatedLatencyMs: 420,
     availability:       1.0,
     services: {
+      "text-translate": {
+        id: "text-translate",
+        name: "Text Translation (Premium)",
+        price: 6,
+        description: "Highest quality, human-reviewed translation.",
+        generate(reqId, payload = {}) {
+          return {
+            provider: "gamma-translate",
+            service: "text-translate",
+            reqId,
+            sourceText: payload.text || "The quick brown fox",
+            targetLanguage: payload.targetLanguage || "English",
+            translatedText: `[Gamma/Premium] ${payload.text || "The quick brown fox"} → (translated to ${payload.targetLanguage || "English"})`,
+            qualityConfidence: 0.97,
+            wordCount: (payload.text || "The quick brown fox").split(" ").length,
+            humanReviewed: true,
+            generatedAt: new Date().toISOString(),
+          };
+        },
+      },
       "expert-translate": {
         id: "expert-translate",
         name: "Expert Human-in-the-Loop Translation",
@@ -219,7 +258,7 @@ const PROVIDERS = [
       "patents-translate": {
         id: "patents-translate",
         name: "Multilingual Patent & IP Translation",
-        price: 6.5,
+        price: 7,
         category: "translation",
         quality: 0.97,
         latencyMs: 400,
@@ -263,7 +302,7 @@ const PROVIDERS = [
   {
     providerId:         "delta-compute",
     name:               "Delta Distributed Compute",
-    serviceType:        "data-compute",
+    serviceType:        "compute",
     qualityScore:       0.90,
     estimatedLatencyMs: 150,
     availability:       1.0,
@@ -282,11 +321,19 @@ const PROVIDERS = [
             provider: "delta-compute",
             service: "data-process",
             reqId,
+            input,
             aggregates: {
               sum: input.reduce((a, b) => a + b, 0),
               mean: input.reduce((a, b) => a + b, 0) / input.length,
               count: input.length,
               stdev: 24.6,
+            },
+            output: {
+              sum: input.reduce((a, b) => a + b, 0),
+              mean: input.reduce((a, b) => a + b, 0) / input.length,
+              min: Math.min(...input),
+              max: Math.max(...input),
+              count: input.length,
             },
             generatedAt: new Date().toISOString(),
           };
@@ -295,7 +342,7 @@ const PROVIDERS = [
       "matrix-compute": {
         id: "matrix-compute",
         name: "High-Performance Matrix Operations",
-        price: 4.5,
+        price: 5,
         category: "data-compute",
         quality: 0.93,
         latencyMs: 210,
@@ -1281,8 +1328,8 @@ function getProvider(providerId) {
  * @param {number} [filters.maxPrice]     — all services priced <= maxPrice
  * @returns {object[]}
  */
-function listProviders({ serviceType, minQuality, maxPrice } = {}) {
-  return PROVIDERS.filter((p) => {
+function listProviders({ serviceType, minQuality, maxPrice } = {}, providerList = PROVIDERS) {
+  return providerList.filter((p) => {
     if (!p.availability || p.availability <= 0) return false;
     if (serviceType && p.serviceType !== serviceType) return false;
     if (minQuality && p.qualityScore < minQuality) return false;
@@ -1325,7 +1372,7 @@ function providerToDiscovery(provider) {
       serviceId:   s.id,
       name:        s.name,
       price:       s.price,
-      currency:    "USDC",
+      currency:    "UNIT",
       description: s.description,
       category:    s.category || provider.serviceType,
       quality:     s.quality || provider.qualityScore,

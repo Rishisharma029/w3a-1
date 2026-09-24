@@ -828,6 +828,65 @@ ${JSON.stringify(
   },
 
   // ---------------------------------------------------------------------------
+  // Interactive AI Payment Confirmation Popup Modal
+  // ---------------------------------------------------------------------------
+  confirmAiPayment(details = {}) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById("aiPaymentConfirmationModal");
+      if (!modal) {
+        // If modal element isn't in DOM, auto-approve
+        return resolve(true);
+      }
+
+      // Populate dynamic fields
+      const elProvider = document.getElementById("modalPaymentProvider");
+      const elService = document.getElementById("modalPaymentService");
+      const elAmount = document.getElementById("modalPaymentAmount");
+      const elRecipient = document.getElementById("modalPaymentRecipient");
+      const elNetwork = document.getElementById("modalPaymentNetwork");
+      const elReason = document.getElementById("modalPaymentReason");
+
+      if (elProvider) elProvider.textContent = details.provider || "Alpha Translation Labs";
+      if (elService) elService.textContent = details.service || "Neural Text Translation";
+      if (elAmount) elAmount.textContent = details.amount || "$4.00 USDC";
+      if (elRecipient) elRecipient.textContent = details.recipient || "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";
+      if (elNetwork) elNetwork.textContent = details.network || "Ethereum Sepolia (eip155:11155111)";
+      if (elReason) elReason.textContent = details.reason || "Selected Pareto-optimal provider based on quality & budget ceiling.";
+
+      modal.classList.remove("hidden");
+
+      const btnAccept = document.getElementById("btnAcceptAiPayment");
+      const btnDecline = document.getElementById("btnDeclineAiPayment");
+
+      const onKeyDown = (e) => {
+        if (e.key === "Escape") cleanup(false);
+      };
+      window.addEventListener("keydown", onKeyDown);
+
+      const onBackdrop = (e) => {
+        if (e.target === modal) cleanup(false);
+      };
+      modal.addEventListener("click", onBackdrop);
+
+      const cleanup = (accepted) => {
+        modal.classList.add("hidden");
+        window.removeEventListener("keydown", onKeyDown);
+        modal.removeEventListener("click", onBackdrop);
+        if (btnAccept) btnAccept.onclick = null;
+        if (btnDecline) btnDecline.onclick = null;
+        resolve(accepted);
+      };
+
+      if (btnAccept) {
+        btnAccept.onclick = () => cleanup(true);
+      }
+      if (btnDecline) {
+        btnDecline.onclick = () => cleanup(false);
+      }
+    });
+  },
+
+  // ---------------------------------------------------------------------------
   // Full Hero Experience: Run Autonomous Purchase Sequence (00:00 - 00:05)
   // ---------------------------------------------------------------------------
   async runAutonomousPurchaseSequence() {
@@ -848,13 +907,15 @@ ${JSON.stringify(
 
       this.toast("Executing Autonomous Purchase Sequence (00:00 -> 00:05)...", "info");
 
-      // 2. Trigger n8n Cloud 30-Node Orchestrator & real 10-step sub-second sequence
-      ApiService.orchestrateN8n().catch(() => {});
+      // 2. Run sequence which includes interactive payment confirmation popup
+      let result = true;
       if (typeof CurrentTransactionView !== "undefined" && CurrentTransactionView.runAutonomousSequence) {
-        await CurrentTransactionView.runAutonomousSequence();
+        result = await CurrentTransactionView.runAutonomousSequence();
       }
 
-      this.toast("Autonomous Purchase Succeeded! $4.00 USDC Settled & Cryptographically Verified.", "success");
+      if (result !== false) {
+        this.toast("Autonomous Purchase Succeeded! $4.00 USDC Settled & Cryptographically Verified.", "success");
+      }
     } catch (err) {
       console.error("[App] runAutonomousPurchaseSequence failed:", err);
       this.toast(`Execution error: ${err.message}`, "error");
@@ -876,6 +937,28 @@ ${JSON.stringify(
     if (btn) {
       btn.disabled = true;
       btn.classList.add("opacity-75", "cursor-wait");
+    }
+
+    // Ask user with popup modal to Accept or Decline before signing payment
+    let userAccepted = true;
+    if (typeof App !== "undefined" && typeof App.confirmAiPayment === "function") {
+      userAccepted = await App.confirmAiPayment({
+        provider: "Alpha Translation Services",
+        service: "AI Legal Contract Translation",
+        amount: "$4.00 USDC",
+        recipient: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+        network: "Ethereum Sepolia (eip155:11155111)",
+        reason: "Autonomous settlement broadcast on Ethereum Sepolia Testnet with verified proof.",
+      });
+    }
+
+    if (!userAccepted) {
+      this.toast("Payment Declined by User. Broadcast aborted with $0 spent.", "error");
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove("opacity-75", "cursor-wait");
+      }
+      return;
     }
 
     this.toast("Broadcasting autonomous settlement to Ethereum Sepolia Testnet...", "info");

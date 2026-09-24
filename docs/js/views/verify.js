@@ -275,6 +275,25 @@ const VerifyView = {
   },
 
   async broadcastSepoliaSettlement() {
+    let userAccepted = true;
+    if (typeof App !== "undefined" && typeof App.confirmAiPayment === "function") {
+      userAccepted = await App.confirmAiPayment({
+        provider: "Alpha Translation Services",
+        service: "AI Legal Contract Translation",
+        amount: "$4.00 USDC",
+        recipient: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+        network: "Ethereum Sepolia (eip155:11155111)",
+        reason: "On-chain autonomous settlement verification on Ethereum Sepolia Testnet.",
+      });
+    }
+
+    if (!userAccepted) {
+      if (typeof App !== "undefined" && typeof App.toast === "function") {
+        App.toast("Sepolia settlement declined by user. $0 spent.", "error");
+      }
+      return;
+    }
+
     if (typeof App !== "undefined" && typeof App.toast === "function") {
       App.toast("Broadcasting autonomous purchase directly to Ethereum Sepolia...", "info");
     }

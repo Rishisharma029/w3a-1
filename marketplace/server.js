@@ -63,10 +63,20 @@ function createMarketplace({
     );
   }
 
+  // ── Base providers for Phase 2 marketplace ──────────────────────────────
+  const BASE_PROVIDER_IDS = new Set([
+    "alpha-translate",
+    "beta-translate",
+    "gamma-translate",
+    "delta-compute",
+    "epsilon-vision",
+  ]);
+  const marketProviders = PROVIDERS.filter((p) => BASE_PROVIDER_IDS.has(p.providerId));
+
   // ── Per-provider state ────────────────────────────────────────────────────
   // Each provider gets isolated stores and a tamper flag.
   const providerState = {};
-  for (const p of PROVIDERS) {
+  for (const p of marketProviders) {
     providerState[p.providerId] = {
       receiptStore: createReceiptStore(),
       quoteStore:   createQuoteStore(),
@@ -89,7 +99,7 @@ function createMarketplace({
       serviceType: serviceType || undefined,
       minQuality:  minQuality  ? parseFloat(minQuality)  : undefined,
       maxPrice:    maxPrice    ? parseFloat(maxPrice)    : undefined,
-    });
+    }, marketProviders);
 
     res.json({
       count:     candidates.length,
@@ -98,7 +108,7 @@ function createMarketplace({
   });
 
   // ── Per-provider routes ───────────────────────────────────────────────────
-  for (const providerConfig of PROVIDERS) {
+  for (const providerConfig of marketProviders) {
     const { providerId } = providerConfig;
     const state = providerState[providerId];
 
@@ -119,8 +129,8 @@ function createMarketplace({
     res.json({
       status:          "ok",
       contractAddress,
-      providerCount:   PROVIDERS.length,
-      providers:       PROVIDERS.map((p) => p.providerId),
+      providerCount:   marketProviders.length,
+      providers:       marketProviders.map((p) => p.providerId),
     });
   });
 

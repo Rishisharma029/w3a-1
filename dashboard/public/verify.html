@@ -694,6 +694,9 @@
     }
 
     async function broadcastToSepolia() {
+      if (!window.confirm("Authorize AI Payment of $4.00 USDC to Alpha Translation Services on Ethereum Sepolia Testnet?")) {
+        return;
+      }
       const btn = document.getElementById("btnBroadcastSepolia");
       const origText = btn.innerHTML;
       btn.disabled = true;

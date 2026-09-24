@@ -117,8 +117,8 @@ const AgentView = {
 
     const currentRem = AppState && AppState.budget ? (parseFloat(AppState.budget.remaining || AppState.budget.totalFunded || 545).toFixed(2)) : "545.00";
 
-    // Launch backend execution in parallel
-    const apiPromise = ApiService.executeAiPurchase(prompt).catch((err) => ({ error: err.message }));
+    // Deferred backend execution - only runs after user payment confirmation
+    let apiPromise = null;
 
     // Stage 1: Immediately — AI AGENT
     stagesContainer.innerHTML += `
@@ -237,6 +237,54 @@ const AgentView = {
     `;
 
     await delay(500);
+
+    // Ask user with popup modal to Accept or Decline before signing payment
+    let userAccepted = true;
+    if (typeof App !== "undefined" && typeof App.confirmAiPayment === "function") {
+      if (ticker) ticker.innerHTML = `<span class="material-symbols-outlined text-sm text-amber-400 animate-pulse">pan_tool</span><span class="text-amber-400">AWAITING USER PAYMENT CONFIRMATION...</span>`;
+      userAccepted = await App.confirmAiPayment({
+        provider: "Alpha Translation Labs",
+        service: "Neural Text Translation",
+        amount: "$4.00 USDC",
+        recipient: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+        network: "Ethereum Sepolia (eip155:11155111)",
+        reason: "Selected Pareto-optimal provider based on quality (0.92) & budget ($4.00 <= $5.00).",
+      });
+    }
+
+    if (!userAccepted) {
+      if (ticker) ticker.innerHTML = `<span class="material-symbols-outlined text-sm text-rose-400">cancel</span><span class="text-rose-400">PAYMENT DECLINED BY USER — ABORTED ($0 SPENT)</span>`;
+      stagesContainer.innerHTML += `
+        <div id="stage-5-declined" class="live-tx-step rounded-xl p-4 bg-surface-low border border-rose-500/50 shadow-lg space-y-2 animate-fade-in font-mono text-xs">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 text-rose-400 font-bold uppercase tracking-wider">
+              <span class="material-symbols-outlined text-sm">block</span>
+              <span>PAYMENT DECLINED BY USER</span>
+            </div>
+            <span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40">
+              ABORTED ($0 SPENT)
+            </span>
+          </div>
+          <div class="text-xs text-on-surface-variant p-2.5 rounded bg-surface-lowest border border-outline-variant/20 flex items-center justify-between">
+            <span>Authorization signature refused by user. Zero tokens transferred. Escrow balance untouched.</span>
+            <span class="text-tertiary font-bold">$0.00 Spent</span>
+          </div>
+        </div>
+      `;
+      this.isExecuting = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<span class="material-symbols-outlined text-base">smart_toy</span><span>BUY WITH AI AGENT</span>`;
+        btn.classList.remove("opacity-75", "cursor-wait");
+      }
+      if (typeof App !== "undefined" && typeof App.toast === "function") {
+        App.toast("Payment Declined by User. $0 spent, escrow funds untouched.", "error");
+      }
+      return;
+    }
+
+    // Launch backend execution only after acceptance
+    apiPromise = ApiService.executeAiPurchase(prompt).catch((err) => ({ error: err.message }));
 
     // Stage 5: Then — PAYMENT-SIGNATURE
     if (ticker) ticker.innerHTML = `<span class="material-symbols-outlined text-sm text-secondary">verified</span><span>PAYMENT-SIGNATURE: EIP-712 ✓</span>`;
