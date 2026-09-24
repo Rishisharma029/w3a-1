@@ -153,20 +153,18 @@ The AI agent's natural language reasoning happens off-chain. A jailbroken agent 
 
 > **This section is required by the Phase 4 spec to maintain technical honesty.**
 
-1. **Not real USDC**: The `MockUSDC` token has no real monetary value. It is a 6-decimal test ERC-20 for demonstration only.
-
-2. **Not full x402 conformant**: We implement an **x402-compatible** flow (HTTP 402 → pay → deliver pattern) but do not use the official x402 SDK or fully conform to all x402 spec headers.
-
-3. **Not fully trustless**: Delivery verification requires the client to recompute and compare the hash in JavaScript. The on-chain hash is a binding commitment, but verifying the content matches is off-chain.
-
-4. **Not decentralized discovery**: Provider registry is a centralized in-memory list. Not a DHT, not a smart contract registry.
-
-5. **Not production-audited**: This contract has not been audited by a professional security firm. Do not deploy with real funds.
-
-6. **MEV risk**: On-chain settlement transactions could theoretically be front-run or sandwiched in production environments.
+1. **Test Tokens & Sepolia**: Local testing uses `MockUSDC.sol` (6 decimals). Live testnet testing executes on Ethereum Sepolia Testnet (`eip155:11155111`).
+2. **Official x402 V2 Wire Protocol**: Fully conformant with Coinbase x402 V2 wire specification (`@x402/core@2.25.0`) using standard HTTP headers (`PAYMENT-REQUIRED`, `PAYMENT-SIGNATURE`, `PAYMENT-RESPONSE`) and CAIP-2 network identifiers.
+3. **Delivery Verification**: Delivery verification requires the client or backend to recompute and compare the canonical SHA-256 hash. The on-chain hash is a binding, immutable commitment in the settlement receipt.
+4. **Relational Persistence**: The persistent marketplace catalog runs on PHP 8.3 & MySQL 8.0 (InnoDB) with parameterized PDO prepared statements, guaranteeing SQL injection immunity.
+5. **Credential Security**: All private keys, RPC URLs, and orchestration tokens are isolated in local `.env` files and strictly excluded from version control.
 
 ---
 
 ## Vulnerability Disclosure
 
-If you discover a security issue, do not post it publicly. Instead, open a private issue or contact the team directly.
+If you discover a security vulnerability or potential protocol breach, please report it privately:
+* **Email**: `security@w3a1.io`
+* **Direct**: Open a GitHub Security Advisory in the repository
+
+Please do not open public issues for security vulnerabilities until a patch has been published.

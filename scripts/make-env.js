@@ -51,7 +51,7 @@ const defaultEnv = [
   "# ---- Cloud Orchestrator (n8n Cloud & MCP Gateway) ----",
   "N8N_WEBHOOK_URL=https://rishisharma029.app.n8n.cloud/webhook/w3a1/purchase",
   "N8N_MCP_URL=https://rishisharma029.app.n8n.cloud/mcp-server/http",
-  "N8N_ACCESS_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MDZiMmZhYy1iZmU4LTQzZDMtYjNlNS0wZmQzNjczNWQxMTUiLCJpc3MiOiJuOG4iLCJhdWQiOiJtY3Atc2VydmVyLWFwaSIsImp0aSI6ImZlMWFkODQ2LTk5YWEtNDhhMS1iZGNlLTVhNmU2MjdlOWQ2YSIsImlhdCI6MTc4OTE1MzAzNX0.UyHX5sQcxeWc1XUOvqCXAUZ2OBidEKc5gDCFY9Uw5uo",
+  `N8N_ACCESS_KEY=${process.env.N8N_ACCESS_KEY || (fs.existsSync(envPath) ? (fs.readFileSync(envPath, 'utf8').match(/N8N_ACCESS_KEY=([^\r\n]+)/) || [])[1] : '') || ''}`,
   "",
   "# ---- Phase 2 (Sepolia Testnet Configuration) ----",
   "# SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY",

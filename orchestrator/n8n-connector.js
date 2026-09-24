@@ -19,6 +19,8 @@
 
 "use strict";
 
+require("dotenv").config();
+
 const express = require("express");
 const crypto = require("crypto");
 const axios = require("axios");
@@ -37,7 +39,7 @@ const { computeContentHash } = require("../shared/types");
 
 const N8N_WORKFLOW_ID = "cveIFBZn9aM1CNLF";
 const N8N_WEBHOOK_URL = "https://rishisharma029.app.n8n.cloud/webhook/w3a1/purchase";
-const N8N_BEARER_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MDZiMmZhYy1iZmU4LTQzZDMtYjNlNS0wZmQzNjczNWQxMTUiLCJpc3MiOiJuOG4iLCJhdWQiOiJtY3Atc2VydmVyLWFwaSIsImp0aSI6ImZlMWFkODQ2LTk5YWEtNDhhMS1iZGNlLTVhNmU2MjdlOWQ2YSIsImlhdCI6MTc4OTE1MzAzNX0.UyHX5sQcxeWc1XUOvqCXAUZ2OBidEKc5gDCFY9Uw5uo";
+const N8N_BEARER_TOKEN = process.env.N8N_ACCESS_KEY || "";
 const ACTIVE_TUNNEL_URL = process.env.TUNNEL_URL || "https://angeles-featuring-vip-display.trycloudflare.com";
 
 

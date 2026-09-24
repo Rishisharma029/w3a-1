@@ -13,7 +13,7 @@ const { AuditEvent } = require("../shared/events");
 
 const SEPOLIA_ENFORCER = process.env.SEPOLIA_ENFORCER_ADDRESS || "0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e";
 const SEPOLIA_TOKEN = process.env.SEPOLIA_TOKEN_ADDRESS || "0xAaa008Df25A46dc501B5B712ac18B47901AF99A7";
-const SEPOLIA_RPC = process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.g.alchemy.com/v2/alch_y7R7G49oS7RAtbQKKIpBu";
+const SEPOLIA_RPC = process.env.SEPOLIA_RPC_URL || (process.env.ALCHEMY_API_KEY ? `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}` : "https://rpc.sepolia.org");
 const SEPOLIA_KEY = process.env.SEPOLIA_OWNER_PRIVATE_KEY || process.env.SEPOLIA_PRIVATE_KEY || "";
 
 // Pre-seeded confirmed transactions on Sepolia for instant proof verification
@@ -84,6 +84,9 @@ const sepoliaTransactions = [
  * Execute real settlement on Ethereum Sepolia Testnet
  */
 async function executeSepoliaSettlement(options = {}) {
+  if (!SEPOLIA_KEY) {
+    throw new Error("SEPOLIA_OWNER_PRIVATE_KEY is not configured in .env");
+  }
   const provider = new ethers.JsonRpcProvider(SEPOLIA_RPC);
   const wallet = new ethers.Wallet(SEPOLIA_KEY, provider);
 

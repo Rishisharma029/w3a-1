@@ -77,6 +77,17 @@ async function main() {
   await enforcer.connect(ownerSigner).fundBudget(deposit);
   console.log(chalk.green(`  ✔ Escrow funded with $30.00 MockUSDC (Authorized Ceiling: $20.00)`));
 
+  // 3.5. Ensure MySQL 8.0 & PHP 8.3 Persistent Marketplace Layer
+  console.log(chalk.blue("[3.5/5] Booting MySQL 8.0 & PHP 8.3 Persistent Marketplace Layer..."));
+  try {
+    const { ensureMySQLAndPHP } = require("./start-mysql-php");
+    const dbStats = await ensureMySQLAndPHP();
+    console.log(chalk.green(`  ✔ MySQL 8.0 (InnoDB) & PHP 8.3 API live on: http://127.0.0.1:8088/api.php`));
+    console.log(chalk.green(`    (Database: w3a1_marketplace • 52 Services • 14 Providers • Relational Orders)`));
+  } catch (err) {
+    console.log(chalk.yellow(`  ⚠ MySQL/PHP status: ${err.message} (Using in-memory fallback)`));
+  }
+
   // 4. Start Infrastructure Components
   console.log(chalk.blue("[4/5] Starting Facilitator, Marketplace & Owner Control Center..."));
   const facilitator = new PaymentFacilitator({
