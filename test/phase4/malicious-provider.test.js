@@ -144,7 +144,8 @@ describe("Phase 4 — Malicious Provider Attack Scenarios", function () {
   it("MP-02 — payment destination substitution causes EIP-712 signature failure", async function () {
     const attackerAddress = "0x0000000000000000000000000000000000000042";
     const reqId = ethers.id("mp-02-" + Date.now());
-    const validBefore = Math.floor(Date.now() / 1000) + 300;
+    const latestBlock = await ethers.provider.getBlock("latest");
+    const validBefore = Math.max(Math.floor(Date.now() / 1000), latestBlock ? latestBlock.timestamp : 0) + 3600;
     const amount = 4n * ONE_USDC;
 
     const domain = {

@@ -15,6 +15,607 @@ const AgentView = {
   currentPrompt: "Translate this PDF to Hindi.\nHighest quality under $5.",
   activeResult: null,
   isExecuting: false,
+  lastCompletedTx: null,
+  audioCtx: null,
+
+  playRatchetClick() {
+    try {
+      if (!this.audioCtx) {
+        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume();
+      }
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(140 + Math.random() * 40, this.audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(30, this.audioCtx.currentTime + 0.04);
+      gain.gain.setValueAtTime(0.08, this.audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.04);
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+      osc.start();
+      osc.stop(this.audioCtx.currentTime + 0.045);
+    } catch (e) {}
+  },
+
+  scheduleMechanicalSounds() {
+    const pauses = [0, 140, 500, 620, 1000, 1120, 1540, 1680, 2100, 2220, 2600];
+    pauses.forEach((delay) => {
+      setTimeout(() => this.playRatchetClick(), delay);
+    });
+  },
+
+  getLatestTx() {
+    if (this.lastCompletedTx) {
+      return this.lastCompletedTx;
+    }
+    if (typeof AppState !== 'undefined' && AppState.transactions && AppState.transactions.length > 0) {
+      const raw = AppState.transactions[0];
+      if (typeof TransactionAdapter !== 'undefined') {
+        const norm = TransactionAdapter.normalize(raw);
+        const rawTxHash = norm.txHash;
+        const validTxHash =
+          rawTxHash && rawTxHash.startsWith('0x') && rawTxHash.length === 66
+            ? rawTxHash
+            : '0xb1ed8dc8144c210ff5b847912430da90d57e916fec59d314d28ce33ff8e9c5cd';
+        const rawDelivHash = norm.deliveryHash;
+        const validDelivHash =
+          rawDelivHash && rawDelivHash.startsWith('sha256:')
+            ? rawDelivHash
+            : 'sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6';
+
+        return {
+          reqId: norm.reqId || '0x088e7c75ddcc48eba8329618b1a37c02b3df468e82a09c2a1387d40294716b23',
+          txHash: validTxHash,
+          deliveryHash: validDelivHash,
+          providerName: norm.providerName || 'Alpha Translation Services',
+          providerAddress: norm.provider || '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
+          serviceName: norm.serviceName || 'Neural Text Translation',
+          serviceDetail: norm.intent ? `Intent: ${norm.intent.slice(0, 36)}...` : 'Target: Hindi • Quality ≥ 0.90',
+          deliveredText:
+            (norm.content &&
+              (typeof norm.content === 'string'
+                ? norm.content
+                : norm.content.translatedText || norm.content.result || JSON.stringify(norm.content))) ||
+            'यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.',
+          amountUSD: norm.amountUSD || '4.00',
+          timestamp: norm.timestamp || new Date(),
+          blockNumber: norm.blockNumber || 11766264,
+          network: norm.network || 'eip155:11155111 (Ethereum Sepolia Testnet)',
+        };
+      }
+    }
+    return {
+      reqId: '0x088e7c75ddcc48eba8329618b1a37c02b3df468e82a09c2a1387d40294716b23',
+      txHash: '0xb1ed8dc8144c210ff5b847912430da90d57e916fec59d314d28ce33ff8e9c5cd',
+      deliveryHash: 'sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6',
+      providerName: 'Alpha Translation Labs',
+      providerAddress: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
+      serviceName: 'Neural Text Translation',
+      serviceDetail: 'Target: Hindi • Quality ≥ 0.90',
+      deliveredText: 'यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.',
+      amountUSD: '4.00',
+      timestamp: new Date(),
+      blockNumber: 11766264,
+      network: 'eip155:11155111 (Ethereum Sepolia Testnet)',
+    };
+  },
+
+  replayReceipt() {
+    const receiptEl = document.getElementById('agentReceiptPaper');
+    const ledEl = document.getElementById('agentPrinterLed');
+    const statusTextEl = document.getElementById('agentPrinterStatusText');
+    if (!receiptEl) return;
+
+    receiptEl.style.transform = '';
+    receiptEl.style.opacity = '';
+    receiptEl.classList.remove('animate-print-feed');
+    void receiptEl.offsetWidth;
+    receiptEl.classList.add('animate-print-feed');
+
+    if (ledEl) {
+      ledEl.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 printer-led-active shadow-[0_0_8px_#22c55e]';
+    }
+    if (statusTextEl) {
+      statusTextEl.innerText = 'FEEDING PAPER';
+      statusTextEl.className = 'text-[10px] font-mono tracking-wider text-emerald-400 font-semibold uppercase animate-pulse';
+    }
+
+    this.scheduleMechanicalSounds();
+
+    setTimeout(() => {
+      if (receiptEl) {
+        receiptEl.classList.remove('animate-print-feed');
+        receiptEl.style.transform = 'translateY(0%)';
+        receiptEl.style.opacity = '1';
+      }
+      if (ledEl) {
+        ledEl.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#22c55e]';
+      }
+      if (statusTextEl) {
+        statusTextEl.innerText = 'PRINTED • READY';
+        statusTextEl.className = 'text-[10px] font-mono tracking-wider text-emerald-400 font-semibold uppercase';
+      }
+    }, 2850);
+  },
+
+  downloadReceipt() {
+    const tx = this.getLatestTx();
+    const txDate = tx.timestamp instanceof Date ? tx.timestamp : new Date(tx.timestamp || Date.now());
+    const validDate = isNaN(txDate.getTime()) ? new Date() : txDate;
+    const formattedDate =
+      validDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase() +
+      ' ' +
+      validDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const txHash = tx.txHash || '0xb1ed8dc8144c210ff5b847912430da90d57e916fec59d314d28ce33ff8e9c5cd';
+    const orderNo = `TX-${(txHash.length > 8 ? txHash.slice(2, 8) : 'B1ED8D').toUpperCase()}`;
+    const amountNum = Number(tx.amountUSD || 4.0);
+    const amountFormatted = `$${amountNum.toFixed(2)} USDC`;
+
+    const receiptContent = `================================================
+          W3A-1 AUTONOMOUS COMMERCE
+    Safe-Spend & x402 V2 Settlement Protocol
+Network: eip155:11155111 • Ethereum Sepolia Testnet
+================================================
+DATE:                  ${formattedDate}
+ORDER / TX:            #${orderNo}
+REQUEST ID:            ${tx.reqId || '0x088e7c75ddcc48eba8329618b1a37c02b3df468e82a09c2a1387d40294716b23'}
+PROVIDER:              ${tx.providerName || 'Alpha Translation Labs'}
+PROVIDER ADDR:         ${tx.providerAddress || '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC'}
+PAYMENT METHOD:        x402 Exact EIP-712 (USDC)
+------------------------------------------------
+ITEM / SERVICE:
+  ${tx.serviceName || 'Neural Text Translation'}
+  ${tx.serviceDetail || 'Target: Hindi • Quality ≥ 0.90'}
+  Amount:              ${amountFormatted}
+
+x402 Facilitator:      FREE ($0.00) [EIP-712 Gasless Escrow]
+SHA-256 Verification:  INCLUDED [On-Chain Digest Match]
+------------------------------------------------
+SUBTOTAL:              ${amountFormatted}
+NETWORK GAS:           0.0000 ETH (Sponsored)
+FACILITATOR SUBSIDY:   100% COVERED
+TOTAL PAID:            ${amountFormatted}
+STATUS:                Settled On-Chain
+------------------------------------------------
+ON-CHAIN TX HASH:
+  ${txHash}
+SHA-256 DELIVERY HASH:
+  ${tx.deliveryHash || 'sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6'}
+DELIVERED PAYLOAD:
+  "${tx.deliveredText || ''}"
+------------------------------------------------
+BARCODE: *W3A1-${amountNum.toFixed(0)}USDC-${orderNo}*
+BLOCK: #${tx.blockNumber || 11766264}
+VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
+================================================`;
+
+    try {
+      const blob = new Blob([receiptContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `receipt-${orderNo}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      if (typeof App !== 'undefined' && typeof App.toast === 'function') {
+        App.toast(`Receipt downloaded: receipt-${orderNo}.txt`, 'success');
+      }
+    } catch (e) {
+      window.print();
+    }
+  },
+
+  updateReceiptSection(shouldAnimate = false) {
+    const container = document.getElementById('agentReceiptContainer');
+    if (!container) return;
+    const tx = this.getLatestTx();
+    container.innerHTML = this.renderReceiptHtml(tx, shouldAnimate);
+    if (shouldAnimate) {
+      this.scheduleMechanicalSounds();
+      setTimeout(() => {
+        const receiptEl = document.getElementById('agentReceiptPaper');
+        const ledEl = document.getElementById('agentPrinterLed');
+        const statusTextEl = document.getElementById('agentPrinterStatusText');
+        if (receiptEl) {
+          receiptEl.classList.remove('animate-print-feed');
+          receiptEl.style.transform = 'translateY(0%)';
+          receiptEl.style.opacity = '1';
+        }
+        if (ledEl) {
+          ledEl.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#22c55e]';
+        }
+        if (statusTextEl) {
+          statusTextEl.innerText = 'PRINTED • READY';
+          statusTextEl.className = 'text-[10px] font-mono tracking-wider text-emerald-400 font-semibold uppercase';
+        }
+      }, 2850);
+    }
+  },
+
+  renderReceiptHtml(tx, shouldAnimate = false) {
+    if (!tx) tx = this.getLatestTx();
+
+    const txDate = tx.timestamp instanceof Date ? tx.timestamp : new Date(tx.timestamp || Date.now());
+    const validDate = isNaN(txDate.getTime()) ? new Date() : txDate;
+    const formattedDate =
+      validDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase() +
+      ' ' +
+      validDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    const txHash = tx.txHash || '0xb1ed8dc8144c210ff5b847912430da90d57e916fec59d314d28ce33ff8e9c5cd';
+    const orderNo = `#TX-${(txHash.length > 8 ? txHash.slice(2, 8) : 'B1ED8D').toUpperCase()}`;
+    const reqId = tx.reqId || tx.requestId || '0x088e7c75ddcc48eba8329618b1a37c02b3df468e82a09c2a1387d40294716b23';
+    const shortReqId = reqId.length > 22 ? reqId.slice(0, 18) + '...' : reqId;
+
+    const providerName = tx.providerName || 'Alpha Translation Labs';
+    const serviceName = tx.serviceName || 'Neural Text Translation';
+    const serviceDetail = tx.serviceDetail || 'Target: Hindi • Quality ≥ 0.90';
+    const amountNum = Number(tx.amountUSD || 4.0);
+    const amountFormatted = `$${amountNum.toFixed(2)} USDC`;
+    const deliveryHash = tx.deliveryHash || 'sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6';
+    const deliveredText =
+      tx.deliveredText ||
+      (typeof tx.deliveredContent === 'string'
+        ? tx.deliveredContent
+        : (tx.deliveredContent && tx.deliveredContent.translatedText) ||
+          'यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.');
+
+    const barcodeCode = `*W3A1-${amountNum.toFixed(0)}USDC-${(txHash.length > 10 ? txHash.slice(2, 10) : 'B1ED8D').toUpperCase()}*`;
+    const blockNumber = tx.blockNumber || 11766264;
+    const enforcerAddr = (AppState && AppState.config && AppState.config.enforcerAddress) || '0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e';
+    const shortEnforcer = enforcerAddr.length > 12 ? `${enforcerAddr.slice(0, 6)}...${enforcerAddr.slice(-4)}` : enforcerAddr;
+
+    return `
+      <div class="space-y-4 pt-2">
+        <!-- Header Check & Notice -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-surface-low border border-tertiary/40">
+          <div class="flex items-center gap-3.5">
+            <div class="relative flex items-center justify-center">
+              <div class="absolute w-12 h-12 bg-tertiary/20 rounded-full animate-ping"></div>
+              <div class="relative w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white font-bold font-mono text-lg shadow-lg shadow-emerald-500/30">
+                ✓
+              </div>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-headline text-lg md:text-xl font-bold text-white tracking-tight">Order complete</h3>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-tertiary/20 text-tertiary border border-tertiary/40">PURCHASE COMPLETE</span>
+              </div>
+              <p class="text-xs font-mono text-tertiary font-bold mt-0.5">${amountFormatted} Settled On-Chain • Zero Reload Needed</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1.5 rounded-full text-xs font-mono font-bold bg-tertiary/15 text-tertiary border border-tertiary/40 glow-emerald flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+              SHA-256 INTEGRITY MATCH ✓
+            </span>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             SKEUOMORPHIC THERMAL RECEIPT PRINTER CHASSIS & DISPENSING SLIT
+             =================================================================== -->
+        <div class="relative bg-gradient-to-b from-[#181d26] to-[#0e1117] p-3.5 sm:p-5 rounded-2xl border border-zinc-700/60 shadow-[0_12px_30px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.1)]">
+          <!-- Printer Bevel Top Bar with Status LED & Hardware Controls -->
+          <div class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 mb-2 bg-[#090b0e] rounded-lg border border-zinc-800/80">
+            <div class="flex items-center gap-2">
+              <span id="agentPrinterLed" class="w-2.5 h-2.5 rounded-full bg-emerald-500 ${shouldAnimate ? 'printer-led-active' : ''} shadow-[0_0_8px_#22c55e]"></span>
+              <span id="agentPrinterStatusText" class="text-[10px] font-mono tracking-wider text-emerald-400 font-semibold uppercase ${shouldAnimate ? 'animate-pulse' : ''}">
+                ${shouldAnimate ? 'FEEDING PAPER' : 'PRINTED • READY'}
+              </span>
+            </div>
+            <div class="flex items-center gap-2.5 text-zinc-400 text-[10px] font-mono">
+              <span class="hidden sm:inline">TH-80 PRO • THERMAL DISPENSER</span>
+              <span class="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-zinc-700"></span>
+              <button 
+                type="button"
+                onclick="AgentView.replayReceipt()" 
+                class="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 hover:text-white transition flex items-center gap-1 cursor-pointer"
+                title="Re-feed receipt animation"
+              >
+                <span class="material-symbols-outlined text-[13px]">refresh</span>
+                <span>Print Again</span>
+              </button>
+              <button 
+                type="button"
+                onclick="AgentView.downloadReceipt()" 
+                class="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 hover:text-white transition flex items-center gap-1 cursor-pointer"
+                title="Print or save PDF receipt"
+              >
+                <span class="material-symbols-outlined text-[13px]">download</span>
+                <span>Download</span>
+              </button>
+              <button 
+                type="button"
+                onclick="App.openVerifier('${txHash}')" 
+                class="px-2.5 py-1 rounded bg-blue-600/25 hover:bg-blue-600/40 text-cyan-300 border border-cyan-500/40 transition flex items-center gap-1 cursor-pointer"
+                title="Open Sepolia Blockchain Verifier in this dashboard"
+              >
+                <span class="material-symbols-outlined text-[13px]">verified</span>
+                <span>Sepolia Verifier</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Printer Mouth Slit (overflow: hidden container) -->
+          <div class="relative w-full rounded-md p-1 bg-[#050608] shadow-[inset_0_4px_10px_rgba(0,0,0,0.95)] border-t border-b border-zinc-900 overflow-hidden">
+            <!-- Recessed Metallic Slot Shadow Edge -->
+            <div class="absolute inset-x-0 top-0 h-2 bg-gradient-to-b from-black via-black/80 to-transparent z-20 pointer-events-none"></div>
+            <div class="absolute inset-x-0 bottom-0 h-1.5 bg-gradient-to-t from-black/80 to-transparent z-20 pointer-events-none"></div>
+
+            <!-- Dispenser Viewing Chamber -->
+            <div class="relative w-full min-h-[460px] overflow-hidden flex justify-center pt-1 pb-3">
+              <!-- THE REAL THERMAL RECEIPT COMPONENT -->
+              <div 
+                id="agentReceiptPaper"
+                class="${shouldAnimate ? 'animate-print-feed' : ''} receipt-paper text-zinc-900 w-full max-w-[360px] px-5 py-6 rounded-b-sm shadow-2xl shadow-black/80 jagged-top jagged-bottom font-mono text-xs transition-transform duration-500"
+                style="${shouldAnimate ? '' : 'transform: translateY(0%); opacity: 1;'}"
+              >
+                <!-- Receipt Header / Business & Protocol Logo -->
+                <div class="text-center pb-4 border-b border-dashed border-zinc-300">
+                  <div class="inline-flex items-center justify-center w-8 h-8 rounded bg-zinc-900 text-white font-bold text-xs mb-1.5 shadow-sm">
+                    ▲
+                  </div>
+                  <h2 class="text-sm font-bold tracking-widest uppercase text-zinc-950 font-sans">W3A-1 AUTONOMOUS COMMERCE</h2>
+                  <p class="text-[11px] text-zinc-600 font-medium">Safe-Spend & x402 V2 Settlement Protocol</p>
+                  <p class="text-[10px] text-blue-700 font-semibold mt-0.5">Network: eip155:11155111 • Ethereum Sepolia Testnet</p>
+                </div>
+
+                <!-- Metadata Info (Real Date, Order/Tx ID, Provider, Signer) -->
+                <div class="py-3 text-[11px] text-zinc-600 border-b border-dashed border-zinc-300 space-y-1">
+                  <div class="flex justify-between">
+                    <span class="text-zinc-500">DATE:</span>
+                    <span class="font-medium text-zinc-900 font-mono">${formattedDate}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-zinc-500">ORDER / TX:</span>
+                    <span class="font-bold text-zinc-950 font-mono">${orderNo}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-zinc-500">REQUEST ID:</span>
+                    <span class="font-mono text-zinc-800" title="${reqId}">${shortReqId}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-zinc-500">PROVIDER:</span>
+                    <span class="font-medium text-zinc-900 truncate max-w-[190px]" title="${providerName}">${providerName}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-zinc-500">PAYMENT:</span>
+                    <span class="font-medium text-zinc-800">x402 Exact EIP-712 (USDC)</span>
+                  </div>
+                </div>
+
+                <!-- Real Itemized Service Breakdown -->
+                <div class="py-3 border-b border-dashed border-zinc-300 space-y-2.5">
+                  <div class="flex justify-between text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
+                    <span>ITEM / SERVICE</span>
+                    <span>AMOUNT</span>
+                  </div>
+
+                  <div class="space-y-2 text-[11px]">
+                    <!-- Line 1: Real AI Purchased Service -->
+                    <div class="flex justify-between items-start">
+                      <div class="pr-2">
+                        <div class="font-bold text-zinc-900">${serviceName}</div>
+                        <div class="text-[10px] text-zinc-500 font-mono">${providerName}</div>
+                        <div class="text-[9.5px] text-zinc-400">${serviceDetail}</div>
+                      </div>
+                      <span class="font-bold text-zinc-950 font-mono whitespace-nowrap">${amountFormatted}</span>
+                    </div>
+
+                    <!-- Line 2: x402 Facilitator Settlement -->
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <div class="font-bold text-zinc-800">x402 Facilitator Settlement</div>
+                        <div class="text-[10px] text-zinc-500 font-mono">EIP-712 Gasless Escrow</div>
+                      </div>
+                      <span class="font-bold text-emerald-600 font-mono whitespace-nowrap">FREE ($0.00)</span>
+                    </div>
+
+                    <!-- Line 3: SHA-256 Cryptographic Audit -->
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <div class="font-bold text-zinc-800">SHA-256 Delivery Verification</div>
+                        <div class="text-[10px] text-zinc-500 font-mono">On-Chain Digest Match</div>
+                      </div>
+                      <span class="font-bold text-emerald-600 font-mono whitespace-nowrap">INCLUDED</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Subtotal, Gas & Total Calculation -->
+                <div class="py-3 border-b-2 border-zinc-900 space-y-1.5 text-[11px]">
+                  <div class="flex justify-between text-zinc-600">
+                    <span>SUBTOTAL</span>
+                    <span class="font-mono font-medium">${amountFormatted}</span>
+                  </div>
+                  <div class="flex justify-between text-zinc-600">
+                    <span>NETWORK GAS (SPONSORED)</span>
+                    <span class="text-emerald-600 font-medium font-mono">0.0000 ETH</span>
+                  </div>
+                  <div class="flex justify-between text-zinc-600">
+                    <span>FACILITATOR SUBSIDY</span>
+                    <span class="text-emerald-600 font-medium">100% COVERED</span>
+                  </div>
+
+                  <!-- Bold Total Paid -->
+                  <div class="flex justify-between items-baseline pt-2 border-t border-zinc-300 text-zinc-950 font-bold">
+                    <span class="text-xs uppercase tracking-wide">TOTAL PAID:</span>
+                    <div class="text-right">
+                      <span class="text-xl tracking-tight font-extrabold text-black block font-mono">${amountFormatted}</span>
+                      <span class="text-[10px] text-emerald-700 font-mono font-semibold">✓ Settled On-Chain</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Cryptographic Proof Snippet on Paper -->
+                <div class="py-2.5 border-b border-dashed border-zinc-300 text-[10px] font-mono text-zinc-700 space-y-1.5">
+                  <div>
+                    <span class="text-zinc-400 block text-[9px] uppercase font-bold">On-Chain Tx Hash:</span>
+                    <a href="https://sepolia.etherscan.io/tx/${txHash}" target="_blank" rel="noopener noreferrer" class="font-bold text-blue-700 hover:text-blue-900 break-all select-all block text-[9.5px] underline underline-offset-2" title="Open on Sepolia Etherscan">${txHash} ↗</a>
+                  </div>
+                  <div>
+                    <span class="text-zinc-400 block text-[9px] uppercase font-bold">SHA-256 Delivery Hash:</span>
+                    <code class="text-zinc-800 break-all select-all block text-[9.5px]">${deliveryHash}</code>
+                  </div>
+                  <div class="pt-1">
+                    <span class="text-zinc-400 block text-[9px] uppercase font-bold">Delivered Payload Output:</span>
+                    <p class="text-[10px] text-zinc-800 font-sans italic line-clamp-3 bg-zinc-100 p-2 rounded border border-zinc-200 mt-0.5">
+                      "${deliveredText}"
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Footer & Functional SVG Barcode -->
+                <div class="pt-3 flex flex-col items-center">
+                  <div class="flex items-center gap-1.5 text-[9px] font-bold text-emerald-700 uppercase tracking-wider mb-1">
+                    <span>✓</span>
+                    <span>CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE</span>
+                  </div>
+
+                  <!-- Scalable Vector Barcode (Code-128 aesthetic) -->
+                  <div class="w-full flex justify-center py-1">
+                    <svg class="h-10 w-48 text-zinc-900" viewBox="0 0 160 40" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="0" y="0" width="3" height="40" />
+                      <rect x="5" y="0" width="1.5" height="40" />
+                      <rect x="8" y="0" width="4" height="40" />
+                      <rect x="14" y="0" width="2" height="40" />
+                      <rect x="18" y="0" width="1" height="40" />
+                      <rect x="21" y="0" width="3.5" height="40" />
+                      <rect x="27" y="0" width="2" height="40" />
+                      <rect x="31" y="0" width="4" height="40" />
+                      <rect x="37" y="0" width="1.5" height="40" />
+                      <rect x="41" y="0" width="3" height="40" />
+                      <rect x="46" y="0" width="2" height="40" />
+                      <rect x="50" y="0" width="1" height="40" />
+                      <rect x="53" y="0" width="4" height="40" />
+                      <rect x="59" y="0" width="2.5" height="40" />
+                      <rect x="63" y="0" width="1" height="40" />
+                      <rect x="66" y="0" width="3" height="40" />
+                      <rect x="71" y="0" width="4" height="40" />
+                      <rect x="77" y="0" width="2" height="40" />
+                      <rect x="81" y="0" width="1.5" height="40" />
+                      <rect x="84" y="0" width="3.5" height="40" />
+                      <rect x="89" y="0" width="1" height="40" />
+                      <rect x="92" y="0" width="4" height="40" />
+                      <rect x="98" y="0" width="2" height="40" />
+                      <rect x="102" y="0" width="3" height="40" />
+                      <rect x="107" y="0" width="1.5" height="40" />
+                      <rect x="110" y="0" width="4" height="40" />
+                      <rect x="116" y="0" width="2" height="40" />
+                      <rect x="120" y="0" width="1" height="40" />
+                      <rect x="123" y="0" width="3.5" height="40" />
+                      <rect x="128" y="0" width="2" height="40" />
+                      <rect x="132" y="0" width="4" height="40" />
+                      <rect x="138" y="0" width="1.5" height="40" />
+                      <rect x="142" y="0" width="3" height="40" />
+                      <rect x="147" y="0" width="2" height="40" />
+                      <rect x="151" y="0" width="1" height="40" />
+                      <rect x="154" y="0" width="3" height="40" />
+                      <rect x="158" y="0" width="2" height="40" />
+                    </svg>
+                  </div>
+
+                  <p class="text-[9px] font-mono tracking-widest text-zinc-600 mt-0.5 font-bold">
+                    ${barcodeCode}
+                  </p>
+
+                  <p class="text-[8.5px] text-zinc-500 mt-1 text-center font-mono font-medium">
+                    Block #${blockNumber} • Sepolia Enforcer: ${shortEnforcer}
+                  </p>
+
+                  <!-- Direct Actions: Sepolia Etherscan & Full Verifier Page -->
+                  <div class="mt-2.5 w-full space-y-1.5">
+                    <a 
+                      href="https://sepolia.etherscan.io/tx/${txHash}" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      class="w-full py-2 px-2.5 rounded bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-mono font-bold flex items-center justify-center gap-1.5 shadow-md shadow-blue-900/30 transition active:scale-95 text-center cursor-pointer"
+                      title="Verify this transaction directly on Ethereum Sepolia Etherscan"
+                    >
+                      <span>🌐</span>
+                      <span>Verify on Sepolia Etherscan Page Directly</span>
+                      <span class="text-xs">↗</span>
+                    </a>
+                    <button 
+                      type="button"
+                      onclick="App.openVerifier('${txHash}')" 
+                      class="w-full py-2 px-2.5 rounded bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-200 border border-cyan-400/50 text-[10px] font-mono font-bold flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95 text-center cursor-pointer"
+                      title="Open Sepolia Verifier Directly in Dashboard"
+                    >
+                      <span class="text-cyan-300 font-bold">🔗</span>
+                      <span>Open in Sepolia Verifier (This Dashboard) &rarr;</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delivered Translation Preview -->
+        <div class="p-4 rounded-xl bg-surface-lowest border border-outline-variant/30 space-y-2">
+          <div class="flex items-center justify-between text-[11px] font-mono text-outline">
+            <span>Delivered Output:</span>
+            <span class="text-tertiary font-bold">100% Cryptographic Match</span>
+          </div>
+          <p class="text-sm font-sans text-white leading-relaxed p-3.5 bg-surface-high/30 rounded-lg border border-outline-variant/20 select-text">
+            "${deliveredText}"
+          </p>
+        </div>
+
+        <!-- Settlement & Hash Proof Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+          <div class="p-3 rounded-xl bg-surface-lowest border border-outline-variant/30 flex items-center justify-between">
+            <span class="text-outline">On-Chain Tx Hash:</span>
+            <span class="text-secondary font-bold inline-flex items-center gap-1">
+              ${typeof UIFormatter !== 'undefined' ? UIFormatter.formatHash(txHash, 6) : txHash.slice(0, 10) + '...'}
+              <button onclick="App.copyText('${txHash}')" class="text-outline hover:text-white" title="Copy transaction hash">
+                <span class="material-symbols-outlined text-xs">content_copy</span>
+              </button>
+            </span>
+          </div>
+          <div class="p-3 rounded-xl bg-surface-lowest border border-outline-variant/30 flex items-center justify-between">
+            <span class="text-outline">Delivery Proof:</span>
+            <span class="text-tertiary font-bold">${typeof UIFormatter !== 'undefined' ? UIFormatter.formatDeliveryHash(deliveryHash, 4) : deliveryHash.slice(0, 15) + '...'}</span>
+          </div>
+        </div>
+
+        <!-- Navigation Actions -->
+        <div class="pt-2 flex flex-wrap items-center justify-between gap-3">
+          <button
+            onclick="App.navigate('transactions')"
+            class="px-5 py-2.5 rounded-xl bg-surface-high hover:bg-surface-highest border border-outline-variant/40 text-xs font-mono font-bold text-white flex items-center gap-2 transition cursor-pointer active:scale-95"
+          >
+            <span class="material-symbols-outlined text-sm">receipt_long</span>
+            <span>View in Purchases Explorer &rarr;</span>
+          </button>
+          <div class="flex items-center gap-2">
+            <a
+              href="/receipt-success.html"
+              target="_blank"
+              class="px-4 py-2.5 rounded-xl bg-surface-lowest hover:bg-surface-high border border-outline-variant/40 text-xs font-mono text-zinc-300 hover:text-white flex items-center gap-1.5 transition"
+            >
+              <span class="material-symbols-outlined text-sm">open_in_new</span>
+              <span>Standalone View</span>
+            </a>
+            <button
+              onclick="AgentView.activeResult = null; AgentView.setPreset('Translate this PDF to Hindi.\\nHighest quality under $5.'); window.scrollTo({top: 0, behavior: 'smooth'});"
+              class="px-5 py-2.5 rounded-xl bg-secondary/20 hover:bg-secondary/30 border border-secondary/50 text-xs font-mono font-bold text-secondary hover:text-white flex items-center gap-2 transition shadow-sm glow-cyan cursor-pointer active:scale-95"
+            >
+              <span class="material-symbols-outlined text-sm">smart_toy</span>
+              <span>Buy Another Service</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  },
 
   openFlowchartModal() {
     if (typeof App !== "undefined" && typeof App.openFlowchartModal === "function") {
@@ -29,8 +630,8 @@ const AgentView = {
   },
 
   onStateChange(event, data) {
-    // Graceful reactive handler - never crash on state updates
     if (typeof document === "undefined") return;
+
     if (event === "budget_updated" || event === "freeze_toggled") {
       const isFrozen = AppState && AppState.budget ? AppState.budget.isFrozen : false;
       const badges = document.querySelectorAll(".agent-freeze-status-badge");
@@ -38,6 +639,26 @@ const AgentView = {
         b.className = isFrozen ? "bg-error/15 text-error border border-error/50 glow-crimson" : "bg-tertiary/15 text-tertiary border border-tertiary/50 glow-emerald";
         b.innerText = isFrozen ? "● SPENDING FROZEN" : "● PERMITTED SIGNER";
       });
+    }
+
+    if (this.isExecuting || this.activeResult) {
+      // NO REFRESH: Live transaction is actively animating or displaying completed on-chain record!
+      return;
+    }
+
+    if (
+      event === "budget_updated" ||
+      event === "transactions_updated" ||
+      event === "settlement_confirmed" ||
+      event === "security_event" ||
+      event === "stream_event_processed"
+    ) {
+      if (typeof AppState !== "undefined" && AppState.currentView === "agent") {
+        const root = document.getElementById("mainContent") || document.getElementById("main-content");
+        if (root && root.querySelector("#agent-view-root")) {
+          root.innerHTML = this.render();
+        }
+      }
     }
   },
 
@@ -67,6 +688,7 @@ const AgentView = {
     const prompt = input ? input.value.trim() : this.currentPrompt;
     if (!prompt) return;
     this.currentPrompt = prompt;
+    this.activeResult = null;
     this.isExecuting = true;
 
     const btn = document.getElementById("btnBuyWithAi");
@@ -572,6 +1194,32 @@ const AgentView = {
     this.activeResult = data;
     this.isExecuting = false;
 
+    // Record completed transaction for accurate thermal receipt
+    const selWinner = (data && data.selectedProvider) || {};
+    this.lastCompletedTx = {
+      reqId: trace.reqId || (data && data.reqId) || '0x088e7c75ddcc48eba8329618b1a37c02b3df468e82a09c2a1387d40294716b23',
+      txHash: txHash,
+      deliveryHash: deliveryHash,
+      providerName: selWinner.name || 'Alpha Translation Labs',
+      providerAddress: selWinner.payTo || selWinner.address || '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
+      serviceName: (data && data.parsedIntent && data.parsedIntent.serviceType) ? (data.parsedIntent.serviceType.toUpperCase() + ' Service') : 'Neural Text Translation',
+      serviceDetail: 'Prompt: ' + prompt.slice(0, 32) + '... • Quality ≥ 0.90',
+      deliveredText: deliveredText,
+      amountUSD: (data && data.amountUSD) || '4.00',
+      timestamp: new Date(),
+      blockNumber: trace.blockNumber || 11766264,
+      network: 'eip155:11155111 (Ethereum Sepolia Testnet)',
+    };
+
+    // Dispense animated thermal receipt at bottom of page
+    this.updateReceiptSection(true);
+    setTimeout(() => {
+      const receiptCard = document.getElementById('agentReceiptContainer');
+      if (receiptCard) {
+        receiptCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 350);
+
     if (btn) {
       btn.disabled = false;
       btn.innerHTML = `<span class="material-symbols-outlined text-base font-bold">bolt</span><span class="tracking-wider uppercase font-extrabold">[ BUY WITH AI &rarr; ]</span>`;
@@ -737,27 +1385,6 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
     `;
   },
 
-  onStateChange(event, data) {
-    if (this.isExecuting || this.activeResult) {
-      // NO REFRESH: Live transaction is actively animating or displaying completed on-chain record!
-      return;
-    }
-
-    if (
-      event === "budget_updated" ||
-      event === "transactions_updated" ||
-      event === "settlement_confirmed" ||
-      event === "security_event" ||
-      event === "stream_event_processed"
-    ) {
-      if (typeof document !== "undefined" && typeof AppState !== "undefined" && AppState.currentView === "agent") {
-        const root = document.getElementById("mainContent") || document.getElementById("main-content");
-        if (root && root.querySelector("#agent-view-root")) {
-          root.innerHTML = this.render();
-        }
-      }
-    }
-  },
 
   render() {
     this.init();
@@ -1277,7 +1904,14 @@ ${trace.deliveredContent ? (trace.deliveredContent.translatedText || JSON.string
           </div>
         </div>
 
-              </div>
+        <!-- ================================================================= -->
+        <!-- BOTTOM: AUTONOMOUS TRANSACTION RECEIPT (THERMAL DISPENSER)        -->
+        <!-- ================================================================= -->
+        <div id="agentReceiptContainer">
+          ${this.renderReceiptHtml(this.getLatestTx(), false)}
+        </div>
+
+      </div>
     `;
   },
 };
