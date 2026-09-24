@@ -542,7 +542,7 @@ function createDashboardServer({
       }
 
       const enforcerAddress = process.env.SEPOLIA_ENFORCER_ADDRESS || "0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e";
-      const targetHash = txHash || (match && match.txHash) || "0xb1ed8dc8144c210ff5b847912430da90d57e916fec59d314d28ce33ff8e9c5cd";
+      const targetHash = txHash || (match && match.txHash) || "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136";
 
       res.json({
         verified: true,

@@ -357,7 +357,7 @@ const LiveSystemTerminal = {
     { time: "23:14:03", tag: "X402", text: "402 PAYMENT_REQUIRED", type: "x402" },
     { time: "23:14:03", tag: "SIGN", text: "EIP-712 authorization", type: "sign" },
     { time: "23:14:04", tag: "VERIFY", text: "✓ budget=26 amount=4", type: "verify" },
-    { time: "23:14:04", tag: "SETTLE", text: "tx=0xda48b1...", type: "settle" },
+    { time: "23:14:04", tag: "SETTLE", text: "tx=0x20c900...", type: "settle" },
     { time: "23:14:04", tag: "CHAIN", text: "✓ block #12", type: "chain" },
     { time: "23:14:05", tag: "DELIVER", text: "receipt=REC_78a19...", type: "deliver" },
     { time: "23:14:05", tag: "HASH", text: "✓ MATCH", type: "hash" },

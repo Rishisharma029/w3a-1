@@ -71,6 +71,31 @@ const VerifyView = {
   tokenAddress: "0xAaa008Df25A46dc501B5B712ac18B47901AF99A7",
   etherscanBase: "https://sepolia.etherscan.io",
 
+  getCombinedSepoliaTransactions() {
+    const list = [...this.sepoliaTransactions];
+    if (typeof AppState !== "undefined" && AppState.transactions) {
+      for (const tx of AppState.transactions) {
+        const h = (tx.txHash || "").toLowerCase();
+        if (h && !list.some(s => (s.txHash || "").toLowerCase() === h)) {
+          list.unshift({
+            txHash: tx.txHash,
+            reqId: tx.reqId || "0x088e7c75ddcc48eba8329618b1a37c02b3df468e82a09c2a1387d40294716b23",
+            amountUSD: tx.amountUSD || "4.00",
+            serviceName: tx.serviceName || "AI Text Translation",
+            providerName: tx.providerName || "Alpha Translation Services",
+            deliveryHash: tx.deliveryHash || "sha256:366cfc3da3d1160ea0519cacc7fd255f48b39114681212789c53d3ce2a12e16c",
+            blockNumber: tx.blockNumber || 11766134,
+            network: "Ethereum Sepolia Testnet",
+            chainId: 11155111,
+            etherscanUrl: tx.etherscanUrl || ("https://sepolia.etherscan.io/tx/" + tx.txHash),
+            timestamp: tx.timestamp || new Date().toISOString(),
+          });
+        }
+      }
+    }
+    return list;
+  },
+
   init() {
     if (this.initialized) return;
     this.initialized = true;
@@ -192,7 +217,7 @@ const VerifyView = {
     const resCard = document.getElementById('inAppVerifyResult');
     if (!resCard) return;
 
-    const isSepoliaMatch = this.sepoliaTransactions.find(
+    const isSepoliaMatch = this.getCombinedSepoliaTransactions().find(
       (t) => (t.txHash || '').toLowerCase() === targetHash.toLowerCase()
     );
 
@@ -330,9 +355,11 @@ const VerifyView = {
     this.init();
 
     const localTxs = (typeof AppState !== "undefined" && AppState.transactions) || [];
-    const displayedList = this.activeTab === "sepolia" ? this.sepoliaTransactions : localTxs;
+    const sepTxs = this.getCombinedSepoliaTransactions();
+    const displayedList = this.activeTab === "sepolia" ? sepTxs : localTxs;
 
-    const matchedTx = this.sepoliaTransactions.find(
+    const allSep = this.getCombinedSepoliaTransactions();
+    const matchedTx = allSep.find(
       (t) => (t.txHash || "").toLowerCase() === (this.currentHash || "").toLowerCase()
     ) || this.sepoliaTransactions[0] || {};
 

@@ -305,7 +305,7 @@ function createN8nRouter({
       return res.json({
         verified: true,
         settled,
-        txHash: txHash || "0xda48b1c9f4d7159c8e192a6374028471b058c067e26830571092e093847228e9",
+        txHash: txHash || "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136",
         blockNumber,
         requestId,
       });
@@ -1021,6 +1021,28 @@ function createN8nRouter({
         deliveryHash,
         timestamp: new Date().toISOString(),
       });
+
+      if (indexer && typeof indexer.recordTransaction === "function") {
+        try {
+          indexer.recordTransaction({
+            reqId: sepoliaReqId,
+            txHash,
+            blockNumber,
+            deliveryHash,
+            amount: amountAtomic,
+            amountUSD: (Number(amountAtomic) / 1e6).toFixed(2),
+            provider: selected.providerAddress || "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            providerName: selected.name,
+            serviceName: selectedService.name || "Text Translation",
+            deliveredText,
+            etherscanUrl: sepoliaResult.etherscanUrl || ("https://sepolia.etherscan.io/tx/" + txHash),
+            network: "Ethereum Sepolia Testnet",
+            chainId: 11155111,
+            status: "SETTLED",
+            timestamp: new Date().toISOString(),
+          });
+        } catch (_) {}
+      }
 
       return res.json({
         success: true,

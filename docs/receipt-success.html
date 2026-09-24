@@ -293,7 +293,7 @@
             <div class="py-2.5 border-b border-dashed border-zinc-300 text-[10px] font-mono text-zinc-700 space-y-1.5">
               <div>
                 <span class="text-zinc-400 block text-[9px] uppercase font-bold">On-Chain Tx Hash:</span>
-                <code id="proofTxHash" class="font-bold text-zinc-900 break-all select-all block text-[9.5px]">0xb1ed8dc8144c210ff5b847912430da90d57e916fec59d314d28ce33ff8e9c5cd</code>
+                <code id="proofTxHash" class="font-bold text-zinc-900 break-all select-all block text-[9.5px]">0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136</code>
               </div>
               <div>
                 <span class="text-zinc-400 block text-[9px] uppercase font-bold">SHA-256 Delivery Hash:</span>
@@ -509,7 +509,7 @@
             }
 
             // Order No from Tx Hash
-            const hash = latest.txHash || "0xb1ed8dc8144c210ff5b847912430da90d57e916fec59d314d28ce33ff8e9c5cd";
+            const hash = latest.txHash || "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136";
             receiptOrderNo.textContent = `#TX-${hash.slice(2, 8).toUpperCase()}`;
 
             // Request ID

@@ -59,7 +59,7 @@ const AgentView = {
         const validTxHash =
           rawTxHash && rawTxHash.startsWith('0x') && rawTxHash.length === 66
             ? rawTxHash
-            : '0xb1ed8dc8144c210ff5b847912430da90d57e916fec59d314d28ce33ff8e9c5cd';
+            : '0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136';
         const rawDelivHash = norm.deliveryHash;
         const validDelivHash =
           rawDelivHash && rawDelivHash.startsWith('sha256:')
@@ -89,7 +89,7 @@ const AgentView = {
     }
     return {
       reqId: '0x088e7c75ddcc48eba8329618b1a37c02b3df468e82a09c2a1387d40294716b23',
-      txHash: '0xb1ed8dc8144c210ff5b847912430da90d57e916fec59d314d28ce33ff8e9c5cd',
+      txHash: '0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136',
       deliveryHash: 'sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6',
       providerName: 'Alpha Translation Labs',
       providerAddress: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
@@ -149,7 +149,7 @@ const AgentView = {
       validDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase() +
       ' ' +
       validDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const txHash = tx.txHash || '0xb1ed8dc8144c210ff5b847912430da90d57e916fec59d314d28ce33ff8e9c5cd';
+    const txHash = tx.txHash || '0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136';
     const orderNo = `TX-${(txHash.length > 8 ? txHash.slice(2, 8) : 'B1ED8D').toUpperCase()}`;
     const amountNum = Number(tx.amountUSD || 4.0);
     const amountFormatted = `$${amountNum.toFixed(2)} USDC`;
@@ -247,7 +247,7 @@ VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
       ' ' +
       validDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-    const txHash = tx.txHash || '0xb1ed8dc8144c210ff5b847912430da90d57e916fec59d314d28ce33ff8e9c5cd';
+    const txHash = tx.txHash || '0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136';
     const orderNo = `#TX-${(txHash.length > 8 ? txHash.slice(2, 8) : 'B1ED8D').toUpperCase()}`;
     const reqId = tx.reqId || tx.requestId || '0x088e7c75ddcc48eba8329618b1a37c02b3df468e82a09c2a1387d40294716b23';
     const shortReqId = reqId.length > 22 ? reqId.slice(0, 18) + '...' : reqId;
@@ -1085,7 +1085,7 @@ VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
       return;
     }
 
-    const txHash = trace.txHash || "0xda48b1c9f4d7159c8e192a6374028471b058c067e26830571092e093847228e9";
+    const txHash = trace.txHash || "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136";
     const deliveryHash = trace.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
     const rawContent = trace.deliveredContent || trace.content || "यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.";
     const deliveredText = typeof rawContent === "object" ? (rawContent.translatedText || JSON.stringify(rawContent)) : rawContent;
@@ -1210,6 +1210,57 @@ VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
       blockNumber: trace.blockNumber || 11766264,
       network: 'eip155:11155111 (Ethereum Sepolia Testnet)',
     };
+
+    // Add completed transaction to global application state so it immediately appears in Purchases, Overview & Verifier
+    if (typeof AppState !== "undefined") {
+      const txObj = {
+        reqId: this.lastCompletedTx.reqId,
+        provider: this.lastCompletedTx.providerAddress,
+        providerName: this.lastCompletedTx.providerName,
+        serviceId: (data && data.parsedIntent && data.parsedIntent.serviceType) || "text-translate",
+        serviceName: this.lastCompletedTx.serviceName,
+        amount: "4000000",
+        amountUSD: this.lastCompletedTx.amountUSD || "4.00",
+        status: "SETTLED",
+        txHash: txHash,
+        blockNumber: this.lastCompletedTx.blockNumber || 11766134,
+        deliveryHash: deliveryHash,
+        deliveredText: deliveredText,
+        timestamp: new Date().toISOString(),
+        network: "Ethereum Sepolia Testnet",
+        chainId: 11155111,
+        caip2: "eip155:11155111",
+        etherscanUrl: "https://sepolia.etherscan.io/tx/" + txHash,
+        content: {
+          translatedText: deliveredText,
+          provider: this.lastCompletedTx.providerName,
+          service: this.lastCompletedTx.serviceName,
+          reqId: this.lastCompletedTx.reqId,
+        },
+      };
+
+      const normalizedTx = typeof TransactionAdapter !== "undefined"
+        ? TransactionAdapter.normalize(txObj)
+        : txObj;
+
+      AppState.transactions = [normalizedTx, ...(AppState.transactions || [])];
+      AppState.x402Transactions = [normalizedTx, ...(AppState.x402Transactions || [])];
+
+      // Update remaining budget reactively across the whole UI
+      const spentNum = parseFloat(this.lastCompletedTx.amountUSD || "4.00") || 4.00;
+      const prevSettled = AppState.budget ? parseFloat(AppState.budget.settledSpend || "0") : 0;
+      const prevBudget = AppState.budget ? parseFloat(AppState.budget.authorizedBudget || "30") : 30;
+      const newSettled = prevSettled + spentNum;
+      const newRemaining = Math.max(0, prevBudget - newSettled);
+
+      AppState.updateBudget({
+        settledSpend: newSettled.toFixed(2),
+        remainingBudget: newRemaining.toFixed(2),
+      });
+
+      AppState.notify("transactions_updated", AppState.transactions);
+      AppState.notify("x402_updated", AppState.x402Transactions);
+    }
 
     // Dispense animated thermal receipt at bottom of page
     this.updateReceiptSection(true);

@@ -106,15 +106,15 @@ const ApiService = {
           AppState.updateServices(svcRes.value.services);
         }
       } else {
-        // Backend offline -> gracefully fallback to seeded mock data
-        if (!AppState.isMockMode) {
+        // Backend offline -> gracefully fallback to seeded mock data only if state empty
+        if (!AppState.isMockMode && (!AppState.transactions || AppState.transactions.length === 0)) {
           AppState.loadMockSeed();
         }
       }
     } catch (err) {
       console.warn("ApiService sync error (fallback to mock):", err);
       AppState.isBackendReachable = false;
-      if (!AppState.isMockMode) {
+      if (!AppState.isMockMode && (!AppState.transactions || AppState.transactions.length === 0)) {
         AppState.loadMockSeed();
       }
     }
@@ -346,8 +346,13 @@ const ApiService = {
         trace: {
           reqId: "0xmock_ai_req_" + Date.now().toString(16),
           amountUSD: "4.00",
-          txHash: "0xda48b1c9f4d7159c8e192a6374028471b058c067e26830571092e093847228e9",
-          blockNumber: 13,
+          txHash: "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136",
+          blockNumber: 11766134,
+          etherscanUrl: "https://sepolia.etherscan.io/tx/0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136",
+          network: "Ethereum Sepolia Testnet",
+          caip2: "eip155:11155111",
+          chainId: 11155111,
+          contractAddress: "0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e",
           deliveryHash: "sha256:366cfc3da3d1160ea0519cacc7fd255f48b39114681212789c53d3ce2a12e16c",
           deliveredContent: {
             translatedText: "[Alpha] PDF Translation → (translated to English)",

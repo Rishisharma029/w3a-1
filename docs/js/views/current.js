@@ -66,7 +66,7 @@ const CurrentTransactionView = {
     deliveredText: "This legal agreement is verified, secure, and confidential. Under the W3A-1 protocol, payment was settled directly on-chain and SHA-256 cryptographic verification succeeded.",
     amountUSD: "4.00",
     amountAtomic: "4000000",
-    txHash: "0xb1ed8dc8144c210ff5b847912430da90d57e916fec59d314d28ce33ff8e9c5cd",
+    txHash: "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136",
     deliveryHash: "0x23d0e64c4c2c4db5974856d5194e33920ab22a0bb6522c0f115ce2a1dc779ddd",
     timestamp: new Date(),
     blockNumber: 11766134,
@@ -684,6 +684,57 @@ const CurrentTransactionView = {
         this.updateFromApiResult(finalResult);
       }
     } catch (_) {}
+
+    if (typeof AppState !== "undefined") {
+      const txObj = {
+        reqId: this.realTx.reqId,
+        provider: this.realTx.providerAddress || "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+        providerName: this.realTx.providerName,
+        serviceId: "text-translate",
+        serviceName: this.realTx.serviceName,
+        amount: "4000000",
+        amountUSD: this.realTx.amountUSD || "4.00",
+        status: "SETTLED",
+        txHash: this.realTx.txHash || "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136",
+        blockNumber: this.realTx.blockNumber || 11766134,
+        deliveryHash: this.realTx.deliveryHash,
+        deliveredText: this.realTx.deliveredText,
+        timestamp: new Date().toISOString(),
+        network: "Ethereum Sepolia Testnet",
+        chainId: 11155111,
+        caip2: "eip155:11155111",
+        etherscanUrl: "https://sepolia.etherscan.io/tx/" + (this.realTx.txHash || "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136"),
+        content: {
+          translatedText: this.realTx.deliveredText,
+          provider: this.realTx.providerName,
+          service: this.realTx.serviceName,
+          reqId: this.realTx.reqId,
+        },
+      };
+
+      const normalizedTx = typeof TransactionAdapter !== "undefined"
+        ? TransactionAdapter.normalize(txObj)
+        : txObj;
+
+      if (!AppState.transactions.some(t => t.reqId === normalizedTx.reqId)) {
+        AppState.transactions = [normalizedTx, ...(AppState.transactions || [])];
+        AppState.x402Transactions = [normalizedTx, ...(AppState.x402Transactions || [])];
+
+        const spentNum = parseFloat(this.realTx.amountUSD || "4.00") || 4.00;
+        const prevSettled = AppState.budget ? parseFloat(AppState.budget.settledSpend || "0") : 0;
+        const prevBudget = AppState.budget ? parseFloat(AppState.budget.authorizedBudget || "30") : 30;
+        const newSettled = prevSettled + spentNum;
+        const newRemaining = Math.max(0, prevBudget - newSettled);
+
+        AppState.updateBudget({
+          settledSpend: newSettled.toFixed(2),
+          remainingBudget: newRemaining.toFixed(2),
+        });
+
+        AppState.notify("transactions_updated", AppState.transactions);
+        AppState.notify("x402_updated", AppState.x402Transactions);
+      }
+    }
 
     if (this.timerInterval) clearInterval(this.timerInterval);
     this.status = "COMPLETED";
