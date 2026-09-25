@@ -1287,7 +1287,7 @@ VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
               ✓ PROVIDER DISCOVERED & SELECTED
             </span>
             <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-secondary/15 text-secondary border border-secondary/40">
-              ⚡ n8n ENGINE (cveIFBZn9aM1CNLF)
+              ⚡  ENGINE (cveIFBZn9aM1CNLF)
             </span>
             <span class="text-xs font-mono text-white font-bold">${winner.name}</span>
           </div>
