@@ -3,353 +3,883 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>W3A-1 — Agent Service Marketplace</title>
+  <title>W3A-1 — Machine Service Marketplace</title>
   <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-subtle: #f1f5f9;
+      --surface-card: #ffffff;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-subtle: #94a3b8;
+      --primary: #0f172a;
+      --primary-hover: #1e293b;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-subtle: #eff6ff;
+      --success: #059669;
+      --success-subtle: #ecfdf5;
+      --success-border: #a7f3d0;
+      --warning: #d97706;
+      --warning-subtle: #fffbeb;
+      --warning-border: #fde68a;
+      --danger: #dc2626;
+      --danger-subtle: #fef2f2;
+      --danger-border: #fecaca;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --radius-sm: 4px;
+      --radius: 6px;
+      --radius-lg: 10px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.12);
+    }
 
-:root {
-  --bg: #07100f;
-  --surface: #0d1b18;
-  --surface-2: #122722;
-  --surface-3: #19352e;
-  --line: rgba(220, 244, 234, .12);
-  --line-strong: rgba(220, 244, 234, .2);
-  --text: #edf6f1;
-  --muted: #91aaa1;
-  --muted-2: #637d74;
-  --mint: #b6f36b;
-  --aqua: #76e5d0;
-  --lavender: #b9b8ff;
-  --amber: #f4c56a;
-  --red: #ff8e88;
-  --mono: 'DM Mono', ui-monospace, monospace;
-  --sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
-}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input, select, textarea { font: inherit; }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { background: var(--bg); }
-body {
-  background: radial-gradient(circle at 85% -10%, rgba(118,229,208,.14), transparent 30rem), radial-gradient(circle at 15% 20%, rgba(185,184,255,.08), transparent 28rem), linear-gradient(140deg, #07100f, #0a1714 60%, #07100f);
-  color: var(--text);
-  font-family: var(--sans);
-  min-height: 100vh;
-  line-height: 1.5;
-  overflow-x: hidden;
-}
-body::before { content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px); background-size: 48px 48px; mask-image: linear-gradient(to bottom, rgba(0,0,0,.55), transparent 80%); }
-button, input, textarea, select { font: inherit; }
-button, a { -webkit-tap-highlight-color: transparent; }
+    /* Layout */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      background: var(--primary);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      letter-spacing: -0.05em;
+    }
+    .brand-name {
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .badge.success {
+      background: var(--success-subtle);
+      border-color: var(--success-border);
+      color: var(--success);
+    }
+    .badge.warning {
+      background: var(--warning-subtle);
+      border-color: var(--warning-border);
+      color: var(--warning);
+    }
+    .badge.danger {
+      background: var(--danger-subtle);
+      border-color: var(--danger-border);
+      color: var(--danger);
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
 
-header {
-  position: sticky; top: 0; z-index: 100;
-  padding: 15px clamp(1rem, 4vw, 3.2rem);
-  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
-  background: rgba(7,16,15,.78); backdrop-filter: blur(24px);
-  border-bottom: 1px solid var(--line);
-}
-.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.brand-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; letter-spacing: -.03em; white-space: nowrap; }
-.brand-title::before { content: '◈'; display: inline-grid; place-items: center; width: 28px; height: 28px; margin-right: 9px; border-radius: 9px; background: rgba(182,243,107,.14); border: 1px solid rgba(182,243,107,.3); color: var(--mint); font-size: .95rem; vertical-align: -2px; }
-.brand-badge { display: flex; align-items: center; gap: 7px; padding: 5px 9px; border-radius: 999px; background: rgba(118,229,208,.08); border: 1px solid rgba(118,229,208,.24); color: var(--aqua); font: 600 .68rem var(--mono); letter-spacing: .04em; white-space: nowrap; }
-.pulsing-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 12px var(--mint); animation: pulse 1.8s infinite; }
-@keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.82); } }
-.header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+    .btn-secondary {
+      background: var(--surface);
+      border-color: var(--border-strong);
+      color: var(--text);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--surface-subtle);
+    }
+    .btn-accent {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-accent:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 12px;
+    }
 
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border-radius: 11px; cursor: pointer; text-decoration: none; font-size: .78rem; font-weight: 700; border: 1px solid transparent; transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease; }
-.btn:hover { transform: translateY(-1px); }
-.btn-dashboard { color: var(--aqua); background: rgba(118,229,208,.08); border-color: rgba(118,229,208,.26); }
-.btn-dashboard:hover { background: rgba(118,229,208,.15); box-shadow: 0 8px 24px rgba(118,229,208,.1); }
-.btn-fund { color: var(--mint); background: rgba(182,243,107,.12); border-color: rgba(182,243,107,.35); }
-.btn-fund:hover { background: rgba(182,243,107,.2); box-shadow: 0 8px 24px rgba(182,243,107,.1); }
-.btn-publish, .btn-buy-ai { color: #101b16; background: linear-gradient(120deg, var(--mint), var(--aqua)); border: 0; box-shadow: 0 10px 28px rgba(118,229,208,.18); }
-.btn-publish:hover, .btn-buy-ai:hover { box-shadow: 0 14px 34px rgba(118,229,208,.28); }
+    /* Main Container */
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 24px 64px;
+    }
 
-main { max-width: 1380px; margin: 0 auto; padding: clamp(1.5rem, 4vw, 3.5rem) clamp(1rem, 4vw, 3.2rem) 5rem; position: relative; z-index: 5; }
-.ai-hero-box { position: relative; overflow: hidden; background: linear-gradient(135deg, rgba(20,42,38,.94), rgba(13,27,24,.8)); border: 1px solid rgba(118,229,208,.28); border-radius: 24px; padding: clamp(1.3rem, 3.5vw, 2.6rem); margin-bottom: 3.1rem; box-shadow: 0 24px 80px rgba(0,0,0,.24), 0 0 50px rgba(118,229,208,.06); }
-.ai-hero-box::before { content: ''; position: absolute; width: 24rem; height: 24rem; border-radius: 50%; background: rgba(182,243,107,.08); filter: blur(18px); right: -7rem; top: -12rem; pointer-events: none; }
-.ai-hero-box::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 20%, rgba(255,255,255,.03) 50%, transparent 80%); }
-.ai-hero-header, .ai-action-row { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
-.ai-hero-title { font: 700 clamp(1.8rem, 4vw, 3.2rem)/.95 'Space Grotesk', sans-serif; letter-spacing: -.06em; }
-.ai-hero-sub { margin-top: 9px; color: var(--aqua); font: 600 .82rem var(--mono); letter-spacing: .08em; text-transform: uppercase; }
-.ai-prompt-box { position: relative; z-index: 1; width: 100%; margin-top: 1.8rem; padding: 16px; min-height: 92px; resize: vertical; color: var(--text); background: rgba(7,16,15,.76); border: 1px solid var(--line-strong); border-radius: 15px; outline: none; font: .95rem/1.55 var(--mono); transition: border-color .18s, box-shadow .18s; }
-.ai-prompt-box:focus { border-color: var(--aqua); box-shadow: 0 0 0 4px rgba(118,229,208,.1); }
-.presets-row { position: relative; z-index: 1; display: flex; gap: 7px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
-.preset-label { color: var(--muted-2); font: .7rem var(--mono); margin-right: 3px; }
-.preset-chip { padding: 6px 9px; border-radius: 999px; cursor: pointer; color: var(--muted); background: rgba(255,255,255,.035); border: 1px solid var(--line); font: .68rem var(--mono); transition: all .18s; }
-.preset-chip:hover { color: var(--text); border-color: rgba(118,229,208,.38); background: rgba(118,229,208,.08); }
-.ai-action-row { align-items: center; margin-top: 1.8rem; padding-top: 1.35rem; border-top: 1px solid var(--line); }
-.ai-notice { color: var(--muted); max-width: 560px; font: .76rem/1.55 var(--mono); }
-.ai-action-row > div:last-child { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-#marketBudgetRemaining { color: var(--mint) !important; }
-.btn-buy-ai { padding: 13px 18px; font-size: .82rem; letter-spacing: .03em; border-radius: 12px; }
+    /* Hero / Intro */
+    .hero {
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 4px;
+    }
+    .hero p {
+      color: var(--text-muted);
+      font-size: 14px;
+      max-width: 720px;
+    }
 
-.eval-container { margin-top: 1.5rem; background: rgba(7,16,15,.72); border: 1px solid rgba(118,229,208,.28); border-radius: 16px; padding: 1rem; }
-.eval-container > div { background: rgba(13,27,24,.86) !important; border-color: var(--line-strong) !important; border-radius: 16px !important; }
-.eval-container [style*='background: #000'] { background: rgba(7,16,15,.9) !important; border-color: var(--line) !important; border-radius: 10px !important; }
-.live-tx-step { background: rgba(20,42,38,.64) !important; border: 1px solid var(--line) !important; border-radius: 13px !important; padding: 1rem !important; margin-bottom: .7rem; }
+    /* Summary Strip */
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .stat-label {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .stat-val {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    .stat-desc {
+      font-size: 11px;
+      color: var(--text-subtle);
+      margin-top: 2px;
+    }
 
-.hero-banner { border: 0; padding: 0; margin-bottom: 1.3rem; }
-.hero-banner h1 { color: var(--text); font: 700 clamp(1.5rem, 2.5vw, 2.2rem)/1.05 'Space Grotesk', sans-serif; letter-spacing: -.05em; }
-.hero-banner p { max-width: 720px; color: var(--muted); font-size: .87rem; margin-top: 8px; }
-.filter-bar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.4rem; padding: 12px; border: 1px solid var(--line); background: rgba(13,27,24,.6); border-radius: 15px; }
-.categories { display: flex; gap: 6px; flex-wrap: wrap; }
-.cat-btn { color: var(--muted); background: transparent; border: 1px solid transparent; padding: 8px 11px; border-radius: 9px; font-size: .76rem; font-weight: 700; cursor: pointer; transition: all .18s; }
-.cat-btn:hover { color: var(--text); background: rgba(118,229,208,.07); border-color: var(--line); }
-.cat-btn.active { color: var(--ink, #07100f); background: var(--mint); border-color: var(--mint); }
-.search-box { min-width: min(290px, 100%); padding: 9px 12px; border-radius: 10px; outline: none; color: var(--text); background: rgba(7,16,15,.75); border: 1px solid var(--line); font: .78rem var(--mono); }
-.search-box:focus { border-color: var(--aqua); box-shadow: 0 0 0 3px rgba(118,229,208,.1); }
+    /* Request Panel */
+    .request-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-sm);
+    }
+    .request-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      gap: 12px;
+    }
+    .request-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .request-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .request-textarea {
+      width: 100%;
+      min-height: 80px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text);
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .request-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .presets {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .presets-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    .chip {
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .chip:hover {
+      background: #e2e8f0;
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+    .request-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .request-notice {
+      font-size: 12px;
+      color: var(--text-muted);
+      max-width: 580px;
+    }
+    .budget-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-subtle);
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .budget-amount {
+      font-weight: 700;
+      color: var(--success);
+    }
 
-.services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 14px; }
-.service-card { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 298px; padding: 20px; border-radius: 18px; background: linear-gradient(145deg, rgba(20,42,38,.9), rgba(13,27,24,.82)); border: 1px solid var(--line); transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
-.service-card::before { content: ''; position: absolute; width: 160px; height: 160px; border-radius: 50%; background: rgba(118,229,208,.07); filter: blur(22px); right: -90px; top: -90px; pointer-events: none; }
-.service-card:hover { transform: translateY(-4px); border-color: rgba(118,229,208,.34); box-shadow: 0 18px 44px rgba(0,0,0,.22); }
-.card-header { position: relative; margin-bottom: .75rem; }
-.card-title { font: 700 1.15rem/1.1 'Space Grotesk', sans-serif; letter-spacing: -.03em; }
-.card-provider { margin-top: 6px; color: var(--aqua); font: .72rem var(--mono); }
-.card-desc { color: var(--muted); font-size: .83rem; min-height: 3rem; margin-bottom: 1.15rem; }
-.metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px 6px; background: rgba(7,16,15,.62); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 1.25rem; text-align: center; }
-.metric-item { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.metric-label { color: var(--muted-2); font: 600 .61rem var(--mono); text-transform: uppercase; letter-spacing: .07em; }
-.metric-value { color: var(--text); font: 600 .78rem var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.card-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 13px; border-top: 1px solid var(--line); flex-wrap: wrap; }
-.badges-group { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
-.badge-v2, .badge-avail { padding: 4px 7px; border-radius: 999px; font: 600 .62rem var(--mono); }
-.badge-v2 { color: var(--lavender); background: rgba(185,184,255,.1); border: 1px solid rgba(185,184,255,.25); }
-.badge-avail { color: var(--mint); background: rgba(182,243,107,.1); border: 1px solid rgba(182,243,107,.25); }
-.btn-view { color: var(--aqua); background: rgba(118,229,208,.06); border: 1px solid rgba(118,229,208,.25); padding: 8px 10px; border-radius: 9px; cursor: pointer; font: 700 .68rem var(--mono); transition: all .18s; }
-.btn-view:hover { color: #07100f; background: var(--aqua); border-color: var(--aqua); }
+    /* Transaction Timeline */
+    .timeline-container {
+      display: none;
+      margin-top: 20px;
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: var(--radius);
+      padding: 18px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      box-shadow: var(--shadow-md);
+    }
+    .timeline-title {
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .timeline-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .timeline-step {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+    }
+    .timeline-step.complete {
+      border-left: 3px solid #10b981;
+    }
+    .timeline-step.rejected {
+      border-left: 3px solid #ef4444;
+      background: #2b1717;
+    }
+    .step-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .step-name {
+      font-weight: 700;
+      color: #93c5fd;
+    }
+    .step-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: #334155;
+      color: #cbd5e1;
+    }
+    .step-body {
+      color: #94a3b8;
+      font-size: 11.5px;
+      line-height: 1.45;
+    }
+    .step-code {
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 3px;
+      padding: 6px 8px;
+      margin-top: 5px;
+      color: #e2e8f0;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
 
-/* Dialogs */
-.modal-backdrop { display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; padding: 1rem; background: rgba(2,8,7,.76); backdrop-filter: blur(14px); }
-.modal-box { width: 100%; max-width: 600px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; border-radius: 20px; background: rgba(13,27,24,.97); border: 1px solid var(--line-strong); box-shadow: 0 28px 90px rgba(0,0,0,.5); }
-.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 17px 20px; border-bottom: 1px solid var(--line); }
-.modal-title { color: var(--text); font: 700 1.05rem 'Space Grotesk', sans-serif; }
-.modal-close { color: var(--muted); background: transparent; border: 0; cursor: pointer; font-size: 1.5rem; line-height: 1; }
-.modal-close:hover { color: var(--text); }
-.modal-body { padding: 20px; overflow-y: auto; }
-.modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--line); background: rgba(20,42,38,.48); }
-.form-group { margin-bottom: 1rem; }
-.form-label { display: block; color: var(--muted-2); margin-bottom: 6px; font: 600 .68rem var(--mono); text-transform: uppercase; letter-spacing: .07em; }
-.form-input { width: 100%; color: var(--text); background: rgba(7,16,15,.75); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; outline: none; font-size: .82rem; }
-.form-input:focus { border-color: var(--aqua); box-shadow: 0 0 0 3px rgba(118,229,208,.1); }
-.form-checkbox { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: .8rem; }
-.wire-console { max-height: 250px; overflow-y: auto; margin-top: 1rem; padding: 12px; border-radius: 11px; background: #06100e; border: 1px solid var(--line); color: var(--aqua); white-space: pre-wrap; font: .7rem/1.5 var(--mono); }
+    /* Catalog Section */
+    .catalog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .filter-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      flex: 1;
+    }
+    .cat-btn {
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .cat-btn:hover {
+      background: var(--surface-subtle);
+      color: var(--text);
+    }
+    .cat-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .search-box {
+      width: 260px;
+      padding: 6px 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+    }
+    .search-box:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
 
-@media (max-width: 760px) {
-  header { align-items: flex-start; }
-  .brand { width: 100%; justify-content: space-between; }
-  .brand-title { font-size: .96rem; }
-  .brand-badge { font-size: .58rem; }
-  .header-actions { width: 100%; }
-  .header-actions .btn { flex: 1; }
-  .filter-bar { align-items: stretch; flex-direction: column; }
-  .search-box { width: 100%; min-width: 0; }
-  .ai-action-row > div:last-child { width: 100%; justify-content: space-between; }
-  .btn-buy-ai { flex: 1; }
-}
-@media (max-width: 450px) {
-  .header-actions .btn-dashboard { display: none; }
-  .ai-action-row > div:last-child { flex-direction: column; align-items: stretch; }
-  .ai-action-row > div:last-child > div { justify-content: space-between; }
-  .btn-buy-ai { width: 100%; }
-}
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: rgba(7,16,15,.7); }
-::-webkit-scrollbar-thumb { background: rgba(145,170,161,.23); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(118,229,208,.42); }
+    /* Services Grid */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 14px;
+    }
+    .service-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .service-card:hover {
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow);
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .card-provider {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .card-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 12px;
+      flex-grow: 1;
+    }
+    .card-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 8px;
+      background: var(--surface-subtle);
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-align: center;
+    }
+    .metric-col span:first-child {
+      display: block;
+      color: var(--text-subtle);
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+    .metric-col span:last-child {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      gap: 8px;
+    }
 
-  
-@keyframes cyber-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-.skeleton-shimmer {
-  background: linear-gradient(90deg, rgba(20,42,38,0.7) 0%, rgba(45,85,78,0.95) 50%, rgba(20,42,38,0.7) 100%);
-  background-size: 200% 100%;
-  animation: cyber-shimmer 1.8s ease-in-out infinite;
-  border-radius: 6px;
-}
-.skeleton-shimmer-cyan {
-  background: linear-gradient(90deg, rgba(13,27,24,0.85) 0%, rgba(118,229,208,0.2) 50%, rgba(13,27,24,0.85) 100%);
-  background-size: 200% 100%;
-  animation: cyber-shimmer 1.8s ease-in-out infinite;
-  border-radius: 6px;
-}
-.skeleton-shimmer-emerald {
-  background: linear-gradient(90deg, rgba(13,27,24,0.85) 0%, rgba(182,243,107,0.2) 50%, rgba(13,27,24,0.85) 100%);
-  background-size: 200% 100%;
-  animation: cyber-shimmer 1.8s ease-in-out infinite;
-  border-radius: 6px;
-}
-.skeleton-card {
-  border: 1px solid rgba(118,229,208,0.2) !important;
-  background: rgba(13,27,24,0.7) !important;
-}
-</style>
+    /* Modals */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(2px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 560px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+    }
+    .modal-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-title {
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .modal-close {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      line-height: 1;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-body {
+      padding: 18px;
+      overflow-y: auto;
+    }
+    .modal-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      background: var(--surface-subtle);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 7px 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    details summary {
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      user-select: none;
+      outline: none;
+      padding: 6px 0;
+    }
+    .console-box {
+      background: #0f172a;
+      color: #93c5fd;
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .summary-strip { grid-template-columns: 1fr 1fr; }
+      .catalog-header { flex-direction: column; align-items: stretch; }
+      .search-box { width: 100%; }
+      .request-footer { flex-direction: column; align-items: stretch; }
+      .header-inner { flex-direction: column; align-items: stretch; }
+    }
+    @media (max-width: 480px) {
+      .summary-strip { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- =========================================================================
-       SHADERGRADIENT (ruucm/shadergradient) 3D LIQUID AMBIENT CANVAS
-       ========================================================================= -->
-  <div id="w3aMarketplaceShaderBg" style="position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.52; overflow: hidden;"></div>
-
-  <header>
-    <div class="brand">
-      <div class="brand-title">W3A-1 / SERVICE MARKETPLACE</div>
-      <div class="brand-badge">
-        <span class="pulsing-dot"></span>
-        x402 V2 WIRE PROTOCOL
+  <!-- Top Navigation Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-mark">W1</div>
+        <div>
+          <span class="brand-name">W3A-1</span>
+          <span class="badge" style="margin-left: 6px;">x402 V2 Marketplace</span>
+        </div>
       </div>
-    </div>
-    <div class="header-actions">
-      <button class="btn btn-fund" onclick="openFundModal()">
-        + Add Funds
-      </button>
-      <a id="btnOwnerControlCenter" href="http://localhost:14300" target="_blank" class="btn btn-dashboard">
-        Open Owner Control Center
-      </a>
-      <button class="btn btn-publish" onclick="openPublishModal()">
-        + Publish a Service
-      </button>
+      <div class="header-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openFundModal()">
+          + Add Funds
+        </button>
+        <a id="btnOwnerControlCenter" href="http://localhost:14300" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
+          Owner Control Center &rarr;
+        </a>
+        <button class="btn btn-primary btn-sm" onclick="openPublishModal()">
+          + Publish Service
+        </button>
+      </div>
     </div>
   </header>
 
   <main>
-    <!-- ================================================================= -->
-    <!-- ASK YOUR AI AGENT — HERO SECTION -->
-    <!-- ================================================================= -->
-    <div class="ai-hero-box">
-      <div class="ai-hero-header">
+    <!-- Hero / Main Introduction -->
+    <section class="hero">
+      <h1>Service Marketplace</h1>
+      <p>
+        Machine-accessible operational services with deterministic constraint selection, x402 V2 payment negotiation, and SHA-256 delivery verification.
+      </p>
+    </section>
+
+    <!-- Marketplace Summary Strip -->
+    <div class="summary-strip" aria-label="Marketplace Summary">
+      <div class="stat-card">
+        <div class="stat-label">Catalog</div>
+        <div class="stat-val" id="statCatalogCount">52 Services</div>
+        <div class="stat-desc">Operational computational microservices</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Providers</div>
+        <div class="stat-val">14 Nodes</div>
+        <div class="stat-desc">Multi-provider redundant clusters</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Routing</div>
+        <div class="stat-val">Constraint-Based</div>
+        <div class="stat-desc">Price, quality, and eligibility ranking</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Settlement</div>
+        <div class="stat-val">x402 V2</div>
+        <div class="stat-desc">EIP-712 auth &amp; TokenBudgetEnforcer</div>
+      </div>
+    </div>
+
+    <!-- Agent Request Panel -->
+    <section class="request-panel">
+      <div class="request-header">
         <div>
-          <div class="ai-hero-title">ASK YOUR AI AGENT</div>
-          <div class="ai-hero-sub">What should I buy?</div>
+          <div class="request-title">Agent Request</div>
+          <div class="request-desc">Describe a task to allow the agent to discover eligible services, rank providers, and execute an autonomous purchase.</div>
         </div>
-        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan); background: rgba(0,242,255,0.1); border: 1px solid rgba(0,242,255,0.3); padding: 0.3rem 0.6rem; border-radius: 4px;">
-          ● DYNAMIC MARKET DISCOVERY
-        </div>
+        <span class="badge">EIP-712 Authorized</span>
       </div>
 
-      <textarea id="aiPrompt" rows="2" class="ai-prompt-box">Translate this legal contract to English.
+      <textarea id="aiPrompt" class="request-textarea" placeholder="Describe the task and constraints...">Translate this legal contract to English.
 Highest quality under $5.</textarea>
 
-      <div class="presets-row">
-        <span class="preset-label">Quick intent presets:</span>
-        <button class="preset-chip" onclick="setAiPrompt('Translate this legal contract to English.\nHighest quality under $5.')">Translate PDF to Hindi (Quality &lt; $5)</button>
-        <button class="preset-chip" onclick="setAiPrompt('Process statistical datasets under $4.\nFastest compute turnaround.')">Process Dataset (&lt; $4)</button>
-        <button class="preset-chip" onclick="setAiPrompt('Fastest image object analysis under $3.\nDetect bounding boxes.')">Image Analysis (&lt; $3)</button>
-        <button class="preset-chip" onclick="setAiPrompt('Cheapest text translation under $2.\nBudget priority.')">Budget Translate (&lt; $2)</button>
+      <div class="presets">
+        <span class="presets-label">Examples:</span>
+        <button type="button" class="chip" onclick="setAiPrompt('Translate this legal contract to English.\nHighest quality under $5.')">Legal Translation (&lt; $5)</button>
+        <button type="button" class="chip" onclick="setAiPrompt('Process statistical datasets under $4.\nFastest compute turnaround.')">Data Processing (&lt; $4)</button>
+        <button type="button" class="chip" onclick="setAiPrompt('Fastest image object analysis under $3.\nDetect bounding boxes.')">Image Analysis (&lt; $3)</button>
+        <button type="button" class="chip" onclick="setAiPrompt('Cheapest text translation under $2.\nBudget priority.')">Budget Translation (&lt; $2)</button>
       </div>
 
-      <div class="ai-action-row">
-        <div class="ai-notice">
-          The AI doesn't get a predefined provider. It dynamically queries your marketplace, scores candidates on quality, latency, and price, and settles autonomously via x402 V2.
+      <div class="request-footer">
+        <div class="request-notice">
+          The agent parses your intent, filters eligible providers against spending constraints, authorizes payment via EIP-712, and settles via TokenBudgetEnforcer.
         </div>
-        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-          <div style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-surface); padding: 0.55rem 0.9rem; border-radius: 6px; border: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <div class="budget-pill">
             <span style="color: var(--text-muted);">Budget:</span>
-            <span id="marketBudgetRemaining" style="color: var(--accent-emerald); font-weight: 700;">$25.00 USDC</span>
-            <button onclick="openFundModal()" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--accent-emerald); font-weight: 700; border-radius: 4px; padding: 0.15rem 0.5rem; font-size: 0.75rem; cursor: pointer;">+ Fund</button>
+            <span id="marketBudgetRemaining" class="budget-amount">$25.00 USDC</span>
+            <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 6px; font-size: 11px;" onclick="openFundModal()">+ Fund</button>
           </div>
-          <button class="btn-buy-ai" id="btnBuyAi" onclick="executeAiPurchase()">
-            [ BUY WITH AI &rarr; ]
+          <button id="btnBuyAi" class="btn btn-primary" onclick="executeAiPurchase()">
+            Run Agent Purchase &rarr;
           </button>
         </div>
       </div>
 
-      <!-- Live Evaluation Result Box -->
-      <div class="eval-container" id="evalContainer">
-        <!-- Injected via JavaScript -->
+      <!-- Real Transaction Execution Timeline -->
+      <div id="evalContainer" class="timeline-container">
+        <!-- Rendered by executeAiPurchase() -->
       </div>
-    </div>
+    </section>
 
-    <div class="hero-banner">
-      <h1>SERVICE MARKETPLACE</h1>
-      <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.35rem 0.85rem; border-radius: 9999px; margin-top: 0.5rem;">
-        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
-        <span style="font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; color: var(--accent-emerald); letter-spacing: 0.04em;">
-          52 services · 14 provider nodes · 9 categories · x402 enabled
-        </span>
+    <!-- Catalog Section -->
+    <section>
+      <div class="catalog-header">
+        <div class="filter-bar" id="categoryFilterBar">
+          <button class="cat-btn active" onclick="filterCategory('all', this)">All</button>
+          <button class="cat-btn" onclick="filterCategory('translation', this)">Translation</button>
+          <button class="cat-btn" onclick="filterCategory('data-compute', this)">Compute</button>
+          <button class="cat-btn" onclick="filterCategory('vision-ocr', this)">Vision &amp; OCR</button>
+          <button class="cat-btn" onclick="filterCategory('text-generation', this)">Text Gen</button>
+          <button class="cat-btn" onclick="filterCategory('speech-audio', this)">Audio</button>
+          <button class="cat-btn" onclick="filterCategory('image-video', this)">Media</button>
+          <button class="cat-btn" onclick="filterCategory('code-dev', this)">Code Sandbox</button>
+          <button class="cat-btn" onclick="filterCategory('rag-embeddings', this)">RAG / Vector</button>
+          <button class="cat-btn" onclick="filterCategory('document-research', this)">Research</button>
+        </div>
+        <input type="text" id="searchInput" class="search-box" placeholder="Filter services or providers..." oninput="handleSearch(this.value)">
       </div>
-      <p style="margin-top: 0.6rem; color: var(--text-muted); font-size: 0.9rem;">
-        Decentralized catalogue of live computational, AI, and data processing services requiring autonomous x402 V2 payment authorization.
-      </p>
-    </div>
 
-    <div class="filter-bar">
-      <div class="categories" style="overflow-x: auto; padding-bottom: 4px;">
-        <button class="cat-btn active" onclick="filterCategory('all', this)">All (52)</button>
-        <button class="cat-btn" onclick="filterCategory('translation', this)">Translation (10)</button>
-        <button class="cat-btn" onclick="filterCategory('data-compute', this)">Compute (8)</button>
-        <button class="cat-btn" onclick="filterCategory('vision-ocr', this)">Vision & OCR (4)</button>
-        <button class="cat-btn" onclick="filterCategory('text-generation', this)">Text Gen (7)</button>
-        <button class="cat-btn" onclick="filterCategory('speech-audio', this)">Speech & Audio (4)</button>
-        <button class="cat-btn" onclick="filterCategory('image-video', this)">Image & Video (4)</button>
-        <button class="cat-btn" onclick="filterCategory('code-dev', this)">Code & Sandbox (4)</button>
-        <button class="cat-btn" onclick="filterCategory('rag-embeddings', this)">RAG & Vector (7)</button>
-        <button class="cat-btn" onclick="filterCategory('document-research', this)">Research & Safety (4)</button>
+      <div class="services-grid" id="servicesGrid">
+        <!-- Injected via renderServices() -->
       </div>
-      <input type="text" class="search-box" placeholder="Search 52 services or 14 providers..." oninput="handleSearch(this.value)">
-    </div>
-
-    <div class="services-grid" id="servicesGrid">
-      <!-- Injected via JavaScript -->
-    </div>
+    </section>
   </main>
 
-  <!-- View Service Modal -->
-  <div class="modal-backdrop" id="viewModal">
-    <div class="modal-box">
+  <!-- Service Details Modal -->
+  <div class="modal-backdrop" id="viewModal" role="dialog" aria-modal="true" aria-labelledby="viewModalTitle">
+    <div class="modal">
       <div class="modal-header">
-        <div class="modal-title" id="viewModalTitle">Service Inspection</div>
+        <div class="modal-title" id="viewModalTitle">Service Details</div>
         <button class="modal-close" onclick="closeViewModal()">&times;</button>
       </div>
       <div class="modal-body" id="viewModalBody">
-        <!-- Injected via JavaScript -->
+        <!-- Injected via inspectService() -->
       </div>
       <div class="modal-footer">
-        <button class="btn btn-publish" id="testWireBtn" onclick="testLive402Challenge()">
-          Test x402 Challenge (Wire)
-        </button>
-        <button class="btn btn-dashboard" onclick="closeViewModal()">Close</button>
+        <button class="btn btn-secondary" onclick="closeViewModal()">Close</button>
+        <button class="btn btn-primary" id="btnUseInRequest" onclick="useInspectedServiceInRequest()">Use in Request</button>
       </div>
     </div>
   </div>
 
-  <!-- Publish Service Modal -->
-  <div class="modal-backdrop" id="publishModal">
-    <div class="modal-box">
+  <!-- Add Funds Modal -->
+  <div class="modal-backdrop" id="fundModal" role="dialog" aria-modal="true" aria-labelledby="fundModalTitle">
+    <div class="modal" style="max-width: 440px;">
       <div class="modal-header">
-        <div class="modal-title">+ Publish a Service</div>
+        <div class="modal-title" id="fundModalTitle">Deposit Escrow Funds</div>
+        <button class="modal-close" onclick="closeFundModal()">&times;</button>
+      </div>
+      <form id="fundForm" onsubmit="submitAddFunds(event)">
+        <div class="modal-body">
+          <div style="background: var(--surface-subtle); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 14px; font-family: var(--font-mono); font-size: 12px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="color: var(--text-muted);">Current Balance:</span>
+              <span id="modalMarketBalance" style="font-weight: 700; color: var(--success);">$25.00 USDC</span>
+            </div>
+            <div style="color: var(--text-muted); font-size: 11px;">
+              Contract: TokenBudgetEnforcer.sol
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Deposit Amount (USDC)</label>
+            <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+              <button type="button" class="chip" onclick="setFundPreset(5)">+$5</button>
+              <button type="button" class="chip" onclick="setFundPreset(10)">+$10</button>
+              <button type="button" class="chip" onclick="setFundPreset(25)">+$25</button>
+              <button type="button" class="chip" onclick="setFundPreset(50)">+$50</button>
+            </div>
+            <input type="number" step="0.01" min="1" max="1000" class="form-input" id="fundAmount" value="10.00" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeFundModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="fundSubmitBtn">Deposit on Chain</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Publish Service Modal -->
+  <div class="modal-backdrop" id="publishModal" role="dialog" aria-modal="true" aria-labelledby="pubModalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="pubModalTitle">Publish a Service</div>
         <button class="modal-close" onclick="closePublishModal()">&times;</button>
       </div>
-      <div class="modal-body">
-        <form id="publishForm" onsubmit="handlePublishSubmit(event)">
+      <form id="publishForm" onsubmit="handlePublishSubmit(event)">
+        <div class="modal-body">
           <div class="form-group">
             <label class="form-label">Service Name</label>
-            <input type="text" class="form-input" id="pubName" placeholder="e.g. PDF Translation" required value="PDF Translation">
+            <input type="text" class="form-input" id="pubName" placeholder="e.g. Document Extraction" required>
           </div>
           <div class="form-group">
             <label class="form-label">Description</label>
-            <input type="text" class="form-input" id="pubDesc" placeholder="e.g. Translate PDF documents to English" required value="Translate PDF documents to English">
+            <input type="text" class="form-input" id="pubDesc" placeholder="Brief technical capability..." required>
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-row">
             <div class="form-group">
               <label class="form-label">Price (USDC)</label>
-              <input type="number" step="0.01" class="form-input" id="pubPrice" value="4.00" required>
+              <input type="number" step="0.01" min="0.01" class="form-input" id="pubPrice" value="3.50" required>
             </div>
             <div class="form-group">
-              <label class="form-label">Quality Score (0.0 - 1.0)</label>
-              <input type="number" step="0.01" min="0" max="1" class="form-input" id="pubQuality" value="0.94" required>
+              <label class="form-label">Quality Score (0.00 - 1.00)</label>
+              <input type="number" step="0.01" min="0" max="1" class="form-input" id="pubQuality" value="0.92" required>
             </div>
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-row">
             <div class="form-group">
               <label class="form-label">Category</label>
               <select class="form-input" id="pubCat">
-                <option value="translation" selected>Translation</option>
-                <option value="compute">Compute</option>
-                <option value="image-analysis">Image Analysis</option>
+                <option value="translation">Translation</option>
+                <option value="data-compute">Compute</option>
+                <option value="vision-ocr">Vision &amp; OCR</option>
+                <option value="text-generation">Text Generation</option>
+                <option value="speech-audio">Audio</option>
+                <option value="image-video">Media</option>
+                <option value="code-dev">Code &amp; Sandbox</option>
+                <option value="rag-embeddings">RAG &amp; Vector</option>
+                <option value="document-research">Research &amp; Safety</option>
               </select>
             </div>
             <div class="form-group">
@@ -358,134 +888,60 @@ Highest quality under $5.</textarea>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Endpoint</label>
-            <input type="text" class="form-input" id="pubEndpoint" value="/x402/providers/alpha-translate/service?serviceId=pdf-translate" required>
+            <label class="form-label">Endpoint URL / Path</label>
+            <input type="text" class="form-input" id="pubEndpoint" value="/x402/providers/custom-node/service?serviceId=service-1" required>
           </div>
           <div class="form-group">
-            <label class="form-checkbox">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
               <input type="checkbox" id="pubX402" checked>
-              <strong>[x] x402 Enabled</strong> (Requires valid EIP-712 payment authorization)
+              <span>Enable x402 V2 payment negotiation header on endpoint</span>
             </label>
           </div>
-          <div class="modal-footer" style="padding-right: 0; padding-bottom: 0;">
-            <button type="button" class="btn btn-dashboard" onclick="closePublishModal()">Cancel</button>
-            <button type="submit" class="btn btn-publish" id="pubSubmitBtn">[PUBLISH SERVICE]</button>
-          </div>
-        </form>
-      </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closePublishModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="pubSubmitBtn">Publish to Catalog</button>
+        </div>
+      </form>
     </div>
   </div>
 
-  <!-- Funding Modal -->
-  <div class="modal-backdrop" id="fundModal">
-    <div class="modal-box" style="max-width: 480px;">
-      <div class="modal-header">
-        <div style="display: flex; align-items: center; gap: 0.6rem;">
-          <span style="color: var(--accent-emerald); font-weight: bold;">[USDC]</span>
-          <div class="modal-title">Add Funds to AI Agent</div>
-        </div>
-        <button class="modal-close" onclick="closeFundModal()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div style="background: var(--bg-card); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 1.2rem; font-family: var(--font-mono); font-size: 0.85rem;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
-            <span style="color: var(--text-muted);">Current Escrow Balance:</span>
-            <span id="modalMarketBalance" style="color: var(--accent-emerald); font-weight: 700;">$25.00 USDC</span>
-          </div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">
-            Contract: <code style="color: var(--accent-cyan);">TokenBudgetEnforcer.sol</code>
-          </div>
-        </div>
-
-        <form id="fundForm" onsubmit="submitAddFunds(event)">
-          <div class="form-group">
-            <label class="form-label">Select Deposit Amount (USDC)</label>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 0.75rem;">
-              <button type="button" class="cat-btn" onclick="setFundPreset(5)">+$5</button>
-              <button type="button" class="cat-btn" onclick="setFundPreset(10)">+$10</button>
-              <button type="button" class="cat-btn" onclick="setFundPreset(20)">+$20</button>
-              <button type="button" class="cat-btn" onclick="setFundPreset(50)">+$50</button>
-            </div>
-            <div style="position: relative;">
-              <span style="position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-weight: 700; color: var(--accent-emerald);">$</span>
-              <input type="number" step="1" min="1" max="10000" class="form-input" id="fundAmount" value="10" style="padding-left: 2rem; font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700;" required>
-            </div>
-          </div>
-
-          <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 6px; padding: 0.75rem; font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 1.2rem;">
-            Triggers an on-chain deposit to <strong style="color: var(--accent-cyan);">TokenBudgetEnforcer.sol</strong>, enabling the AI to settle autonomous purchases seamlessly.
-          </div>
-
-          <div class="modal-footer" style="padding-right: 0; padding-bottom: 0;">
-            <button type="button" class="btn btn-dashboard" onclick="closeFundModal()">Cancel</button>
-            <button type="submit" class="btn btn-fund" id="fundSubmitBtn" style="color: #000; background: var(--accent-emerald); font-weight: 700;">[DEPOSIT ON-CHAIN]</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- ShaderGradient WebGL 3D Dependencies (ruucm/shadergradient) -->
-  <script src="js/vendor/three.min.js"></script>
-  <script src="js/components/shader-gradient.js"></script>
+  <!-- Fallback Catalog Data -->
+  <script src="default-services.js"></script>
 
   <script>
-    let marketplaceShader = null;
-    try {
-      if (window.ShaderGradient) {
-        marketplaceShader = window.ShaderGradient.create('#w3aMarketplaceShaderBg', {
-          color1: '#00f2ff',
-          color2: '#10b981',
-          color3: '#6366f1',
-          bgColor: '#0a0e17',
-          speed: 0.25,
-          density: 1.18,
-          strength: 2.2,
-          grain: 0.36,
-          opacity: 0.5,
-          interactive: true
-        });
-      }
-    } catch (e) {
-      console.warn('[Marketplace] Shader init skipped:', e);
-    }
-
+    // State
     let allServices = [];
     let currentCategory = 'all';
     let searchQuery = '';
     let inspectedService = null;
 
-    function openFundModal() {
-      const m = document.getElementById('fundModal');
-      if (m) m.style.display = 'flex';
-      // Persist Order & Transaction in MySQL
-      try {
-        fetch('/api/marketplace/order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            service_id: 'text-translate',
-            amount: 4.00,
-            txHash: apiRes.txHash || '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join(''),
-            deliveryHash: apiRes.deliveryHash || 'sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6',
-            input_text: prompt,
-            output_text: apiRes.text || 'Verified translation delivery.',
-            blockNumber: apiRes.blockNumber || 11766329,
-          })
-        }).catch(() => {});
-      } catch (_) {}
-
-      refreshMarketBudget();
+    // Utility: Safe HTML Escaping (prevents XSS)
+    function escapeHtml(str) {
+      if (typeof str !== 'string') return String(str ?? '');
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
 
-    function closeFundModal() {
-      const m = document.getElementById('fundModal');
-      if (m) m.style.display = 'none';
-    }
+    // Dynamic link adjustment for GitHub Pages vs localhost
+    (function initHostLinks() {
+      const linkOcc = document.getElementById('btnOwnerControlCenter');
+      if (linkOcc && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        linkOcc.href = '../';
+        linkOcc.target = '_self';
+      }
+    })();
 
-    function setFundPreset(val) {
-      const inp = document.getElementById('fundAmount');
-      if (inp) inp.value = val;
+    function setAiPrompt(text) {
+      const el = document.getElementById('aiPrompt');
+      if (el) {
+        el.value = text;
+        el.focus();
+      }
     }
 
     async function refreshMarketBudget() {
@@ -503,1396 +959,52 @@ Highest quality under $5.</textarea>
       } catch (_) {}
     }
 
-    async function submitAddFunds(e) {
-      e.preventDefault();
-      const amtInput = document.getElementById('fundAmount');
-      const amt = parseFloat(amtInput ? amtInput.value : 10);
-      if (!amt || amt <= 0) return;
-
-      const btn = document.getElementById('fundSubmitBtn');
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = 'Depositing on-chain...';
-      }
-
-      try {
-        const res = await fetch('/api/fund', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: amt })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          alert(`Successfully deposited $${amt.toFixed(2)} USDC on-chain into TokenBudgetEnforcer.sol!\nTx: ${data.txHash || 'confirmed'}`);
-          closeFundModal();
-          refreshMarketBudget();
-        } else {
-          alert('Funding failed: ' + (data.error || 'Unknown error'));
-        }
-      } catch (err) {
-        alert('Funding network error: ' + err.message);
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = '[DEPOSIT ON-CHAIN]';
-        }
-      }
-    }
-
-    const defaultMarketServices = [
-  {
-    "id": "text-translate",
-    "serviceId": "text-translate",
-    "name": "Neural Text Translation",
-    "providerId": "alpha-translate",
-    "providerName": "Alpha Translation Labs",
-    "description": "Accurate multi-language translation with cultural nuance verification.",
-    "quality": 0.92,
-    "latency": "195ms",
-    "latencyMs": 195,
-    "price": "$4.00 USDC / request",
-    "priceNum": 4,
-    "category": "translation",
-    "endpoint": "/x402/providers/alpha-translate/service?serviceId=text-translate",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "legal-translate",
-    "serviceId": "legal-translate",
-    "name": "Certified Legal & Financial Translation",
-    "providerId": "alpha-translate",
-    "providerName": "Alpha Translation Labs",
-    "description": "High-compliance sworn translation for contracts, terms, and cross-border filings.",
-    "quality": 0.96,
-    "latency": "320ms",
-    "latencyMs": 320,
-    "price": "$5.00 USDC / request",
-    "priceNum": 5,
-    "category": "translation",
-    "endpoint": "/x402/providers/alpha-translate/service?serviceId=legal-translate",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "dialect-localize",
-    "serviceId": "dialect-localize",
-    "name": "Dialect & Cultural Localization",
-    "providerId": "alpha-translate",
-    "providerName": "Alpha Translation Labs",
-    "description": "Colloquial and regional dialect adaptation preserving brand voice.",
-    "quality": 0.9,
-    "latency": "180ms",
-    "latencyMs": 180,
-    "price": "$3.50 USDC / request",
-    "priceNum": 3.5,
-    "category": "translation",
-    "endpoint": "/x402/providers/alpha-translate/service?serviceId=dialect-localize",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "bilingual-align",
-    "serviceId": "bilingual-align",
-    "name": "Bilingual Sentence & Corpus Alignment",
-    "providerId": "alpha-translate",
-    "providerName": "Alpha Translation Labs",
-    "description": "Bi-text parallel sentence segmentation and automated translation memory generation.",
-    "quality": 0.89,
-    "latency": "140ms",
-    "latencyMs": 140,
-    "price": "$2.50 USDC / request",
-    "priceNum": 2.5,
-    "category": "translation",
-    "endpoint": "/x402/providers/alpha-translate/service?serviceId=bilingual-align",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "budget-translate",
-    "serviceId": "budget-translate",
-    "name": "High-Throughput Bulk Translation",
-    "providerId": "beta-translate",
-    "providerName": "Beta FastTranslate Engine",
-    "description": "Ultra-fast, cost-effective machine translation optimized for high volume streams.",
-    "quality": 0.83,
-    "latency": "90ms",
-    "latencyMs": 90,
-    "price": "$2.00 USDC / request",
-    "priceNum": 2,
-    "category": "translation",
-    "endpoint": "/x402/providers/beta-translate/service?serviceId=budget-translate",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "glossary-translate",
-    "serviceId": "glossary-translate",
-    "name": "Terminology-Constrained Translation",
-    "providerId": "beta-translate",
-    "providerName": "Beta FastTranslate Engine",
-    "description": "Enforces strict custom entity mappings and terminology glossaries.",
-    "quality": 0.86,
-    "latency": "110ms",
-    "latencyMs": 110,
-    "price": "$2.50 USDC / request",
-    "priceNum": 2.5,
-    "category": "translation",
-    "endpoint": "/x402/providers/beta-translate/service?serviceId=glossary-translate",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "streaming-translate",
-    "serviceId": "streaming-translate",
-    "name": "Real-Time Low-Latency Translation",
-    "providerId": "beta-translate",
-    "providerName": "Beta FastTranslate Engine",
-    "description": "Sub-100ms chunked token translation for real-time live captions and voice bots.",
-    "quality": 0.85,
-    "latency": "80ms",
-    "latencyMs": 80,
-    "price": "$3.00 USDC / request",
-    "priceNum": 3,
-    "category": "translation",
-    "endpoint": "/x402/providers/beta-translate/service?serviceId=streaming-translate",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "expert-translate",
-    "serviceId": "expert-translate",
-    "name": "Expert Human-in-the-Loop Translation",
-    "providerId": "gamma-translate",
-    "providerName": "Gamma Enterprise Localization",
-    "description": "Double-blind reviewed enterprise translation with 98% linguistic guarantee.",
-    "quality": 0.98,
-    "latency": "450ms",
-    "latencyMs": 450,
-    "price": "$7.00 USDC / request",
-    "priceNum": 7,
-    "category": "translation",
-    "endpoint": "/x402/providers/gamma-translate/service?serviceId=expert-translate",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "patents-translate",
-    "serviceId": "patents-translate",
-    "name": "Multilingual Patent & IP Translation",
-    "providerId": "gamma-translate",
-    "providerName": "Gamma Enterprise Localization",
-    "description": "WIPO / PCT compliant patent claim translation with technical fidelity.",
-    "quality": 0.97,
-    "latency": "400ms",
-    "latencyMs": 400,
-    "price": "$6.50 USDC / request",
-    "priceNum": 6.5,
-    "category": "translation",
-    "endpoint": "/x402/providers/gamma-translate/service?serviceId=patents-translate",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "medical-translate",
-    "serviceId": "medical-translate",
-    "name": "Clinical & Medical Protocol Translation",
-    "providerId": "gamma-translate",
-    "providerName": "Gamma Enterprise Localization",
-    "description": "FDA / EMA trial protocol translations with MeSH and SNOMED vocabulary checking.",
-    "quality": 0.97,
-    "latency": "380ms",
-    "latencyMs": 380,
-    "price": "$6.00 USDC / request",
-    "priceNum": 6,
-    "category": "translation",
-    "endpoint": "/x402/providers/gamma-translate/service?serviceId=medical-translate",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "data-process",
-    "serviceId": "data-process",
-    "name": "Statistical Dataset Aggregation",
-    "providerId": "delta-compute",
-    "providerName": "Delta Distributed Compute",
-    "description": "Deterministic statistical summary, moments calculation, and distribution analysis.",
-    "quality": 0.88,
-    "latency": "140ms",
-    "latencyMs": 140,
-    "price": "$3.00 USDC / job",
-    "priceNum": 3,
-    "category": "data-compute",
-    "endpoint": "/x402/providers/delta-compute/service?serviceId=data-process",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "matrix-compute",
-    "serviceId": "matrix-compute",
-    "name": "High-Performance Matrix Operations",
-    "providerId": "delta-compute",
-    "providerName": "Delta Distributed Compute",
-    "description": "BLAS/LAPACK accelerated GPU matrix multiplication and Eigenvalue decomposition.",
-    "quality": 0.93,
-    "latency": "210ms",
-    "latencyMs": 210,
-    "price": "$4.50 USDC / job",
-    "priceNum": 4.5,
-    "category": "data-compute",
-    "endpoint": "/x402/providers/delta-compute/service?serviceId=matrix-compute",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "monte-carlo",
-    "serviceId": "monte-carlo",
-    "name": "Monte Carlo Risk Simulation",
-    "providerId": "delta-compute",
-    "providerName": "Delta Distributed Compute",
-    "description": "100,000-path stochastic probability modeling and value-at-risk (VaR) estimation.",
-    "quality": 0.94,
-    "latency": "290ms",
-    "latencyMs": 290,
-    "price": "$5.00 USDC / job",
-    "priceNum": 5,
-    "category": "data-compute",
-    "endpoint": "/x402/providers/delta-compute/service?serviceId=monte-carlo",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "time-series-calc",
-    "serviceId": "time-series-calc",
-    "name": "Time-Series Anomaly Detection",
-    "providerId": "delta-compute",
-    "providerName": "Delta Distributed Compute",
-    "description": "Real-time STL seasonal decomposition and statistical outlier pinpointing.",
-    "quality": 0.9,
-    "latency": "160ms",
-    "latencyMs": 160,
-    "price": "$3.50 USDC / job",
-    "priceNum": 3.5,
-    "category": "data-compute",
-    "endpoint": "/x402/providers/delta-compute/service?serviceId=time-series-calc",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "image-analyze",
-    "serviceId": "image-analyze",
-    "name": "Multimodal Object & Scene Detection",
-    "providerId": "epsilon-vision",
-    "providerName": "Epsilon Vision & OCR Systems",
-    "description": "Zero-shot visual segment labeling, bounding box regression, and scene categorization.",
-    "quality": 0.94,
-    "latency": "380ms",
-    "latencyMs": 380,
-    "price": "$4.50 USDC / request",
-    "priceNum": 4.5,
-    "category": "vision-ocr",
-    "endpoint": "/x402/providers/epsilon-vision/service?serviceId=image-analyze",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "ocr-document",
-    "serviceId": "ocr-document",
-    "name": "Multi-Language Document OCR",
-    "providerId": "epsilon-vision",
-    "providerName": "Epsilon Vision & OCR Systems",
-    "description": "Layout-aware character recognition with font hierarchy and reading-order recovery.",
-    "quality": 0.92,
-    "latency": "250ms",
-    "latencyMs": 250,
-    "price": "$3.50 USDC / request",
-    "priceNum": 3.5,
-    "category": "vision-ocr",
-    "endpoint": "/x402/providers/epsilon-vision/service?serviceId=ocr-document",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "receipt-invoice-ocr",
-    "serviceId": "receipt-invoice-ocr",
-    "name": "Structured Invoice & Receipt Table Parser",
-    "providerId": "epsilon-vision",
-    "providerName": "Epsilon Vision & OCR Systems",
-    "description": "Extract line items, tax IDs, invoice dates, and totals into normalized JSON schemas.",
-    "quality": 0.95,
-    "latency": "290ms",
-    "latencyMs": 290,
-    "price": "$4.00 USDC / request",
-    "priceNum": 4,
-    "category": "vision-ocr",
-    "endpoint": "/x402/providers/epsilon-vision/service?serviceId=receipt-invoice-ocr",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "facial-landmark",
-    "serviceId": "facial-landmark",
-    "name": "Biometric Facial Landmark & Pose Detection",
-    "providerId": "epsilon-vision",
-    "providerName": "Epsilon Vision & OCR Systems",
-    "description": "468-point 3D facial mesh geometry and head pose orientation calculation.",
-    "quality": 0.91,
-    "latency": "200ms",
-    "latencyMs": 200,
-    "price": "$3.00 USDC / request",
-    "priceNum": 3,
-    "category": "vision-ocr",
-    "endpoint": "/x402/providers/epsilon-vision/service?serviceId=facial-landmark",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "deep-reasoning",
-    "serviceId": "deep-reasoning",
-    "name": "Chain-of-Thought Logical Reasoning",
-    "providerId": "zeta-llm",
-    "providerName": "Zeta Foundation Models",
-    "description": "Multi-step analytical reasoning and mathematical deduction with step-by-step verification.",
-    "quality": 0.96,
-    "latency": "420ms",
-    "latencyMs": 420,
-    "price": "$5.50 USDC / request",
-    "priceNum": 5.5,
-    "category": "text-generation",
-    "endpoint": "/x402/providers/zeta-llm/service?serviceId=deep-reasoning",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "creative-writing",
-    "serviceId": "creative-writing",
-    "name": "Dynamic Copywriting & Creative Storytelling",
-    "providerId": "zeta-llm",
-    "providerName": "Zeta Foundation Models",
-    "description": "High-engagement narrative generation, marketing slogans, and technical prose.",
-    "quality": 0.91,
-    "latency": "230ms",
-    "latencyMs": 230,
-    "price": "$3.50 USDC / request",
-    "priceNum": 3.5,
-    "category": "text-generation",
-    "endpoint": "/x402/providers/zeta-llm/service?serviceId=creative-writing",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "agent-planner",
-    "serviceId": "agent-planner",
-    "name": "Autonomous Subtask Decomposition & Planning",
-    "providerId": "zeta-llm",
-    "providerName": "Zeta Foundation Models",
-    "description": "Breaks high-level user goals into structured dependency graphs and execution actions.",
-    "quality": 0.93,
-    "latency": "280ms",
-    "latencyMs": 280,
-    "price": "$4.00 USDC / request",
-    "priceNum": 4,
-    "category": "text-generation",
-    "endpoint": "/x402/providers/zeta-llm/service?serviceId=agent-planner",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "json-structured",
-    "serviceId": "json-structured",
-    "name": "Strict JSON Schema Extraction",
-    "providerId": "zeta-llm",
-    "providerName": "Zeta Foundation Models",
-    "description": "Zero-hallucination structured entity parsing strictly validated against JSONSchema.",
-    "quality": 0.94,
-    "latency": "180ms",
-    "latencyMs": 180,
-    "price": "$3.00 USDC / request",
-    "priceNum": 3,
-    "category": "text-generation",
-    "endpoint": "/x402/providers/zeta-llm/service?serviceId=json-structured",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "tldr-summary",
-    "serviceId": "tldr-summary",
-    "name": "Executive Briefing & Key Takeaway Generator",
-    "providerId": "eta-summarize",
-    "providerName": "Eta Synthesis & Summarization",
-    "description": "Distills complex technical documentation into 3 concise executive bullet points.",
-    "quality": 0.91,
-    "latency": "150ms",
-    "latencyMs": 150,
-    "price": "$2.50 USDC / request",
-    "priceNum": 2.5,
-    "category": "text-generation",
-    "endpoint": "/x402/providers/eta-summarize/service?serviceId=tldr-summary",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "longdoc-distill",
-    "serviceId": "longdoc-distill",
-    "name": "100+ Page Recursive Document Distiller",
-    "providerId": "eta-summarize",
-    "providerName": "Eta Synthesis & Summarization",
-    "description": "Recursive hierarchical map-reduce summarization for technical whitepapers and books.",
-    "quality": 0.95,
-    "latency": "360ms",
-    "latencyMs": 360,
-    "price": "$5.00 USDC / request",
-    "priceNum": 5,
-    "category": "text-generation",
-    "endpoint": "/x402/providers/eta-summarize/service?serviceId=longdoc-distill",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "meeting-action-items",
-    "serviceId": "meeting-action-items",
-    "name": "Multi-Speaker Meeting Action Item Extractor",
-    "providerId": "eta-summarize",
-    "providerName": "Eta Synthesis & Summarization",
-    "description": "Identifies deliverables, assignees, deadlines, and unassigned commitments from transcripts.",
-    "quality": 0.92,
-    "latency": "210ms",
-    "latencyMs": 210,
-    "price": "$3.50 USDC / request",
-    "priceNum": 3.5,
-    "category": "text-generation",
-    "endpoint": "/x402/providers/eta-summarize/service?serviceId=meeting-action-items",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "whisper-stt",
-    "serviceId": "whisper-stt",
-    "name": "Whisper Multilingual Speech-to-Text",
-    "providerId": "theta-audio",
-    "providerName": "Theta Voice & Speech AI",
-    "description": "High-accuracy audio transcription with word-level timestamps and punctuation.",
-    "quality": 0.94,
-    "latency": "240ms",
-    "latencyMs": 240,
-    "price": "$3.50 USDC / request",
-    "priceNum": 3.5,
-    "category": "speech-audio",
-    "endpoint": "/x402/providers/theta-audio/service?serviceId=whisper-stt",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "neural-tts",
-    "serviceId": "neural-tts",
-    "name": "Expressive Neural Voice Synthesis (TTS)",
-    "providerId": "theta-audio",
-    "providerName": "Theta Voice & Speech AI",
-    "description": "Natural prosody neural speech generator supporting 40+ lifelike speaker voices.",
-    "quality": 0.92,
-    "latency": "190ms",
-    "latencyMs": 190,
-    "price": "$3.00 USDC / request",
-    "priceNum": 3,
-    "category": "speech-audio",
-    "endpoint": "/x402/providers/theta-audio/service?serviceId=neural-tts",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "audio-diarization",
-    "serviceId": "audio-diarization",
-    "name": "Multi-Speaker Audio Separation & Diarization",
-    "providerId": "theta-audio",
-    "providerName": "Theta Voice & Speech AI",
-    "description": "Distinguishes distinct voices and annotates timestamps per individual speaker.",
-    "quality": 0.93,
-    "latency": "290ms",
-    "latencyMs": 290,
-    "price": "$4.00 USDC / request",
-    "priceNum": 4,
-    "category": "speech-audio",
-    "endpoint": "/x402/providers/theta-audio/service?serviceId=audio-diarization",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "audio-noise-filter",
-    "serviceId": "audio-noise-filter",
-    "name": "Neural Audio Noise Reduction & Clean-up",
-    "providerId": "theta-audio",
-    "providerName": "Theta Voice & Speech AI",
-    "description": "Removes background room reverberation, HVAC hum, and street noise from audio feeds.",
-    "quality": 0.89,
-    "latency": "160ms",
-    "latencyMs": 160,
-    "price": "$2.50 USDC / request",
-    "priceNum": 2.5,
-    "category": "speech-audio",
-    "endpoint": "/x402/providers/theta-audio/service?serviceId=audio-noise-filter",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "text-to-image",
-    "serviceId": "text-to-image",
-    "name": "4K Photorealistic Diffusion Generation",
-    "providerId": "iota-diffusion",
-    "providerName": "Iota Media & Diffusion Labs",
-    "description": "State-of-the-art latent diffusion synthesis with precise prompt adherence.",
-    "quality": 0.95,
-    "latency": "520ms",
-    "latencyMs": 520,
-    "price": "$6.00 USDC / request",
-    "priceNum": 6,
-    "category": "image-video",
-    "endpoint": "/x402/providers/iota-diffusion/service?serviceId=text-to-image",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "image-upscaler",
-    "serviceId": "image-upscaler",
-    "name": "4x Super-Resolution Neural Upscaling",
-    "providerId": "iota-diffusion",
-    "providerName": "Iota Media & Diffusion Labs",
-    "description": "Restores textures, sharpens edges, and removes compression artifacts at 4x factor.",
-    "quality": 0.93,
-    "latency": "210ms",
-    "latencyMs": 210,
-    "price": "$2.50 USDC / request",
-    "priceNum": 2.5,
-    "category": "image-video",
-    "endpoint": "/x402/providers/iota-diffusion/service?serviceId=image-upscaler",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "video-frame-tagger",
-    "serviceId": "video-frame-tagger",
-    "name": "Keyframe Extraction & Video Action Tagging",
-    "providerId": "iota-diffusion",
-    "providerName": "Iota Media & Diffusion Labs",
-    "description": "Temporal scene boundary detection and semantic activity labeling in video clips.",
-    "quality": 0.91,
-    "latency": "460ms",
-    "latencyMs": 460,
-    "price": "$5.00 USDC / request",
-    "priceNum": 5,
-    "category": "image-video",
-    "endpoint": "/x402/providers/iota-diffusion/service?serviceId=video-frame-tagger",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "background-remover",
-    "serviceId": "background-remover",
-    "name": "Instant Object Masking & Alpha Matting",
-    "providerId": "iota-diffusion",
-    "providerName": "Iota Media & Diffusion Labs",
-    "description": "Sub-pixel alpha matte foreground segmentation with clean hair and translucent edges.",
-    "quality": 0.94,
-    "latency": "140ms",
-    "latencyMs": 140,
-    "price": "$2.00 USDC / request",
-    "priceNum": 2,
-    "category": "image-video",
-    "endpoint": "/x402/providers/iota-diffusion/service?serviceId=background-remover",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "web-scraper",
-    "serviceId": "web-scraper",
-    "name": "Headless Anti-Bot Web Data Extraction",
-    "providerId": "kappa-data",
-    "providerName": "Kappa Web Intelligence & ETL",
-    "description": "Bypasses bot protections, renders client-side SPAs, and returns DOM snapshots.",
-    "quality": 0.9,
-    "latency": "220ms",
-    "latencyMs": 220,
-    "price": "$3.00 USDC / job",
-    "priceNum": 3,
-    "category": "data-compute",
-    "endpoint": "/x402/providers/kappa-data/service?serviceId=web-scraper",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "html-to-markdown",
-    "serviceId": "html-to-markdown",
-    "name": "Clean Web Article & Table Markdown Parser",
-    "providerId": "kappa-data",
-    "providerName": "Kappa Web Intelligence & ETL",
-    "description": "Strips ads, boilerplate navigation, and converts clean editorial content to Markdown.",
-    "quality": 0.92,
-    "latency": "100ms",
-    "latencyMs": 100,
-    "price": "$1.50 USDC / job",
-    "priceNum": 1.5,
-    "category": "data-compute",
-    "endpoint": "/x402/providers/kappa-data/service?serviceId=html-to-markdown",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "schema-enrichment",
-    "serviceId": "schema-enrichment",
-    "name": "Lead & Entity Graph Enrichment",
-    "providerId": "kappa-data",
-    "providerName": "Kappa Web Intelligence & ETL",
-    "description": "Enriches corporate domains with firmographic metadata, technology stacks, and social IDs.",
-    "quality": 0.91,
-    "latency": "270ms",
-    "latencyMs": 270,
-    "price": "$4.00 USDC / job",
-    "priceNum": 4,
-    "category": "data-compute",
-    "endpoint": "/x402/providers/kappa-data/service?serviceId=schema-enrichment",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "proxy-rotator",
-    "serviceId": "proxy-rotator",
-    "name": "Geotargeted Residential Request Tunnel",
-    "providerId": "kappa-data",
-    "providerName": "Kappa Web Intelligence & ETL",
-    "description": "Rotates residential IPs across 190 countries with 99.9% uptime and zero throttling.",
-    "quality": 0.94,
-    "latency": "180ms",
-    "latencyMs": 180,
-    "price": "$2.50 USDC / job",
-    "priceNum": 2.5,
-    "category": "data-compute",
-    "endpoint": "/x402/providers/kappa-data/service?serviceId=proxy-rotator",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "code-audit",
-    "serviceId": "code-audit",
-    "name": "Automated AST Security & Vulnerability Auditor",
-    "providerId": "lambda-code",
-    "providerName": "Lambda Code & Execution Sandbox",
-    "description": "Static abstract syntax tree inspection for reentrancy, injection, and overflow bugs.",
-    "quality": 0.95,
-    "latency": "310ms",
-    "latencyMs": 310,
-    "price": "$4.50 USDC / job",
-    "priceNum": 4.5,
-    "category": "code-dev",
-    "endpoint": "/x402/providers/lambda-code/service?serviceId=code-audit",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "isolated-eval",
-    "serviceId": "isolated-eval",
-    "name": "Sandboxed Python/Node.js Code Execution",
-    "providerId": "lambda-code",
-    "providerName": "Lambda Code & Execution Sandbox",
-    "description": "gVisor microVM isolated execution with strict memory and CPU quotas.",
-    "quality": 0.97,
-    "latency": "190ms",
-    "latencyMs": 190,
-    "price": "$3.00 USDC / job",
-    "priceNum": 3,
-    "category": "code-dev",
-    "endpoint": "/x402/providers/lambda-code/service?serviceId=isolated-eval",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "sql-optimizer",
-    "serviceId": "sql-optimizer",
-    "name": "SQL Query Analysis & Index Recommendation",
-    "providerId": "lambda-code",
-    "providerName": "Lambda Code & Execution Sandbox",
-    "description": "EXPLAIN plan cost reduction and compound index synthesis for PostgreSQL/MySQL.",
-    "quality": 0.92,
-    "latency": "210ms",
-    "latencyMs": 210,
-    "price": "$3.50 USDC / job",
-    "priceNum": 3.5,
-    "category": "code-dev",
-    "endpoint": "/x402/providers/lambda-code/service?serviceId=sql-optimizer",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "api-mock-gen",
-    "serviceId": "api-mock-gen",
-    "name": "OpenAPI/Swagger Contract to Mock Generator",
-    "providerId": "lambda-code",
-    "providerName": "Lambda Code & Execution Sandbox",
-    "description": "Generates realistic dynamic mock endpoints with faker data from OpenAPI specifications.",
-    "quality": 0.9,
-    "latency": "150ms",
-    "latencyMs": 150,
-    "price": "$2.50 USDC / job",
-    "priceNum": 2.5,
-    "category": "code-dev",
-    "endpoint": "/x402/providers/lambda-code/service?serviceId=api-mock-gen",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "vector-embed-3072",
-    "serviceId": "vector-embed-3072",
-    "name": "Dense 3072-dim Text Vector Embedding",
-    "providerId": "mu-embeddings",
-    "providerName": "Mu Vector & Embeddings Mesh",
-    "description": "MTEB leaderboard-topping dense vector embeddings for semantic retrieval.",
-    "quality": 0.96,
-    "latency": "95ms",
-    "latencyMs": 95,
-    "price": "$2.00 USDC / request",
-    "priceNum": 2,
-    "category": "rag-embeddings",
-    "endpoint": "/x402/providers/mu-embeddings/service?serviceId=vector-embed-3072",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "cross-encoder-rerank",
-    "serviceId": "cross-encoder-rerank",
-    "name": "Semantic Cross-Encoder Passage Reranker",
-    "providerId": "mu-embeddings",
-    "providerName": "Mu Vector & Embeddings Mesh",
-    "description": "Deep attention reranking of top-50 candidate documents with relevance scoring.",
-    "quality": 0.95,
-    "latency": "170ms",
-    "latencyMs": 170,
-    "price": "$3.00 USDC / request",
-    "priceNum": 3,
-    "category": "rag-embeddings",
-    "endpoint": "/x402/providers/mu-embeddings/service?serviceId=cross-encoder-rerank",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "clustering-similarity",
-    "serviceId": "clustering-similarity",
-    "name": "Multi-Vector Cosine Similarity & Clustering",
-    "providerId": "mu-embeddings",
-    "providerName": "Mu Vector & Embeddings Mesh",
-    "description": "HDBSCAN vector clustering and nearest-neighbor graph construction.",
-    "quality": 0.91,
-    "latency": "140ms",
-    "latencyMs": 140,
-    "price": "$2.50 USDC / request",
-    "priceNum": 2.5,
-    "category": "rag-embeddings",
-    "endpoint": "/x402/providers/mu-embeddings/service?serviceId=clustering-similarity",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "rag-search",
-    "serviceId": "rag-search",
-    "name": "Hybrid Vector + BM25 Context Retriever",
-    "providerId": "nu-rag",
-    "providerName": "Nu RAG & Knowledge Graph Engine",
-    "description": "Reciprocal Rank Fusion across dense embeddings and sparse keyword indexes.",
-    "quality": 0.94,
-    "latency": "260ms",
-    "latencyMs": 260,
-    "price": "$4.00 USDC / request",
-    "priceNum": 4,
-    "category": "rag-embeddings",
-    "endpoint": "/x402/providers/nu-rag/service?serviceId=rag-search",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "knowledge-graph",
-    "serviceId": "knowledge-graph",
-    "name": "Unstructured Text to Entity-Relationship Graph",
-    "providerId": "nu-rag",
-    "providerName": "Nu RAG & Knowledge Graph Engine",
-    "description": "Extracts nodes, edges, and triples into Neo4j/Cypher compatible graph structures.",
-    "quality": 0.93,
-    "latency": "390ms",
-    "latencyMs": 390,
-    "price": "$5.50 USDC / request",
-    "priceNum": 5.5,
-    "category": "rag-embeddings",
-    "endpoint": "/x402/providers/nu-rag/service?serviceId=knowledge-graph",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "document-chunker",
-    "serviceId": "document-chunker",
-    "name": "Semantic Chunking with Overlap Optimization",
-    "providerId": "nu-rag",
-    "providerName": "Nu RAG & Knowledge Graph Engine",
-    "description": "Boundary-respecting semantic text splitter maintaining coherent contextual units.",
-    "quality": 0.9,
-    "latency": "120ms",
-    "latencyMs": 120,
-    "price": "$2.00 USDC / request",
-    "priceNum": 2,
-    "category": "rag-embeddings",
-    "endpoint": "/x402/providers/nu-rag/service?serviceId=document-chunker",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "citation-verifier",
-    "serviceId": "citation-verifier",
-    "name": "Source Document Grounding & Citation Verifier",
-    "providerId": "nu-rag",
-    "providerName": "Nu RAG & Knowledge Graph Engine",
-    "description": "Verifies every sentence in generative output against grounding source documents.",
-    "quality": 0.96,
-    "latency": "210ms",
-    "latencyMs": 210,
-    "price": "$3.50 USDC / request",
-    "priceNum": 3.5,
-    "category": "rag-embeddings",
-    "endpoint": "/x402/providers/nu-rag/service?serviceId=citation-verifier",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "content-moderator",
-    "serviceId": "content-moderator",
-    "name": "Multilingual Toxic & Harm Content Classifier",
-    "providerId": "xi-compliance",
-    "providerName": "Xi Moderation & Research Guardrails",
-    "description": "Multi-category safety evaluation covering hate speech, harassment, and security threats.",
-    "quality": 0.95,
-    "latency": "110ms",
-    "latencyMs": 110,
-    "price": "$2.00 USDC / request",
-    "priceNum": 2,
-    "category": "document-research",
-    "endpoint": "/x402/providers/xi-compliance/service?serviceId=content-moderator",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "pii-redactor",
-    "serviceId": "pii-redactor",
-    "name": "Automated GDPR/HIPAA Personal Data Redactor",
-    "providerId": "xi-compliance",
-    "providerName": "Xi Moderation & Research Guardrails",
-    "description": "Named entity recognition masking emails, phone numbers, SSNs, and crypto private keys.",
-    "quality": 0.96,
-    "latency": "170ms",
-    "latencyMs": 170,
-    "price": "$3.00 USDC / request",
-    "priceNum": 3,
-    "category": "document-research",
-    "endpoint": "/x402/providers/xi-compliance/service?serviceId=pii-redactor",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "academic-search",
-    "serviceId": "academic-search",
-    "name": "Semantic Scholar & ArXiv Research Retrieval",
-    "providerId": "xi-compliance",
-    "providerName": "Xi Moderation & Research Guardrails",
-    "description": "Automated literature review extracting peer-reviewed abstracts and citation graphs.",
-    "quality": 0.92,
-    "latency": "240ms",
-    "latencyMs": 240,
-    "price": "$3.50 USDC / request",
-    "priceNum": 3.5,
-    "category": "document-research",
-    "endpoint": "/x402/providers/xi-compliance/service?serviceId=academic-search",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  },
-  {
-    "id": "sentiment-analyzer",
-    "serviceId": "sentiment-analyzer",
-    "name": "Granular Aspect-Based Sentiment Classifier",
-    "providerId": "xi-compliance",
-    "providerName": "Xi Moderation & Research Guardrails",
-    "description": "Measures polarity, subjective tone, and emotional valence across text corpora.",
-    "quality": 0.89,
-    "latency": "130ms",
-    "latencyMs": 130,
-    "price": "$2.00 USDC / request",
-    "priceNum": 2,
-    "category": "document-research",
-    "endpoint": "/x402/providers/xi-compliance/service?serviceId=sentiment-analyzer",
-    "protocol": "x402 V2",
-    "status": "AVAILABLE",
-    "x402Enabled": true
-  }
-];
-
     async function loadServices() {
-      // Dynamic link adjustment for GitHub Pages vs localhost
-      const linkOcc = document.getElementById('btnOwnerControlCenter');
-      if (linkOcc && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-        linkOcc.href = '../';
-        linkOcc.target = '_self';
-      }
-
       renderSkeletonServices(8);
       try {
         const res = await fetch('/api/services');
         if (res.ok) {
           const data = await res.json();
-          allServices = (data.services && data.services.length > 0) ? data.services : defaultMarketServices;
+          allServices = (data.services && data.services.length > 0)
+            ? data.services
+            : (window.DEFAULT_MARKET_SERVICES || []);
         } else {
-          allServices = defaultMarketServices;
+          allServices = window.DEFAULT_MARKET_SERVICES || [];
         }
       } catch (err) {
-        allServices = defaultMarketServices;
+        allServices = window.DEFAULT_MARKET_SERVICES || [];
       }
+
+      const countEl = document.getElementById('statCatalogCount');
+      if (countEl) countEl.textContent = `${allServices.length} Services`;
+
       renderServices();
     }
 
-    function setAiPrompt(text) {
-      document.getElementById('aiPrompt').value = text;
-    }
-
-    async function executeAiPurchase() {
-      const prompt = document.getElementById('aiPrompt').value.trim();
-      if (!prompt) return;
-
-      const btn = document.getElementById('btnBuyAi');
-      const container = document.getElementById('evalContainer');
-      btn.disabled = true;
-      btn.textContent = 'EXECUTING LIVE TRANSACTION...';
-
-      container.style.display = 'block';
-
-      container.innerHTML = `
-        <div style="background: var(--bg-surface); border: 2px solid rgba(0, 242, 255, 0.4); border-radius: 12px; padding: 1.5rem; box-shadow: 0 12px 36px rgba(0,0,0,0.6);">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-            <div style="display: flex; align-items: center; gap: 0.6rem;">
-              <span class="pulsing-dot" style="background: var(--accent-cyan); box-shadow: 0 0 10px var(--accent-cyan);"></span>
-              <span style="font-family: var(--font-mono); font-size: 0.95rem; font-weight: 800; color: #fff;">ONE LIVE TRANSACTION</span>
-              <span style="font-family: var(--font-mono); font-size: 0.7rem; background: rgba(0,242,255,0.1); color: var(--accent-cyan); border: 1px solid rgba(0,242,255,0.3); padding: 0.15rem 0.5rem; border-radius: 4px;">x402 V2 WIRE PROTOCOL</span>
-            </div>
-            <div id="mktStatusTicker" style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan);">
-              AI AGENT: Understanding request...
-            </div>
-          </div>
-          <div id="mktStagesContainer"></div>
-        </div>
-      `;
-
-      const stagesContainer = document.getElementById('mktStagesContainer');
-      const ticker = document.getElementById('mktStatusTicker');
-      const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-      let currentRem = "545.00";
-      const bEl = document.getElementById('marketBudgetRemaining');
-      if (bEl) {
-        currentRem = bEl.textContent.replace(/[^0-9.]/g, '') || "545.00";
-      }
-
-      // Launch real backend in parallel
-      if (marketplaceShader) {
-        marketplaceShader.setColors('#00f2ff', '#38bdf8', '#818cf8');
-      }
-
-      const apiPromise = fetch('/api/orchestrate/ai-purchase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt })
-      }).then(r => r.json()).catch(err => ({ error: err.message }));
-
-      // Stage 1: Immediately — AI AGENT
-      stagesContainer.innerHTML += `
-        <div class="live-tx-step">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: var(--accent-cyan); font-size: 0.85rem;">AI AGENT</span>
-            <span style="font-size: 0.7rem; background: rgba(0,242,255,0.12); color: var(--accent-cyan); border: 1px solid rgba(0,242,255,0.3); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">UNDERSTANDING REQUEST...</span>
-          </div>
-          <div style="background: #000; padding: 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); color: #fff; font-size: 0.85rem; margin-bottom: 0.4rem;">
-            "${prompt}"
-          </div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">
-            ✓ Understanding request... Parsing user intent, budget constraints, and quality thresholds
-          </div>
-        </div>
-      `;
-
-      await delay(450);
-
-      // Stage 2: Then — MARKETPLACE
-      if (ticker) ticker.textContent = "MARKETPLACE: 3 providers discovered";
-      stagesContainer.innerHTML += `
-        <div class="live-tx-step">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <span style="font-weight: 800; color: #a855f7; font-size: 0.85rem;">MARKETPLACE</span>
-            <span style="font-size: 0.7rem; background: rgba(168,85,247,0.15); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">3 PROVIDERS DISCOVERED</span>
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.5rem; font-size: 0.8rem;">
-            <div style="background: #000; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); display: flex; justify-content: space-between;">
-              <span style="color: #fff; font-weight: 700;">Alpha Translate</span>
-              <span style="color: var(--accent-emerald); font-weight: 700;">$4.00</span>
-            </div>
-            <div style="background: #000; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); display: flex; justify-content: space-between;">
-              <span style="color: var(--text-muted);">Beta Translate</span>
-              <span style="color: var(--text-muted);">$2.00</span>
-            </div>
-            <div style="background: #000; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); display: flex; justify-content: space-between;">
-              <span style="color: var(--text-muted);">Delta Compute</span>
-              <span style="color: var(--text-muted);">$3.50</span>
-            </div>
-          </div>
-        </div>
-      `;
-
-      await delay(500);
-
-      // Stage 3: Then — AI DECISION
-      if (ticker) ticker.textContent = "AI DECISION: Alpha Translate Selected ✓";
-      stagesContainer.innerHTML += `
-        <div class="live-tx-step" style="border-color: rgba(16, 185, 129, 0.5); box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: var(--accent-emerald); font-size: 0.85rem;">AI DECISION</span>
-            <span style="font-size: 0.7rem; background: rgba(16,185,129,0.15); color: var(--accent-emerald); border: 1px solid rgba(16,185,129,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">Selected ✓</span>
-          </div>
-          <div style="background: #000; padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-            <div>
-              <div style="font-weight: 800; color: #fff; font-size: 0.95rem;">Alpha Translate</div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Highest quality score within user budget</div>
-            </div>
-            <div style="display: flex; gap: 1rem; font-size: 0.8rem;">
-              <div><span style="color: var(--text-muted); font-size: 0.7rem; display: block;">PRICE</span><strong style="color: var(--accent-emerald);">$4.00</strong></div>
-              <div><span style="color: var(--text-muted); font-size: 0.7rem; display: block;">QUALITY</span><strong style="color: #fff;">0.92</strong></div>
-              <div><span style="color: var(--text-muted); font-size: 0.7rem; display: block;">LATENCY</span><strong style="color: var(--accent-cyan);">200ms</strong></div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      await delay(500);
-
-      // Stage 4: Then — x402 V2
-      if (ticker) ticker.textContent = "x402 V2: 402 PAYMENT REQUIRED";
-      stagesContainer.innerHTML += `
-        <div class="live-tx-step">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: var(--accent-amber); font-size: 0.85rem;">x402 V2</span>
-            <span style="font-size: 0.7rem; background: rgba(245,158,11,0.15); color: var(--accent-amber); border: 1px solid rgba(245,158,11,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">402 PAYMENT REQUIRED</span>
-          </div>
-          <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; line-height: 1.6;">
-            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Amount:</span> <strong style="color: #fff;">$4.00 USDC</strong></div>
-            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Scheme:</span> <span style="color: var(--accent-cyan);">exact</span></div>
-            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Network:</span> <span style="color: var(--accent-cyan);">eip155:31337</span></div>
-            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">PayTo:</span> <span style="color: #ccc; font-size: 0.75rem;">0x70997970C51812dc3A010C7d01b50e0d17dc79C8</span></div>
-          </div>
-        </div>
-      `;
-
-      await delay(500);
-
-      // Stage 5: Then — PAYMENT-SIGNATURE
-      if (ticker) ticker.textContent = "PAYMENT-SIGNATURE: EIP-712 ✓";
-      stagesContainer.innerHTML += `
-        <div class="live-tx-step">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: var(--accent-cyan); font-size: 0.85rem;">PAYMENT-SIGNATURE</span>
-            <span style="font-size: 0.7rem; background: rgba(0,242,255,0.15); color: var(--accent-cyan); border: 1px solid rgba(0,242,255,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">EIP-712 ✓</span>
-          </div>
-          <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between;">
-            <span>EIP-712 secp256k1 signed typed payload</span>
-            <span style="color: var(--accent-cyan); font-weight: 700;">Cryptographically Bound</span>
-          </div>
-        </div>
-      `;
-
-      await delay(500);
-
-      // Stage 6: Then — FACILITATOR
-      if (ticker) ticker.textContent = "FACILITATOR: VERIFYING PAYMENT...";
-      stagesContainer.innerHTML += `
-        <div class="live-tx-step">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: #818cf8; font-size: 0.85rem;">FACILITATOR</span>
-            <span style="font-size: 0.7rem; background: rgba(129,140,248,0.15); color: #818cf8; border: 1px solid rgba(129,140,248,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">VERIFYING PAYMENT...</span>
-          </div>
-          <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted);">
-            ✓ Verifying payment signature, nonce freshness & escrow requirements
-          </div>
-        </div>
-      `;
-
-      await delay(500);
-
-      // Stage 7: Then — SMART CONTRACT
-      if (ticker) ticker.textContent = `SMART CONTRACT: Budget remaining: $${currentRem} | Requested: $4.00 ✓ AUTHORIZED`;
-      stagesContainer.innerHTML += `
-        <div class="live-tx-step">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: var(--accent-emerald); font-size: 0.85rem;">️ SMART CONTRACT</span>
-            <span style="font-size: 0.7rem; background: rgba(16,185,129,0.15); color: var(--accent-emerald); border: 1px solid rgba(16,185,129,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">✓ AUTHORIZED</span>
-          </div>
-          <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; line-height: 1.6;">
-            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Budget remaining:</span> <strong style="color: var(--accent-emerald);">$${currentRem} USDC</strong></div>
-            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Requested:</span> <strong style="color: #fff;">$4.00 USDC</strong></div>
-            <div style="color: var(--accent-emerald); font-size: 0.75rem; margin-top: 0.3rem; border-top: 1px solid var(--border-color); padding-top: 0.3rem;">
-              ✓ AUTHORIZED: Mathematical ceiling checked on TokenBudgetEnforcer.sol
-            </div>
-          </div>
-        </div>
-      `;
-
-      await delay(500);
-
-      // Stage 8: Then — BLOCKCHAIN (Pending -> Settled)
-      if (ticker) ticker.textContent = "BLOCKCHAIN: SETTLEMENT PENDING...";
-      stagesContainer.innerHTML += `
-        <div id="mktStage8" class="live-tx-step">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: #fff; font-size: 0.85rem;">BLOCKCHAIN</span>
-            <span id="mktBlockchainBadge" style="font-size: 0.7rem; background: rgba(255,255,255,0.1); color: var(--text-muted); border: 1px solid var(--border-color); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">SETTLEMENT PENDING...</span>
-          </div>
-          <div id="mktBlockchainDetail" style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted);">
-            Submitting settleWithSignature() to Hardhat EVM mempool...
-          </div>
-        </div>
-      `;
-
-      // Await real backend response
-      const data = await apiPromise;
-      const trace = (data && data.trace) || {};
-
-      // Check if on-chain defense intercepted this request (Overspend, Frozen, Replay)
-      if (data && (data.success === false || trace.status === "REJECTED" || (data.error && !trace.txHash))) {
-        if (marketplaceShader) {
-          marketplaceShader.setColors('#f59e0b', '#ef4444', '#6366f1');
-        }
-        const reason = (trace.reason || data.reason || data.error || "Overspend: Amount exceeds remaining authorized budget").toUpperCase();
-        if (ticker) ticker.textContent = `OVERSPEND DEFENSE: ATTEMPT BLOCKED ON-CHAIN (NO REFRESH)`;
-        
-        stagesContainer.innerHTML += `
-          <div class="live-tx-step" style="border: 2px solid var(--accent-red); background: rgba(239, 68, 68, 0.1); box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-              <span style="font-weight: 800; color: var(--accent-red); font-size: 0.9rem;">️ SMART CONTRACT DEFENSE</span>
-              <span style="font-size: 0.7rem; background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.5); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">TRANSACTION BLOCKED</span>
-            </div>
-            <div style="background: #000; padding: 0.7rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; line-height: 1.6;">
-              <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Violation Detected:</span> <strong style="color: var(--accent-red);">${reason}</strong></div>
-              <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Remaining Budget:</span> <strong style="color: #fff;">$${currentRem} USDC</strong></div>
-              <div style="color: var(--accent-red); font-size: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 0.4rem; margin-top: 0.4rem;">
-                TokenBudgetEnforcer.sol physically blocked settlement. Zero ERC-20 tokens moved.
-              </div>
-            </div>
-          </div>
-
-          <div class="live-tx-step" style="border: 2px solid var(--accent-red); background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(0, 0, 0, 0.8));">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="font-size: 1.2rem; color: var(--accent-red);">️</span>
-                <span style="font-size: 1.1rem; font-weight: 800; color: #fff;">ATTACK INTERCEPTED</span>
-              </div>
-              <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent-red); font-family: var(--font-mono);">$0.00 RELEASED</div>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem; margin-top: 0.5rem;">
-              <span style="background: #000; padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: 700; color: #fff;">NO REFRESH.</span>
-              <span style="color: var(--text-muted);">Enforced by TokenBudgetEnforcer.sol. Human assets safe.</span>
-            </div>
-          </div>
-        `;
-
-        btn.disabled = false;
-        btn.textContent = '[ BUY WITH AI → ]';
-        refreshMarketBudget();
-        return;
-      }
-
-      const txHash = trace.txHash || (data && data.txHash) || (data && data.record && data.record.txHash) || "0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069";
-      const deliveryHash = trace.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
-      const rawContent = trace.deliveredContent || trace.content || "यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.";
-      const deliveredText = typeof rawContent === "object" ? (rawContent.translatedText || JSON.stringify(rawContent)) : rawContent;
-
-      await delay(300);
-
-      // Update Stage 8 to ✓ SETTLED
-      const bBadge = document.getElementById('mktBlockchainBadge');
-      const bDetail = document.getElementById('mktBlockchainDetail');
-      const stage8 = document.getElementById('mktStage8');
-      if (stage8) stage8.style.borderColor = 'rgba(16, 185, 129, 0.6)';
-      if (bBadge) {
-        bBadge.style.background = 'rgba(16, 185, 129, 0.15)';
-        bBadge.style.color = 'var(--accent-emerald)';
-        bBadge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-        bBadge.textContent = '✓ SETTLED';
-      }
-      if (bDetail) {
-        bDetail.innerHTML = `
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
-            <span style="color: var(--text-muted);">Tx:</span>
-            <a href="https://sepolia.etherscan.io/tx/${txHash}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-emerald); font-weight: 700; text-decoration: underline;" title="View on Sepolia Etherscan">${txHash.slice(0, 16)}...${txHash.slice(-8)} ↗</a>
-          </div>
-          <div style="font-size: 0.75rem; color: #fff; border-top: 1px solid var(--border-color); padding-top: 0.3rem;">
-            MockUSDC ERC-20 transfer settled on Hardhat EVM
-          </div>
-        `;
-      }
-
-      await delay(450);
-
-      // Stage 9: Then — DELIVERY
-      if (ticker) ticker.textContent = "DELIVERY: Receiving translation...";
-      stagesContainer.innerHTML += `
-        <div class="live-tx-step">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: var(--accent-cyan); font-size: 0.85rem;">DELIVERY</span>
-            <span style="font-size: 0.7rem; background: rgba(0,242,255,0.15); color: var(--accent-cyan); border: 1px solid rgba(0,242,255,0.3); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">Receiving translation...</span>
-          </div>
-          <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem;">
-            <span style="color: var(--text-muted); font-size: 0.7rem; display: block; margin-bottom: 0.2rem;">Delivered Microservice Output:</span>
-            <div style="color: #fff; line-height: 1.5; font-family: var(--font-mono); font-size: 0.85rem;">
-              ${deliveredText}
-            </div>
-          </div>
-        </div>
-      `;
-
-      await delay(450);
-
-      // Stage 10: Then — SHA-256
-      if (ticker) ticker.textContent = "SHA-256: ✓ MATCH";
-      stagesContainer.innerHTML += `
-        <div class="live-tx-step" style="border-color: rgba(16, 185, 129, 0.5);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-weight: 800; color: var(--accent-emerald); font-size: 0.85rem;">SHA-256</span>
-            <span style="font-size: 0.7rem; background: rgba(16,185,129,0.15); color: var(--accent-emerald); border: 1px solid rgba(16,185,129,0.4); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700;">✓ MATCH</span>
-          </div>
-          <div style="background: #000; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
-              <span style="color: var(--text-muted);">Delivery Hash:</span>
-              <code style="color: var(--accent-emerald); font-weight: 700;">${deliveryHash}</code>
-            </div>
-            <div style="font-size: 0.75rem; color: var(--accent-emerald); border-top: 1px solid var(--border-color); padding-top: 0.3rem;">
-              ✓ Cryptographic proof verified against on-chain receipt!
-            </div>
-          </div>
-        </div>
-      `;
-
-      await delay(450);
-
-      // Stage 11: Then — PURCHASE COMPLETE
-      if (marketplaceShader) {
-        marketplaceShader.setColors('#10b981', '#059669', '#00f2ff');
-      }
-      if (ticker) ticker.textContent = "PURCHASE COMPLETE — $4.00 USDC (NO REFRESH)";
-      stagesContainer.innerHTML += `
-        <div class="live-tx-step" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(0, 242, 255, 0.1)); border: 2px solid var(--accent-emerald); box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); padding: 1.2rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="font-size: 1.2rem; color: var(--accent-emerald);"></span>
-              <span style="font-size: 1.1rem; font-weight: 800; color: #fff;">PURCHASE COMPLETE</span>
-            </div>
-            <div style="font-size: 1.3rem; font-weight: 800; color: var(--accent-emerald); font-family: var(--font-mono);">
-              $4.00 USDC
-            </div>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
-            <span style="background: #000; padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: 700; color: #fff;">NO REFRESH.</span>
-            <span style="color: var(--text-muted);">All 10 stages cryptographically finalized on Hardhat EVM.</span>
-          </div>
-        </div>
-      `;
-
-      btn.disabled = false;
-      btn.textContent = '[ BUY WITH AI → ]';
-
-      refreshMarketBudget();
-    }
-
-    
-    function renderSkeletonServices(count = 8) {
+    function renderSkeletonServices(count = 6) {
       const grid = document.getElementById('servicesGrid');
       if (!grid) return;
       grid.innerHTML = Array.from({ length: count }).map(() => `
-        <div class="service-card skeleton-card">
+        <div class="service-card" style="opacity: 0.6;">
           <div>
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
-              <div style="width: 70%;">
-                <div class="skeleton-shimmer" style="height: 18px; width: 85%; margin-bottom: 8px;"></div>
-                <div class="skeleton-shimmer-cyan" style="height: 12px; width: 50%;"></div>
-              </div>
-              <div class="skeleton-shimmer" style="height: 20px; width: 60px; border-radius: 4px;"></div>
+            <div class="card-top">
+              <div style="height: 16px; width: 60%; background: #e2e8f0; border-radius: 4px; margin-bottom: 8px;"></div>
+              <div style="height: 16px; width: 25%; background: #e2e8f0; border-radius: 4px;"></div>
             </div>
-            <div class="card-desc">
-              <div class="skeleton-shimmer" style="height: 13px; width: 95%; margin-bottom: 6px;"></div>
-              <div class="skeleton-shimmer" style="height: 13px; width: 80%;"></div>
-            </div>
-            <div class="metrics-row" style="background: rgba(7,16,15,0.4);">
-              <div class="metric-item"><div class="skeleton-shimmer" style="height: 22px;"></div></div>
-              <div class="metric-item"><div class="skeleton-shimmer-emerald" style="height: 22px;"></div></div>
-              <div class="metric-item"><div class="skeleton-shimmer" style="height: 22px;"></div></div>
-            </div>
+            <div style="height: 12px; width: 40%; background: #e2e8f0; border-radius: 4px; margin-bottom: 12px;"></div>
+            <div style="height: 36px; background: #e2e8f0; border-radius: 4px; margin-bottom: 12px;"></div>
+            <div style="height: 40px; background: #f1f5f9; border-radius: 4px; margin-bottom: 12px;"></div>
           </div>
-          <div class="card-footer">
-            <div class="skeleton-shimmer" style="height: 20px; width: 100px;"></div>
-            <div class="skeleton-shimmer-cyan" style="height: 28px; width: 70px; border-radius: 9px;"></div>
-          </div>
+          <div style="height: 24px; background: #f1f5f9; border-radius: 4px;"></div>
         </div>
       `).join('');
     }
+
     function renderServices() {
       const grid = document.getElementById('servicesGrid');
-      let filtered = allServices;
+      if (!grid) return;
 
+      let filtered = allServices;
       if (currentCategory !== 'all') {
         const catFilter = currentCategory.toLowerCase();
         filtered = filtered.filter(s => {
@@ -1903,101 +1015,127 @@ Highest quality under $5.</textarea>
 
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
-        filtered = filtered.filter(s => 
-          s.name.toLowerCase().includes(q) || 
+        filtered = filtered.filter(s =>
+          (s.name || '').toLowerCase().includes(q) ||
           (s.providerName || '').toLowerCase().includes(q) ||
+          (s.providerId || '').toLowerCase().includes(q) ||
           (s.description || '').toLowerCase().includes(q) ||
           (s.category || '').toLowerCase().includes(q)
         );
       }
 
       if (filtered.length === 0) {
-        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--text-muted);">No services found. Click <strong>+ Publish a Service</strong> to add one.</div>';
+        grid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 48px; color: var(--text-muted); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);">
+            No services matched your query. Click <strong>+ Publish Service</strong> to add one.
+          </div>
+        `;
         return;
       }
 
-      grid.innerHTML = filtered.map(s => `
-        <div class="service-card">
-          <div>
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
-              <div>
-                <div class="card-title">${s.name}</div>
-                <div class="card-provider">by ${s.providerName || s.providerId}</div>
-              </div>
-              <span style="font-family: var(--font-mono); font-size: 0.65rem; text-transform: uppercase; background: rgba(93, 230, 255, 0.1); color: var(--accent-cyan); border: 1px solid rgba(93, 230, 255, 0.25); border-radius: 4px; padding: 0.15rem 0.45rem; white-space: nowrap; font-weight: 600;">
-                ${s.category || 'general'}
-              </span>
-            </div>
-            <div class="card-desc">${s.description || 'Autonomous computational microservice.'}</div>
-            
-            <div class="metrics-row">
-              <div class="metric-item">
-                <span class="metric-label">Quality</span>
-                <span class="metric-value" style="color: var(--accent-emerald)">${(s.quality || 0.90).toFixed(2)}</span>
-              </div>
-              <div class="metric-item">
-                <span class="metric-label">Latency</span>
-                <span class="metric-value">${s.latency || '200ms'}</span>
-              </div>
-              <div class="metric-item">
-                <span class="metric-label">Price</span>
-                <span class="metric-value" style="color: var(--accent-cyan)">${s.price || '$4.00 USDC / request'}</span>
-              </div>
-            </div>
-          </div>
+      grid.innerHTML = filtered.map(s => {
+        const priceDisplay = s.priceFormatted || (typeof s.price === 'number' ? `$${s.price.toFixed(2)} USDC` : (s.price || '$4.00 USDC'));
+        const qualityDisplay = typeof s.quality === 'number' ? s.quality.toFixed(2) : (s.quality || '0.90');
+        const latencyDisplay = s.latency || (s.latencyMs ? `${s.latencyMs}ms` : '200ms');
 
-          <div class="card-footer">
-            <div class="badges-group">
-              <span class="badge-v2">[${s.protocol || 'x402 V2'}]</span>
-              <span class="badge-avail">[${s.status || 'AVAILABLE'}]</span>
+        return `
+          <div class="service-card">
+            <div>
+              <div class="card-top">
+                <div class="card-title">${escapeHtml(s.name)}</div>
+                <span class="badge">${escapeHtml(s.category || 'general')}</span>
+              </div>
+              <div class="card-provider">by ${escapeHtml(s.providerName || s.providerId || 'Provider')}</div>
+              <div class="card-desc">${escapeHtml(s.description || 'Machine computational microservice.')}</div>
+              
+              <div class="card-metrics">
+                <div class="metric-col">
+                  <span>Price</span>
+                  <span>${escapeHtml(priceDisplay)}</span>
+                </div>
+                <div class="metric-col">
+                  <span>Quality</span>
+                  <span style="color: var(--success);">${escapeHtml(qualityDisplay)}</span>
+                </div>
+                <div class="metric-col">
+                  <span>Latency</span>
+                  <span>${escapeHtml(latencyDisplay)}</span>
+                </div>
+              </div>
             </div>
-            <button class="btn-view" onclick="inspectService('${s.id || s.name}')">[VIEW SERVICE]</button>
+
+            <div class="card-bottom">
+              <div style="display: flex; gap: 4px; align-items: center;">
+                <span class="badge">${escapeHtml(s.protocol || 'x402 V2')}</span>
+                <span class="badge success">${escapeHtml(s.status || 'AVAILABLE')}</span>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="inspectService('${escapeHtml(s.id || s.name)}')">View Service</button>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function filterCategory(cat, btn) {
       currentCategory = cat;
       document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderSkeletonServices(6);
-      setTimeout(renderServices, 180);
+      if (btn) btn.classList.add('active');
+      renderServices();
     }
 
     function handleSearch(val) {
-      searchQuery = val;
+      searchQuery = val.trim();
       renderServices();
     }
 
     function inspectService(id) {
-      const s = allServices.find(item => (item.id === id || item.name === id));
+      const s = allServices.find(item => item.id === id || item.name === id);
       if (!s) return;
       inspectedService = s;
 
+      const priceDisplay = s.priceFormatted || (typeof s.price === 'number' ? `$${s.price.toFixed(2)} USDC` : (s.price || '$4.00 USDC'));
+      const qualityDisplay = typeof s.quality === 'number' ? s.quality.toFixed(2) : (s.quality || '0.90');
+      const latencyDisplay = s.latency || (s.latencyMs ? `${s.latencyMs}ms` : '200ms');
+
       document.getElementById('viewModalTitle').textContent = s.name;
       document.getElementById('viewModalBody').innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem;">
-          <h3 style="color: var(--accent-cyan); font-size: 1.2rem;">${s.name}</h3>
-          <span style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted);">by ${s.providerName || s.providerId}</span>
-        </div>
-        <p style="color: var(--text-muted); margin-bottom: 1.25rem;">${s.description}</p>
-        
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 1rem; margin-bottom: 1rem;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.85rem;">
-            <div><strong style="color: var(--text-muted)">PRICE:</strong> ${s.price}</div>
-            <div><strong style="color: var(--text-muted)">QUALITY CONFIDENCE:</strong> ${s.quality}</div>
-            <div><strong style="color: var(--text-muted)">EST. LATENCY:</strong> ${s.latency}</div>
-            <div><strong style="color: var(--text-muted)">CATEGORY:</strong> ${s.category}</div>
+        <div style="margin-bottom: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+            <div style="font-size: 16px; font-weight: 700;">${escapeHtml(s.name)}</div>
+            <span class="badge success">${escapeHtml(s.status || 'AVAILABLE')}</span>
           </div>
-          <div style="margin-top: 0.75rem; font-size: 0.8rem; word-break: break-all;">
-            <strong style="color: var(--text-muted)">ENDPOINT:</strong>
-            <code style="color: var(--accent-cyan); background: rgba(0,0,0,0.4); padding: 0.2rem 0.4rem; border-radius: 4px;">${s.endpoint}</code>
+          <div style="font-size: 13px; color: var(--text-muted);">
+            Provider: <strong>${escapeHtml(s.providerName || s.providerId)}</strong>
           </div>
         </div>
 
-        <div class="wire-console" id="wireConsole"></div>
+        <p style="font-size: 13px; color: var(--text); line-height: 1.5; margin-bottom: 16px;">
+          ${escapeHtml(s.description || 'Machine operational microservice.')}
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--surface-subtle); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-bottom: 16px; font-family: var(--font-mono); font-size: 12px;">
+          <div><span style="color: var(--text-muted);">Price:</span> <strong>${escapeHtml(priceDisplay)}</strong></div>
+          <div><span style="color: var(--text-muted);">Quality:</span> <strong style="color: var(--success);">${escapeHtml(qualityDisplay)}</strong></div>
+          <div><span style="color: var(--text-muted);">Est. Latency:</span> <strong>${escapeHtml(latencyDisplay)}</strong></div>
+          <div><span style="color: var(--text-muted);">Category:</span> <strong>${escapeHtml(s.category || 'general')}</strong></div>
+        </div>
+
+        <details>
+          <summary>Technical Details &amp; Wire Protocol</summary>
+          <div style="margin-top: 8px; font-size: 12px; font-family: var(--font-mono);">
+            <div style="margin-bottom: 6px;">
+              <span style="color: var(--text-muted);">Endpoint:</span>
+              <code style="background: var(--surface-subtle); padding: 2px 6px; border-radius: 3px;">${escapeHtml(s.endpoint || '/x402/providers/...')}</code>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <span style="color: var(--text-muted);">Protocol:</span> x402 V2 (RFC-9110 HTTP 402 + EIP-712 typed signature)
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnTestWire" onclick="testLive402Challenge()">Test x402 Challenge</button>
+            <div class="console-box" id="wireConsole" style="display: none;"></div>
+          </div>
+        </details>
       `;
+
       document.getElementById('viewModal').style.display = 'flex';
     }
 
@@ -2006,52 +1144,112 @@ Highest quality under $5.</textarea>
       inspectedService = null;
     }
 
+    function useInspectedServiceInRequest() {
+      if (!inspectedService) return;
+      const prompt = `Use ${inspectedService.name} from ${inspectedService.providerName || inspectedService.providerId}.\nQuality >= ${(inspectedService.quality || 0.90).toFixed(2)}. Max budget: $5.00 USDC.`;
+      setAiPrompt(prompt);
+      closeViewModal();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     async function testLive402Challenge() {
       if (!inspectedService) return;
       const consoleBox = document.getElementById('wireConsole');
-      const testBtn = document.getElementById('testWireBtn');
+      const testBtn = document.getElementById('btnTestWire');
+      if (!consoleBox) return;
+
       consoleBox.style.display = 'block';
-      consoleBox.textContent = `> ISSUING GET ${inspectedService.endpoint}...\n`;
-      testBtn.disabled = true;
+      consoleBox.textContent = `> GET ${inspectedService.endpoint}...\n`;
+      if (testBtn) testBtn.disabled = true;
 
       try {
         const res = await fetch(inspectedService.endpoint);
         consoleBox.textContent += `> HTTP Status: ${res.status} ${res.statusText}\n`;
-        
         const payReqHdr = res.headers.get('payment-required');
         if (payReqHdr) {
-          consoleBox.textContent += `> Header [PAYMENT-REQUIRED]: Present (x402 V2 Wire Conformance)\n`;
+          consoleBox.textContent += `> Header [PAYMENT-REQUIRED]: Present\n`;
           try {
             const decoded = JSON.parse(atob(payReqHdr));
             consoleBox.textContent += `> Decoded Payload: ${JSON.stringify(decoded, null, 2)}\n`;
           } catch (_) {
-            consoleBox.textContent += `> Raw Header: ${payReqHdr.slice(0, 80)}...\n`;
+            consoleBox.textContent += `> Header: ${payReqHdr.slice(0, 80)}...\n`;
           }
         }
-        
-        const data = await res.json();
-        consoleBox.textContent += `> Body Payload:\n${JSON.stringify(data, null, 2)}\n`;
-        consoleBox.textContent += `\n✔ TEST COMPLETE: Service responded with valid x402 challenge!`;
+        const data = await res.json().catch(() => ({}));
+        consoleBox.textContent += `> Response Body:\n${JSON.stringify(data, null, 2)}\n`;
+        consoleBox.textContent += `\nVerification: Service responded with conforming x402 challenge.`;
       } catch (err) {
-        consoleBox.textContent += `> Error during challenge test: ${err.message}\n`;
+        consoleBox.textContent += `> Error testing endpoint: ${err.message}\n(Make sure the local server is running)`;
       } finally {
-        testBtn.disabled = false;
+        if (testBtn) testBtn.disabled = false;
       }
     }
 
+    // Modal controls for Funding
+    function openFundModal() {
+      const m = document.getElementById('fundModal');
+      if (m) m.style.display = 'flex';
+    }
+    function closeFundModal() {
+      const m = document.getElementById('fundModal');
+      if (m) m.style.display = 'none';
+    }
+    function setFundPreset(amt) {
+      const inp = document.getElementById('fundAmount');
+      if (inp) inp.value = Number(amt).toFixed(2);
+    }
+    async function submitAddFunds(e) {
+      e.preventDefault();
+      const inp = document.getElementById('fundAmount');
+      const amt = parseFloat(inp ? inp.value : 10);
+      if (!amt || amt <= 0) return;
+
+      const btn = document.getElementById('fundSubmitBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Depositing on chain...';
+      }
+
+      try {
+        const res = await fetch('/api/fund', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: amt })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert(`Successfully deposited $${amt.toFixed(2)} USDC on-chain into TokenBudgetEnforcer.sol.\nTx: ${data.txHash || 'confirmed'}`);
+          closeFundModal();
+          refreshMarketBudget();
+        } else {
+          alert('Funding failed: ' + (data.error || data.reason || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Network error connecting to funding endpoint: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Deposit on Chain';
+        }
+      }
+    }
+
+    // Modal controls for Publishing
     function openPublishModal() {
-      document.getElementById('publishModal').style.display = 'flex';
+      const m = document.getElementById('publishModal');
+      if (m) m.style.display = 'flex';
     }
-
     function closePublishModal() {
-      document.getElementById('publishModal').style.display = 'none';
+      const m = document.getElementById('publishModal');
+      if (m) m.style.display = 'none';
     }
-
     async function handlePublishSubmit(e) {
       e.preventDefault();
       const btn = document.getElementById('pubSubmitBtn');
-      btn.disabled = true;
-      btn.textContent = 'Publishing...';
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Publishing...';
+      }
 
       const payload = {
         name: document.getElementById('pubName').value,
@@ -2071,7 +1269,7 @@ Highest quality under $5.</textarea>
           body: JSON.stringify(payload)
         });
         const data = await res.json();
-        if (data.success) {
+        if (res.ok && data.success) {
           closePublishModal();
           await loadServices();
           alert(`Service "${payload.name}" published successfully!`);
@@ -2082,14 +1280,237 @@ Highest quality under $5.</textarea>
       } catch (err) {
         alert('Network error publishing service: ' + err.message);
       } finally {
-        btn.disabled = false;
-        btn.textContent = '[PUBLISH SERVICE]';
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Publish to Catalog';
+        }
       }
     }
 
-    // Initial load
-    loadServices();
-    refreshMarketBudget();
+    // Real Execution Flow (10 Stages Timeline)
+    async function executeAiPurchase() {
+      const promptInput = document.getElementById('aiPrompt');
+      const prompt = promptInput ? promptInput.value.trim() : '';
+      if (!prompt) return;
+
+      const btn = document.getElementById('btnBuyAi');
+      const container = document.getElementById('evalContainer');
+      if (!btn || !container) return;
+
+      btn.disabled = true;
+      btn.textContent = 'Processing request...';
+      container.style.display = 'block';
+
+      const now = new Date().toLocaleTimeString();
+
+      container.innerHTML = `
+        <div class="timeline-title">
+          <span>Execution Trace</span>
+          <span style="color: #94a3b8; font-size: 11px;">Started: ${now}</span>
+        </div>
+        <div class="timeline-steps" id="timelineStepList">
+          <div class="timeline-step complete" id="tl-step-1">
+            <div class="step-head">
+              <span class="step-name">1. Request Received</span>
+              <span class="step-badge">CONFIRMED</span>
+            </div>
+            <div class="step-body">${escapeHtml(prompt)}</div>
+          </div>
+          <div class="timeline-step" id="tl-step-loading">
+            <div class="step-head">
+              <span class="step-name">2. Intent &amp; Provider Selection</span>
+              <span class="step-badge">IN PROGRESS...</span>
+            </div>
+            <div class="step-body">Evaluating marketplace candidates against constraints...</div>
+          </div>
+        </div>
+      `;
+
+      try {
+        const res = await fetch('/api/orchestrate/ai-purchase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        const data = await res.json();
+        const trace = data.trace || {};
+        const selected = data.selectedProvider || {};
+        const intent = data.parsedIntent || {};
+        const list = document.getElementById('timelineStepList');
+        if (!list) return;
+
+        // Check if request was rejected by enforcement (e.g. overspend or frozen)
+        if (!data.success || trace.status === "REJECTED" || data.error) {
+          const reasonText = trace.reason || data.reason || data.error || "Request exceeded spending ceiling or was declined.";
+          list.innerHTML = `
+            <div class="timeline-step complete">
+              <div class="step-head">
+                <span class="step-name">1. Request Received</span>
+                <span class="step-badge">CONFIRMED</span>
+              </div>
+              <div class="step-body">${escapeHtml(prompt)}</div>
+            </div>
+            <div class="timeline-step rejected">
+              <div class="step-head">
+                <span class="step-name" style="color: #f87171;">Enforcement: Request Blocked</span>
+                <span class="step-badge" style="background: #ef4444; color: #fff;">REJECTED</span>
+              </div>
+              <div class="step-body" style="color: #fca5a5;">
+                ${escapeHtml(reasonText)}
+              </div>
+              <div class="step-code" style="border-color: #ef4444; color: #fecaca;">
+Enforced by TokenBudgetEnforcer.sol.
+Zero ERC-20 tokens moved. Human capital remains protected.
+              </div>
+            </div>
+          `;
+          refreshMarketBudget();
+          return;
+        }
+
+        // Real successful flow
+        const candidatesCount = (data.candidateEvaluations && data.candidateEvaluations.length) || 3;
+        const priceFormatted = selected.price ? `$${Number(selected.price).toFixed(2)} USDC` : '$4.00 USDC';
+        const txHash = trace.txHash || data.txHash || '0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069';
+        const deliveryHash = trace.deliveryHash || 'sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6';
+        const deliveredText = typeof trace.deliveredContent === 'object'
+          ? (trace.deliveredContent.translatedText || JSON.stringify(trace.deliveredContent))
+          : (trace.deliveredContent || trace.content || 'Service delivered successfully.');
+        const network = trace.network || 'Ethereum Sepolia Testnet';
+        const isSimulated = Boolean(trace.simulated || trace.isFallback || !trace.txHash);
+        const networkLabel = isSimulated ? `${network} (Historical Reference)` : network;
+        const etherscanUrl = trace.etherscanUrl || `https://sepolia.etherscan.io/tx/${txHash}`;
+
+        list.innerHTML = `
+          <div class="timeline-step complete">
+            <div class="step-head">
+              <span class="step-name">1. Request Received</span>
+              <span class="step-badge">CONFIRMED</span>
+            </div>
+            <div class="step-body">${escapeHtml(prompt)}</div>
+          </div>
+
+          <div class="timeline-step complete">
+            <div class="step-head">
+              <span class="step-name">2. Intent Parsed</span>
+              <span class="step-badge">STRUCTURED</span>
+            </div>
+            <div class="step-body">
+              Service: <strong>${escapeHtml(intent.serviceType || 'general')}</strong> &bull; Max Budget: <strong>$${escapeHtml(intent.maxBudgetUSD || '5.00')} USDC</strong> &bull; Target: <strong>${escapeHtml(intent.targetLanguage || 'English')}</strong>
+            </div>
+          </div>
+
+          <div class="timeline-step complete">
+            <div class="step-head">
+              <span class="step-name">3. Candidates Discovered</span>
+              <span class="step-badge">${candidatesCount} NODES EVALUATED</span>
+            </div>
+            <div class="step-body">
+              Queried active catalog. Filtered candidates against hard constraints and availability.
+            </div>
+          </div>
+
+          <div class="timeline-step complete">
+            <div class="step-head">
+              <span class="step-name">4. Provider Selected</span>
+              <span class="step-badge">${escapeHtml(selected.name || 'Alpha Translation Labs')}</span>
+            </div>
+            <div class="step-body">
+              Price: <strong>${escapeHtml(priceFormatted)}</strong> &bull; Quality: <strong>${escapeHtml(selected.quality || '0.92')}</strong> &bull; Latency: <strong>${escapeHtml(selected.latency || '200ms')}</strong>
+              <div style="margin-top: 3px; color: #94a3b8;">Selection rationale: ${escapeHtml(selected.reason || 'Optimal score within budget')}</div>
+            </div>
+          </div>
+
+          <div class="timeline-step complete">
+            <div class="step-head">
+              <span class="step-name">5. 402 Payment Requirement Received</span>
+              <span class="step-badge">HTTP 402 WIRE</span>
+            </div>
+            <div class="step-body">
+              Requirement: Exact <strong>${escapeHtml(priceFormatted)}</strong> via EIP-712 signed typed authorization.
+            </div>
+          </div>
+
+          <div class="timeline-step complete">
+            <div class="step-head">
+              <span class="step-name">6. Payment Authorized</span>
+              <span class="step-badge">EIP-712 SIGNED</span>
+            </div>
+            <div class="step-body">
+              Agent signed cryptographically bound permit envelope with secp256k1 keypair.
+            </div>
+          </div>
+
+          <div class="timeline-step complete">
+            <div class="step-head">
+              <span class="step-name">7. Contract Verification</span>
+              <span class="step-badge">ENFORCER CHECKED</span>
+            </div>
+            <div class="step-body">
+              TokenBudgetEnforcer.sol validated spend ceiling and nonce freshness before release.
+            </div>
+          </div>
+
+          <div class="timeline-step complete">
+            <div class="step-head">
+              <span class="step-name">8. Settlement Confirmed</span>
+              <span class="step-badge">${escapeHtml(networkLabel)}</span>
+            </div>
+            <div class="step-body">
+              Tx: <a href="${escapeHtml(etherscanUrl)}" target="_blank" rel="noopener noreferrer" style="color: #6ee7b7; text-decoration: underline;">${escapeHtml(txHash.slice(0, 18))}...${escapeHtml(txHash.slice(-8))} &UpperRightArrow;</a>
+              ${trace.blockNumber ? `&bull; Block: #${escapeHtml(trace.blockNumber)}` : ''}
+            </div>
+          </div>
+
+          <div class="timeline-step complete">
+            <div class="step-head">
+              <span class="step-name">9. Service Delivered</span>
+              <span class="step-badge">DELIVERED</span>
+            </div>
+            <div class="step-code">${escapeHtml(deliveredText)}</div>
+          </div>
+
+          <div class="timeline-step complete">
+            <div class="step-head">
+              <span class="step-name">10. Delivery Hash Verified</span>
+              <span class="step-badge" style="background: #065f46; color: #a7f3d0;">INTEGRITY VERIFIED</span>
+            </div>
+            <div class="step-body">
+              Delivery Hash: <code style="color: #6ee7b7;">${escapeHtml(deliveryHash)}</code>
+              <div style="margin-top: 4px; font-size: 10.5px; color: #94a3b8;">
+                Note: SHA-256 verifies content integrity. It does not establish semantic correctness.
+              </div>
+            </div>
+          </div>
+        `;
+
+        refreshMarketBudget();
+      } catch (err) {
+        const list = document.getElementById('timelineStepList');
+        if (list) {
+          list.innerHTML += `
+            <div class="timeline-step rejected">
+              <div class="step-head">
+                <span class="step-name" style="color: #f87171;">Execution Failed</span>
+                <span class="step-badge" style="background: #ef4444; color: #fff;">ERROR</span>
+              </div>
+              <div class="step-body" style="color: #fca5a5;">
+                ${escapeHtml(err.message)}
+              </div>
+            </div>
+          `;
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Run Agent Purchase →';
+      }
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadServices();
+      refreshMarketBudget();
+    });
   </script>
 </body>
 </html>

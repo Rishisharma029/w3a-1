@@ -1,7 +1,14 @@
-﻿const SettingsView = {
+// =========================================================================
+// W3A-1: Autonomous Machine Payments (x402 V2)
+// Settings View — Configuration & Contract Architecture
+// =========================================================================
+
+const SettingsView = {
   render() {
     const { config, isBackendReachable, isMockMode } = AppState;
-    const normBudget = BudgetAdapter.normalize(AppState.budget);
+    const normBudget = typeof BudgetAdapter !== "undefined"
+      ? BudgetAdapter.normalize(AppState.budget)
+      : { isFrozen: false };
     const isFrozen = normBudget.isFrozen;
 
     const enforcerAddr = config.enforcerAddress || "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
@@ -10,184 +17,90 @@
     const agentAddr = config.agentAddress || "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
 
     return `
-      <div class="space-y-6">
+      <div id="settings-view-root" style="display: flex; flex-direction: column; gap: 20px;">
 
-        <!-- Header -->
-        <div class="rounded-2xl bg-surface-low/90 border border-outline-variant/40 p-6 backdrop-blur-md">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <!-- Header Panel -->
+        <div class="panel" style="margin-bottom: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
             <div>
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-outline">System Infrastructure</span>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-secondary/15 text-secondary border border-secondary/30">
-                  EVM Configurations
-                </span>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span class="badge">Configuration</span>
+                <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">Cryptographic &amp; Network Parameters</span>
               </div>
-              <h1 class="font-headline text-2xl lg:text-3xl font-bold text-white tracking-tight">System Settings & Architecture</h1>
-              <p class="text-sm text-on-surface-variant mt-1 leading-relaxed">
+              <h1 style="font-size: 22px; font-weight: 700; letter-spacing: -0.02em;">System Configuration</h1>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
                 Verify contract deployments, inspect trust boundaries, and manage on-chain budget escrow.
               </p>
             </div>
-            <div class="flex items-center gap-2 font-mono text-xs">
-              <span class="status-dot ${isBackendReachable ? "status-dot-emerald" : "status-dot-amber"}"></span>
-              <span class="text-on-surface">${isBackendReachable ? "Backend Live (Port 14300)" : isMockMode ? "Demo Mode Active" : "Backend Standby"}</span>
+
+            <div style="display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px;">
+              <span class="status-dot ${isBackendReachable ? 'status-dot-emerald' : (isMockMode ? 'status-dot-amber' : 'status-dot-rose')}"></span>
+              <span>${isBackendReachable ? 'Backend Connected' : (isMockMode ? 'Demo Mode Active' : 'Backend Standby')}</span>
             </div>
           </div>
         </div>
 
-        <!-- ===================================================================
-             1. IDENTITY & AUTHORITY BOUNDARIES
-             =================================================================== -->
-        <div class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 space-y-4">
-          <div class="flex items-center gap-2.5">
-            <div class="w-2 h-5 bg-secondary rounded-sm glow-cyan"></div>
-            <h2 class="font-headline text-base font-bold text-white tracking-tight">1. Identity & Cryptographic Authority</h2>
+        <!-- 1. Cryptographic Authorities -->
+        <div class="panel" style="margin: 0;">
+          <div class="panel-header">
+            <span class="panel-title">1. Keypairs &amp; Cryptographic Authorities</span>
+            <span class="badge">EIP-712 Boundaries</span>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-            <div class="p-4 rounded-xl bg-surface-lowest border border-outline-variant/30 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-[10px] text-outline uppercase font-sans font-bold">Human Owner Wallet (Admin Authority)</span>
-                ${UIFormatter.copyButton(ownerAddr, "Owner Address")}
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; font-family: var(--font-mono); font-size: 12px;">
+            <div style="background: var(--surface-low); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);">
+              <div style="color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Human Owner Authority</div>
+              <div style="font-weight: 700; color: var(--text); word-break: break-all; cursor: pointer;" onclick="App.copyText('${ownerAddr}')" title="Click to copy">
+                ${ownerAddr} &copy;
               </div>
-              <p class="text-white font-bold break-all select-all">${ownerAddr}</p>
-              <p class="text-[10px] text-on-surface-variant font-sans border-t border-outline-variant/20 pt-1.5">
-                Full authority to deposit funds, withdraw unspent collateral, and execute emergency freeze.
+              <p style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px; font-family: var(--font-sans);">
+                Authority over deposits, collateral withdrawals, and emergency circuit-breaker freeze controls.
               </p>
             </div>
 
-            <div class="p-4 rounded-xl bg-surface-lowest border border-outline-variant/30 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-[10px] text-outline uppercase font-sans font-bold">AI Agent Wallet (Purchasing Signer)</span>
-                ${UIFormatter.copyButton(agentAddr, "Agent Address")}
+            <div style="background: var(--surface-low); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);">
+              <div style="color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Autonomous Agent Signer</div>
+              <div style="font-weight: 700; color: var(--primary); word-break: break-all; cursor: pointer;" onclick="App.copyText('${agentAddr}')" title="Click to copy">
+                ${agentAddr} &copy;
               </div>
-              <p class="text-secondary font-bold break-all select-all">${agentAddr}</p>
-              <p class="text-[10px] text-on-surface-variant font-sans border-t border-outline-variant/20 pt-1.5">
-                Authorized EIP-712 signer; strictly bounded by on-chain budget ceiling and single-use nonces.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- ===================================================================
-             2. ON-CHAIN CONTRACT INFRASTRUCTURE
-             =================================================================== -->
-        <div class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 space-y-4">
-          <div class="flex items-center gap-2.5">
-            <div class="w-2 h-5 bg-secondary rounded-sm glow-cyan"></div>
-            <h2 class="font-headline text-base font-bold text-white tracking-tight">2. Smart Contract Infrastructure</h2>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-            <div class="p-4 rounded-xl bg-surface-lowest border border-outline-variant/30 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-[10px] text-outline uppercase font-sans font-bold">TokenBudgetEnforcer.sol (Enforcer)</span>
-                ${UIFormatter.copyButton(enforcerAddr, "Enforcer Contract Address")}
-              </div>
-              <p class="text-primary font-bold break-all select-all">${enforcerAddr}</p>
-              <p class="text-[10px] text-on-surface-variant font-sans border-t border-outline-variant/20 pt-1.5">
-                Core hackathon contract: enforces hard spending limits, EIP-712 signatures, and delivery hash linkage.
-              </p>
-            </div>
-
-            <div class="p-4 rounded-xl bg-surface-lowest border border-outline-variant/30 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-[10px] text-outline uppercase font-sans font-bold">MockUSDC ERC-20 Asset Contract</span>
-                ${UIFormatter.copyButton(tokenAddr, "Token Contract Address")}
-              </div>
-              <p class="text-tertiary font-bold break-all select-all">${tokenAddr}</p>
-              <p class="text-[10px] text-on-surface-variant font-sans border-t border-outline-variant/20 pt-1.5">
-                6-decimal token contract used for simulated micro-settlement across providers.
+              <p style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px; font-family: var(--font-sans);">
+                Authorized EIP-712 signer bounded by hard on-chain allowance and per-call spending ceilings.
               </p>
             </div>
           </div>
         </div>
 
-        <!-- ===================================================================
-             3. PROTOCOL & NETWORK SPECIFICATIONS
-             =================================================================== -->
-        <div class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 space-y-4">
-          <div class="flex items-center gap-2.5">
-            <div class="w-2 h-5 bg-secondary rounded-sm glow-cyan"></div>
-            <h2 class="font-headline text-base font-bold text-white tracking-tight">3. Protocol & Network Specifications</h2>
+        <!-- 2. Smart Contract Infrastructure -->
+        <div class="panel" style="margin: 0;">
+          <div class="panel-header">
+            <span class="panel-title">2. Smart Contract Deployments</span>
+            <span class="badge badge-info">Hardhat EVM (31337)</span>
           </div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
-            <div class="p-3.5 rounded-xl bg-surface-lowest border border-outline-variant/30">
-              <p class="text-[10px] text-outline uppercase font-sans">Protocol Specification</p>
-              <p class="text-white font-bold mt-1">x402 V2 EXACT</p>
-            </div>
-            <div class="p-3.5 rounded-xl bg-surface-lowest border border-outline-variant/30">
-              <p class="text-[10px] text-outline uppercase font-sans">CAIP-2 Network</p>
-              <p class="text-secondary font-bold mt-1">${config.networkCaip2 || "eip155:31337"}</p>
-            </div>
-            <div class="p-3.5 rounded-xl bg-surface-lowest border border-outline-variant/30">
-              <p class="text-[10px] text-outline uppercase font-sans">EIP-712 Domain</p>
-              <p class="text-primary font-bold mt-1">TokenBudgetEnforcer</p>
-            </div>
-            <div class="p-3.5 rounded-xl bg-surface-lowest border border-outline-variant/30">
-              <p class="text-[10px] text-outline uppercase font-sans">Replay Protection</p>
-              <p class="text-tertiary font-bold mt-1">Single-Use Nonce</p>
-            </div>
-          </div>
-        </div>
 
-        <!-- ===================================================================
-             4. RPC & LOCAL DEPLOYMENT DIAGNOSTICS
-             =================================================================== -->
-        <div class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 space-y-4">
-          <div class="flex items-center gap-2.5">
-            <div class="w-2 h-5 bg-secondary rounded-sm glow-cyan"></div>
-            <h2 class="font-headline text-base font-bold text-white tracking-tight">4. Network Ports & Process Endpoints</h2>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
-            <div class="p-3.5 rounded-xl bg-surface-lowest border border-outline-variant/30 flex items-center justify-between">
-              <div>
-                <p class="text-[10px] text-outline uppercase font-sans">Owner Dashboard</p>
-                <p class="text-white font-bold">http://localhost:14300</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; font-family: var(--font-mono); font-size: 12px;">
+            <div style="background: var(--surface-low); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);">
+              <div style="color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">TokenBudgetEnforcer.sol</div>
+              <div style="font-weight: 700; color: var(--tertiary); word-break: break-all; cursor: pointer;" onclick="App.copyText('${enforcerAddr}')" title="Click to copy">
+                ${enforcerAddr} &copy;
               </div>
-              <span class="w-2 h-2 rounded-full bg-tertiary"></span>
-            </div>
-            <div class="p-3.5 rounded-xl bg-surface-lowest border border-outline-variant/30 flex items-center justify-between">
-              <div>
-                <p class="text-[10px] text-outline uppercase font-sans">x402 Marketplace</p>
-                <p class="text-secondary font-bold">http://localhost:14210</p>
-              </div>
-              <span class="w-2 h-2 rounded-full bg-secondary"></span>
-            </div>
-            <div class="p-3.5 rounded-xl bg-surface-lowest border border-outline-variant/30 flex items-center justify-between">
-              <div>
-                <p class="text-[10px] text-outline uppercase font-sans">Hardhat EVM Node</p>
-                <p class="text-primary font-bold">http://localhost:8545</p>
-              </div>
-              <span class="w-2 h-2 rounded-full bg-primary"></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- ===================================================================
-             5. OWNER ESCROW & EMERGENCY ACTIONS
-             =================================================================== -->
-        <div class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 space-y-4">
-          <div class="flex items-center gap-2.5">
-            <div class="w-2 h-5 bg-secondary rounded-sm glow-cyan"></div>
-            <h2 class="font-headline text-base font-bold text-white tracking-tight">5. Owner Escrow Management & Emergency Circuit Breaker</h2>
-          </div>
-          <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-surface-lowest border border-outline-variant/30">
-            <div>
-              <p class="text-xs font-bold text-white font-sans">Emergency Circuit Breaker Trigger</p>
-              <p class="text-xs text-on-surface-variant font-mono mt-0.5">
-                Current status: <strong class="${isFrozen ? "text-error" : "text-tertiary"} font-bold">${isFrozen ? "FROZEN (Agent Halted)" : "ACTIVE (Agent Permitted)"}</strong>
+              <p style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px; font-family: var(--font-sans);">
+                Core settlement enforcer: enforces spending ceilings, EIP-712 permit signatures, and delivery digest linkage.
               </p>
             </div>
-            <button
-              onclick="App.openFreezeModal()"
-              class="px-4 py-2 text-xs font-mono font-bold rounded-xl ${
-                isFrozen ? "bg-tertiary/20 hover:bg-tertiary/30 text-tertiary border border-tertiary/50 glow-emerald" : "bg-error-container/80 hover:bg-error-container text-white border border-error/50 glow-crimson"
-              } transition shadow-md"
-            >
-              ${isFrozen ? "UNFREEZE AGENT" : "EMERGENCY FREEZE"}
-            </button>
+
+            <div style="background: var(--surface-low); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);">
+              <div style="color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">MockUSDC Asset Contract</div>
+              <div style="font-weight: 700; color: var(--text); word-break: break-all; cursor: pointer;" onclick="App.copyText('${tokenAddr}')" title="Click to copy">
+                ${tokenAddr} &copy;
+              </div>
+              <p style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px; font-family: var(--font-sans);">
+                6-decimal ERC-20 asset contract used for micro-settlement across autonomous machine services.
+              </p>
+            </div>
           </div>
         </div>
 
       </div>
     `;
-  },
+  }
 };

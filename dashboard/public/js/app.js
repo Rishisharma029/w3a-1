@@ -15,18 +15,8 @@ const App = {
   },
 
   pollTimer: null,
-  bgShader: null,
- 
-  async init() {
-    // 0. Initialize Aceternity UI Shooting Stars & Stars Background (Cosmic obsidian theme)
-    if (window.ShootingStarsBackground) {
-      try {
-        window.ShootingStarsBackground.init();
-      } catch (err) {
-        console.warn('[App] ShootingStarsBackground init error:', err);
-      }
-    }
 
+  async init() {
     // 1. Initialize all view subscribers
     Object.values(this.views).forEach((v) => {
       if (v && typeof v.init === "function") {
@@ -47,12 +37,12 @@ const App = {
     this.render();
     this.updateSidebarState();
 
-    // 4. Start background polling (every 2.5s)
+    // 5. Start background polling (every 2.5s)
     this.pollTimer = setInterval(async () => {
       await ApiService.syncAll();
     }, 2500);
 
-    // 5. Setup keyboard shortcuts (ESC closes modals/drawers)
+    // 6. Setup keyboard shortcuts (ESC closes modals/drawers)
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") { App.closeFlowchartModal(); }
       if (e.key === "Escape") {
@@ -61,7 +51,7 @@ const App = {
       }
     });
 
-    // 6. Support URL query params (?view=verify or ?tx=...) within main app
+    // 7. Support URL query params (?view=verify or ?tx=...) within main app
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const viewParam = urlParams.get("view");
@@ -82,31 +72,6 @@ const App = {
       this.updateSidebarState();
       this.updateTopBarState();
       window.scrollTo({ top: 0, behavior: "smooth" });
-
-      // Synchronize floating dock instances if active
-      if (window._globalFloatingDock && typeof window._globalFloatingDock.setActiveView === "function") {
-        window._globalFloatingDock.setActiveView(viewName);
-      }
-      if (window._headerFloatingDock && typeof window._headerFloatingDock.setActiveView === "function") {
-        window._headerFloatingDock.setActiveView(viewName);
-      }
-
-      // Dynamically morph 3D shader gradient mood based on view context
-      if (this.bgShader) {
-        if (viewName === "agent") {
-          // AI Purchase (Pillar 2): Electric Cyan & Royal Indigo
-          this.bgShader.setColors("#00f2ff", "#38bdf8", "#818cf8");
-        } else if (viewName === "providers") {
-          // Marketplace (Pillar 1): Emerald Catalog & Cyan
-          this.bgShader.setColors("#10b981", "#06b6d4", "#6366f1");
-        } else if (viewName === "security") {
-          // Security Defense: Guard Amber & Crimson
-          this.bgShader.setColors("#f59e0b", "#ef4444", "#6366f1");
-        } else {
-          // Default Owner Center: Cyber Cyan, Safe Emerald, Indigo
-          this.bgShader.setColors("#00f2ff", "#10b981", "#6366f1");
-        }
-      }
     }
   },
 

@@ -143,8 +143,7 @@ sequenceDiagram
 | **Payment Protocol** | **Coinbase x402 V2** (`@x402/core@2.25.0`, `@x402/evm@0.6.2`) | Standardized HTTP wire format: `PAYMENT-REQUIRED`, `PAYMENT-SIGNATURE`, `PAYMENT-RESPONSE` headers. |
 | **Relational Database** | **MySQL 8.0 (InnoDB Engine)** | Normalized relational schema: `services`, `providers`, `categories`, `orders`, `transactions`, `reviews`, `users`. |
 | **Backend Microservice** | **PHP 8.3 (PDO MySQL)** | High-speed REST API, Pareto Frontier SQL decision engine, parameter-bound query security. |
-| **Application Gateway** | **Node.js v20+**, Express, Axios, Ethers.js v6 | Orchestration bridge, SSE telemetry streaming, x402 proxy facilitator. |
-| **Frontend HUD** | **HTML5, CSS3, Vanilla ES6+ JavaScript** | Cyber HUD design, reactive state management, Zero-page-reload SSE stream, cryptographic verifier. |
+| **Frontend Console** | **HTML5, CSS3, Vanilla ES6+ JavaScript** | Restrained developer operations console, reactive state management, Zero-page-reload SSE stream, cryptographic verifier. |
 
 ---
 
@@ -241,7 +240,7 @@ All 8 commercial API adapters inherit from a unified `BaseAdapter` with defense-
 3. **Resilient Dual-Mode Execution**: In production, live authenticated API requests are dispatched with a strict 5000ms timeout and 1MB size limit. In offline/hackathon mode or if an API key is unconfigured, the adapter cleanly engages **high-fidelity local simulation** with zero crash, returning complete structured mock data.
 4. **Canonical Cryptographic Proof**: Regardless of live vs. simulated execution, every response is hashed into a canonical `sha256:` delivery hash, verified independently by the autonomous agent, and anchored immutably to the Ethereum Sepolia smart contract.
 5. **Human-in-the-Loop Payment Authorization**: When the agent requests a service, the user receives an interactive confirmation modal showing the selected provider, service name, exact USDC price, and security ceiling, allowing immediate `ACCEPT` (executes payment and on-chain settlement) or `DECLINE` (cleanly aborts with $0 spent).
-6. **Thermal Paper Dispenser Receipt**: Every settled transaction generates an accurate, realistic thermal receipt displayed directly in the UI with printable layout, JSON download, and direct Ethereum Sepolia block explorer verification.
+6. **Cryptographic Proof & Settlement Record**: Every settled transaction generates an accurate, verifiable record displayed directly in the UI with printable layout, JSON download, and direct Ethereum Sepolia block explorer verification.
 
 ### Live Dynamic Pareto Frontier SQL Selection Engine
 When the autonomous agent evaluates which provider to select, it executes a live Pareto optimization query against MySQL:

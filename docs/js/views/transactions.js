@@ -1,7 +1,12 @@
+// =========================================================================
+// W3A-1: Autonomous Machine Payments (x402 V2)
+// Transactions View — Clean Operations Spending Ledger
+// =========================================================================
+
 const TransactionsView = {
   activeFilter: "All Purchases",
   searchQuery: "",
-  viewMode: "cards", // "cards" | "table"
+  viewMode: "table", // "table" | "cards"
   isLoading: false,
   initialized: false,
 
@@ -9,39 +14,29 @@ const TransactionsView = {
     if (this.initialized) return;
     this.initialized = true;
     if (typeof AppState !== "undefined" && typeof AppState.subscribe === "function") {
-      AppState.subscribe((event, data) => this.onStateChange(event, data));
+      AppState.subscribe((event) => this.onStateChange(event));
     }
   },
 
-  onStateChange(event, data) {
+  onStateChange(event) {
     if (
       event === "transactions_updated" ||
       event === "settlement_confirmed" ||
       event === "alerts_updated" ||
       event === "stream_event_processed"
     ) {
-      if (typeof document !== "undefined" && typeof AppState !== "undefined" && (AppState.currentView === "transactions" || AppState.currentView === "purchases")) {
-        const root = document.getElementById("mainContent") || document.getElementById("main-content");
-        if (root && root.querySelector("#transactions-view-root")) {
-          root.innerHTML = this.render();
-        }
-      }
+      this.reRender();
     }
   },
 
   setFilter(filterId) {
     if (this.activeFilter === filterId) return;
     this.activeFilter = filterId;
-    this.isLoading = true;
     this.reRender();
-    setTimeout(() => {
-      this.isLoading = false;
-      this.reRender();
-    }, 200);
   },
 
   setSearch(query) {
-    this.searchQuery = query;
+    this.searchQuery = (query || "").trim();
     this.reRender();
   },
 
@@ -51,41 +46,36 @@ const TransactionsView = {
   },
 
   reRender() {
-    const root = document.getElementById("mainContent") || document.getElementById("main-content");
-    if (root && root.querySelector("#transactions-view-root")) {
-      root.innerHTML = this.render();
+    if (typeof document !== "undefined" && typeof AppState !== "undefined" && (AppState.currentView === "transactions" || AppState.currentView === "purchases")) {
+      const root = document.getElementById("mainContent");
+      if (root) {
+        root.innerHTML = this.render();
+      }
     }
   },
 
-    renderSkeletonCards(count = 5) {
-    return `
-      <div class="space-y-3">
-        ${Array.from({ length: count }).map(() => `
-          <div class="p-4 sm:p-5 rounded-2xl bg-surface-low border border-outline-variant/30 skeleton-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
-            <div class="flex items-center gap-3.5 flex-1">
-              <div class="w-10 h-10 rounded-xl skeleton-shimmer shrink-0"></div>
-              <div class="space-y-2 flex-1">
-                <div class="h-4 w-48 skeleton-shimmer rounded"></div>
-                <div class="h-3 w-64 skeleton-shimmer-cyan rounded"></div>
-              </div>
-            </div>
-            <div class="flex items-center gap-4">
-              <div class="h-7 w-24 rounded-lg skeleton-shimmer-emerald"></div>
-              <div class="h-8 w-24 rounded-xl skeleton-shimmer"></div>
-            </div>
-          </div>
-        `).join("")}
-      </div>
-    `;
-  },
   exportCSV() {
+    const rawTxs = AppState.transactions || [];
+    const rawAlerts = AppState.alerts || [];
     const allRecords = typeof TransactionAdapter !== "undefined" && typeof TransactionAdapter.getUnifiedHistory === "function"
-      ? TransactionAdapter.getUnifiedHistory(AppState.transactions, AppState.alerts, AppState.providerSelectionState)
-      : (AppState.transactions || []);
-    const rows = [["Request ID", "Provider", "Service", "Amount USD", "Status", "Tx Hash", "Delivery Hash", "Timestamp", "Reason"]];
+      ? TransactionAdapter.getUnifiedHistory(rawTxs, rawAlerts, AppState.providerSelectionState)
+      : rawTxs;
+
+    const rows = [["Request ID", "Service", "Provider", "Amount USD", "Status", "Network", "Tx Hash", "Delivery Hash", "Timestamp"]];
     allRecords.forEach((t) => {
-      rows.push([t.reqId, t.providerName || t.provider, t.serviceName || t.serviceId, t.amountUSD, t.status, t.txHash, t.deliveryHash, t.timestamp, t.intent || ""]);
+      rows.push([
+        t.reqId || "",
+        t.serviceName || t.serviceId || "",
+        t.providerName || t.provider || "",
+        t.amountUSD || "0.00",
+        t.status || "SETTLED",
+        t.network || "Local EVM",
+        t.txHash || "",
+        t.deliveryHash || "",
+        t.timestamp || ""
+      ]);
     });
+
     const csvContent = "data:text/csv;charset=utf-8," + rows.map((e) => e.map((val) => `"${val || ""}"`).join(",")).join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -94,6 +84,9 @@ const TransactionsView = {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    if (typeof App !== "undefined" && App.toast) {
+      App.toast("Exported CSV successfully.", "success");
+    }
   },
 
   render() {
@@ -112,7 +105,7 @@ const TransactionsView = {
     const filtered = allRecords.filter((record) => {
       if (this.activeFilter === "Settled Purchases") {
         if (!record.isSettled && record.status !== "SETTLED") return false;
-      } else if (this.activeFilter === "Capped & Rejected" || this.activeFilter === "Blocked Attacks") {
+      } else if (this.activeFilter === "Capped & Rejected") {
         if (!record.isBlocked && record.status !== "CAPPED" && record.status !== "BLOCKED" && record.status !== "REJECTED") return false;
       } else if (this.activeFilter === "Pending") {
         if (record.displayStatus !== "PENDING") return false;
@@ -130,38 +123,33 @@ const TransactionsView = {
     });
 
     return `
-      <div id="transactions-view-root" class="space-y-6">
+      <div id="transactions-view-root" style="display: flex; flex-direction: column; gap: 20px;">
 
-        <!-- Header -->
-        <div class="rounded-2xl bg-surface-low/90 border border-outline-variant/40 p-6 md:p-8 backdrop-blur-md">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <!-- Header Panel -->
+        <div class="panel" style="margin-bottom: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
             <div>
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-outline">Autonomous Spending Ledger</span>
-                <span class="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-secondary/15 text-secondary border border-secondary/30">
-                  x402 V2 Verified
-                </span>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span class="badge">x402 V2 Audit</span>
+                <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">Cryptographic Spending Ledger</span>
               </div>
-              <h1 class="font-headline text-2xl lg:text-3xl font-bold text-white tracking-tight">PURCHASE HISTORY</h1>
-              <p class="text-sm text-on-surface-variant mt-1 leading-relaxed">
-                Click any purchase to open the detailed cryptographic proof drawer.
+              <h1 style="font-size: 22px; font-weight: 700; letter-spacing: -0.02em;">Purchase History</h1>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
+                Every autonomous machine payment verified via TokenBudgetEnforcer and cryptographic SHA-256 delivery receipts.
               </p>
             </div>
 
-            <!-- Toolbar Actions -->
-            <div class="flex items-center gap-2">
+            <div style="display: flex; gap: 8px; align-items: center;">
               <button
-                onclick="TransactionsView.setViewMode('${this.viewMode === 'cards' ? 'table' : 'cards'}')"
-                class="px-3.5 py-2 rounded-xl bg-surface-high hover:bg-surface-highest border border-outline-variant/40 text-on-surface font-mono text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                onclick="TransactionsView.setViewMode('${this.viewMode === 'table' ? 'cards' : 'table'}')"
+                class="btn btn-secondary btn-sm"
               >
-                <span class="material-symbols-outlined text-xs">${this.viewMode === 'cards' ? 'table_rows' : 'grid_view'}</span>
-                <span>${this.viewMode === 'cards' ? 'Switch to Table' : 'Switch to Cards'}</span>
+                <span>${this.viewMode === 'table' ? 'Switch to Cards' : 'Switch to Table'}</span>
               </button>
               <button
                 onclick="TransactionsView.exportCSV()"
-                class="px-3.5 py-2 rounded-xl bg-surface-high hover:bg-surface-highest border border-outline-variant/40 text-on-surface font-mono text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                class="btn btn-secondary btn-sm"
               >
-                <span class="material-symbols-outlined text-xs">file_download</span>
                 <span>Export CSV</span>
               </button>
             </div>
@@ -169,198 +157,124 @@ const TransactionsView = {
         </div>
 
         <!-- Filter & Search Toolbar -->
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl bg-surface-low border border-outline-variant/40 p-3">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
           <!-- Filter Tabs -->
-          <div class="flex items-center bg-surface-lowest p-1 rounded-xl border border-outline-variant/30 text-xs font-mono overflow-x-auto w-full sm:w-auto">
+          <div style="display: flex; gap: 6px; overflow-x: auto;">
             ${[
-              { id: "All Purchases", label: "All Purchases", count: allRecords.length },
-              { id: "Settled Purchases", label: "Settled Purchases", count: settledRecords.length },
-              { id: "Capped & Rejected", label: "Capped & Rejected", count: blockedRecords.length, isAlert: true },
+              { id: "All Purchases", label: "All", count: allRecords.length },
+              { id: "Settled Purchases", label: "Settled", count: settledRecords.length },
+              { id: "Capped & Rejected", label: "Blocked / Invariants", count: blockedRecords.length },
               { id: "Pending", label: "Pending", count: pendingRecords.length },
-            ]
-              .map(
-                (tab) => `
+            ].map(tab => `
               <button
+                type="button"
                 onclick="TransactionsView.setFilter('${tab.id}')"
-                class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                  this.activeFilter === tab.id
-                    ? tab.isAlert
-                      ? "bg-error/20 text-error font-bold border border-error/40"
-                      : "bg-secondary/20 text-secondary font-bold border border-secondary/30"
-                    : "text-outline hover:text-white"
-                }"
+                class="btn btn-sm ${this.activeFilter === tab.id ? 'btn-primary' : 'btn-secondary'}"
               >
                 <span>${tab.label}</span>
-                <span class="px-1.5 py-0.5 rounded-full text-[10px] ${
-                  this.activeFilter === tab.id
-                    ? tab.isAlert
-                      ? "bg-error/30 text-white"
-                      : "bg-secondary/30 text-white"
-                    : "bg-surface-high text-outline"
-                }">${tab.count}</span>
+                <span class="badge" style="margin-left: 4px;">${tab.count}</span>
               </button>
-            `
-              )
-              .join("")}
+            `).join("")}
           </div>
 
           <!-- Search Input -->
-          <div class="relative w-full sm:w-80">
-            <input
-              type="text"
-              placeholder="Search purchases by service, provider, hash..."
-              value="${this.searchQuery}"
-              oninput="TransactionsView.setSearch(this.value)"
-              class="w-full px-3 py-1.5 pl-8 text-xs font-mono bg-surface-lowest border border-outline-variant/40 rounded-xl text-white placeholder-outline focus:outline-none focus:border-secondary transition"
-            />
-            <span class="material-symbols-outlined absolute left-2.5 top-2 text-xs text-outline">search</span>
-          </div>
+          <input
+            type="text"
+            placeholder="Search by service, provider, or hash..."
+            value="${this.searchQuery}"
+            oninput="TransactionsView.setSearch(this.value)"
+            class="form-input font-mono"
+            style="width: 280px; max-width: 100%;"
+          />
         </div>
 
-        <!-- 6. Item 6: PURCHASE HISTORY CARDS (User-Friendly Stream) -->
-        ${
-          this.isLoading ? this.renderSkeletonCards(5) : this.viewMode === 'cards' ? `
-          <div class="space-y-3">
-            ${
-              filtered.length === 0
-                ? `
-              <div class="p-12 text-center rounded-2xl bg-surface-low border border-outline-variant/30 text-outline font-mono text-xs">
-                No purchases match the selected filter.
-              </div>
-            `
-                : filtered
-                    .map((t) => {
-                      const isSuccess = t.isSettled || t.status === "SETTLED";
-                      const isCapped = t.status === "CAPPED" || t.isCapped;
-                      const isRejected = t.status === "REJECTED" || t.isRejected;
-
-                      let statusClass = "bg-tertiary/15 text-tertiary border-tertiary/40";
-                      let statusLabel = "SETTLED";
-                      if (isCapped) {
-                        statusClass = "bg-rose-500/15 text-rose-300 border-rose-500/40";
-                        statusLabel = "CAPPED";
-                      } else if (isRejected || !isSuccess) {
-                        statusClass = "bg-amber-500/15 text-amber-300 border-amber-500/40";
-                        statusLabel = "REJECTED";
-                      }
-
-                      const isSep = (t.chainId === 11155111) || (t.network && String(t.network).includes('Sepolia'));
-                      const netBadge = isSep
-                        ? `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/15 text-cyan-300 border border-blue-500/30">ETHEREUM SEPOLIA</span>`
-                        : `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">LOCAL EVM</span>`;
-
-                      const subNotice = isCapped
-                        ? `<span class="text-[10px] text-rose-400 font-mono flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>Blocked: Exceeds spending cap (ZERO tokens moved)</span>`
-                        : isRejected
-                        ? `<span class="text-[10px] text-amber-400 font-mono flex items-center gap-1"><span>⚠</span>${t.intent || "Intercepted by security protocol"}</span>`
-                        : `<span class="text-[10px] text-on-surface-variant font-mono">Verified SHA-256 Content Delivery</span>`;
-
-                      return `
-                        <div
-                          onclick="App.openTransactionDetail('${t.reqId}')"
-                          class="p-4 sm:p-5 rounded-2xl bg-surface-low border border-outline-variant/30 hover:border-secondary/60 hover:bg-surface-container transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm group"
-                        >
-                          <div class="flex items-start sm:items-center gap-4">
-                            <span class="px-2.5 py-1 rounded-md text-xs font-mono font-extrabold border shrink-0 mt-0.5 sm:mt-0 ${statusClass}">
-                              ${statusLabel}
-                            </span>
-                            <div>
-                              <div class="flex items-center gap-2">
-                                <h3 class="font-headline text-base font-bold text-white group-hover:text-secondary transition-colors">
-                                  ${t.serviceName || t.serviceId || "Autonomous Service"}
-                                </h3>
-                                ${netBadge}
-                              </div>
-                              <div class="flex flex-wrap items-center gap-2 mt-0.5">
-                                <span class="text-xs font-mono text-outline">
-                                  ${t.providerName || t.provider || "Decentralized Provider"}
-                                </span>
-                                <span class="text-outline text-xs">&bull;</span>
-                                ${subNotice}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div class="flex items-center justify-between sm:justify-end gap-6 font-mono text-xs shrink-0">
-                            <div class="text-left sm:text-right">
-                              <span class="text-white font-bold text-sm block">${t.amountUSD} USDC</span>
-                              <span class="text-[11px] text-outline">${UIFormatter.formatRelativeTime(t.timestamp)}</span>
-                            </div>
-                            <span class="material-symbols-outlined text-sm text-outline group-hover:text-white group-hover:translate-x-1 transition-all">
-                              chevron_right
-                            </span>
-                          </div>
-                        </div>
-                      `;
-                    })
-                    .join("")
-            }
-          </div>
-        `
-            : `
-          <!-- Table View Fallback for Technical Auditing -->
-          <div class="rounded-2xl bg-surface-low border border-outline-variant/40 p-6 space-y-4">
-            <div class="overflow-x-auto">
-              <table class="w-full text-left font-mono text-xs">
-                <thead class="border-b border-outline-variant/30 uppercase text-[10px] text-outline">
+        <!-- Table View (Default) -->
+        ${this.viewMode === 'table' ? `
+          <div class="panel" style="margin: 0; padding: 0; overflow: hidden;">
+            <div style="overflow-x: auto;">
+              <table class="data-table">
+                <thead>
                   <tr>
-                    <th class="py-3 px-3">Status</th>
-                    <th class="py-3 px-3">Network</th>
-                    <th class="py-3 px-3">Service</th>
-                    <th class="py-3 px-3">Provider</th>
-                    <th class="py-3 px-3">Amount</th>
-                    <th class="py-3 px-3">Tx Hash</th>
-                    <th class="py-3 px-3">Time</th>
-                    <th class="py-3 px-3 text-right">Action</th>
+                    <th>Timestamp</th>
+                    <th>Request ID</th>
+                    <th>Service</th>
+                    <th>Provider</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>On-Chain Tx</th>
+                    <th style="text-align: right;">Action</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-outline-variant/20">
-                  ${filtered
-                    .map((t) => {
-                      const isSuccess = t.isSettled || t.status === "SETTLED";
-                      const isCapped = t.status === "CAPPED" || t.isCapped;
-                      const isRejected = t.status === "REJECTED" || t.isRejected;
-                      const isSep = (t.chainId === 11155111) || (t.network && String(t.network).includes('Sepolia'));
+                <tbody>
+                  ${filtered.length > 0
+                    ? filtered.map((t) => {
+                        const timeStr = t.timestamp ? new Date(t.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-';
+                        const reqShort = t.reqId && t.reqId.length > 12 ? `${t.reqId.slice(0, 8)}...` : (t.reqId || '-');
+                        const txShort = t.txHash && t.txHash.length > 12 ? `${t.txHash.slice(0, 8)}...` : (t.txHash || '-');
+                        const isSuccess = t.isSettled || t.status === 'SETTLED';
+                        const isAlert = t.isBlocked || t.status === 'CAPPED' || t.status === 'BLOCKED' || t.status === 'REJECTED';
 
-                      let badgeClass = "bg-tertiary/15 text-tertiary border border-tertiary/30";
-                      let badgeLabel = "SETTLED";
-                      if (isCapped) {
-                        badgeClass = "bg-rose-500/15 text-rose-300 border border-rose-500/40";
-                        badgeLabel = "CAPPED";
-                      } else if (isRejected || !isSuccess) {
-                        badgeClass = "bg-amber-500/15 text-amber-300 border border-amber-500/40";
-                        badgeLabel = "REJECTED";
-                      }
-
-                      return `
-                        <tr class="hover:bg-surface-high/40 transition-colors cursor-pointer" onclick="App.openTransactionDetail('${t.reqId}')">
-                          <td class="py-3 px-3">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">
-                              ${badgeLabel}
-                            </span>
-                          </td>
-                          <td class="py-3 px-3">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono ${isSep ? 'bg-blue-500/15 text-cyan-300 border border-blue-500/30' : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'}">
-                              ${isSep ? 'Sepolia' : 'Local EVM'}
-                            </span>
-                          </td>
-                          <td class="py-3 px-3 text-white font-bold font-sans">${t.serviceName || t.serviceId}</td>
-                          <td class="py-3 px-3 text-outline">${t.providerName}</td>
-                          <td class="py-3 px-3 text-white font-bold">${t.amountUSD} USDC</td>
-                          <td class="py-3 px-3 text-secondary font-mono">${UIFormatter.formatHash(t.txHash, 4)}</td>
-                          <td class="py-3 px-3 text-outline">${UIFormatter.formatRelativeTime(t.timestamp)}</td>
-                          <td class="py-3 px-3 text-right text-secondary hover:text-white font-bold">Inspect &rarr;</td>
-                        </tr>
-                      `;
-                    })
-                    .join("")}
+                        return `
+                          <tr onclick="App.openTransactionDetail('${t.reqId || t.txHash}')">
+                            <td>${timeStr}</td>
+                            <td><code>${reqShort}</code></td>
+                            <td><strong>${t.serviceName || t.serviceId || 'Service'}</strong></td>
+                            <td>${t.providerName || t.provider || '-'}</td>
+                            <td>$${Number(t.amountUSD || 0).toFixed(2)} USDC</td>
+                            <td>
+                              <span class="badge ${isSuccess ? 'badge-success' : (isAlert ? 'badge-danger' : 'badge-warning')}">
+                                ${t.status || 'SETTLED'}
+                              </span>
+                            </td>
+                            <td><code>${txShort}</code></td>
+                            <td style="text-align: right;">
+                              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); App.openTransactionDetail('${t.reqId || t.txHash}')">
+                                Inspect
+                              </button>
+                            </td>
+                          </tr>
+                        `;
+                      }).join('')
+                    : `<tr><td colspan="8" style="text-align: center; padding: 36px; color: var(--text-muted);">No transactions match your search filter.</td></tr>`
+                  }
                 </tbody>
               </table>
             </div>
           </div>
-        `
-        }
+        ` : `
+          <!-- Cards View -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px;">
+            ${filtered.length > 0
+              ? filtered.map((t) => {
+                  const isSuccess = t.isSettled || t.status === "SETTLED";
+                  const isAlert = t.isBlocked || t.status === "CAPPED" || t.status === "BLOCKED" || t.status === "REJECTED";
+                  const timeStr = t.timestamp ? new Date(t.timestamp).toLocaleTimeString() : '-';
+
+                  return `
+                    <div class="panel" style="margin: 0; padding: 16px; cursor: pointer;" onclick="App.openTransactionDetail('${t.reqId || t.txHash}')">
+                      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div>
+                          <div style="font-weight: 700; font-size: 14px;">${t.serviceName || t.serviceId || 'Service'}</div>
+                          <div style="font-size: 12px; color: var(--text-muted);">${t.providerName || t.provider || '-'}</div>
+                        </div>
+                        <span class="badge ${isSuccess ? 'badge-success' : (isAlert ? 'badge-danger' : 'badge-warning')}">
+                          ${t.status || 'SETTLED'}
+                        </span>
+                      </div>
+
+                      <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border);">
+                        <span>Amount: <strong>$${Number(t.amountUSD || 0).toFixed(2)} USDC</strong></span>
+                        <span style="color: var(--text-muted);">${timeStr}</span>
+                      </div>
+                    </div>
+                  `;
+                }).join('')
+              : `<div style="grid-column: 1/-1; text-align: center; padding: 36px; color: var(--text-muted);" class="panel">No transactions match your filter.</div>`
+            }
+          </div>
+        `}
+
       </div>
     `;
-  },
+  }
 };

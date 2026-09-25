@@ -103,7 +103,7 @@ w3a-1/
 ├── dashboard/
 │   ├── server.js                    Owner Control Center REST API
 │   └── public/
-│       └── index.html               Tailwind CSS real-time dashboard UI
+│       └── index.html               Operations console real-time dashboard UI
 │
 ├── provider/
 │   ├── server.js                    Phase 1 — single provider HTTP server

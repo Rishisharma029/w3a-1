@@ -273,36 +273,6 @@ async function checkSepolia() {
   }
 }
 
-async function checkN8n() {
-  console.log('\n========================================');
-  console.log('9. N8N CLOUD & MCP');
-  console.log('========================================');
-  console.log('Webhook URL:', env.N8N_WEBHOOK_URL);
-  console.log('MCP URL:', env.N8N_MCP_URL);
-  console.log('Access Key:', mask(env.N8N_ACCESS_KEY));
-
-  try {
-    const res = await axios.get('https://rishisharma029.app.n8n.cloud/api/v1/workflows', {
-      headers: { 'X-N8N-API-KEY': env.N8N_ACCESS_KEY },
-      timeout: TIMEOUT
-    });
-    console.log('STATUS (n8n Cloud REST API): WORKING PERFECTLY');
-    console.log('Workflows count:', res.data?.data?.length);
-    if (res.data?.data) {
-      console.log('Workflows:', res.data.data.map(w => ({ id: w.id, name: w.name, active: w.active })));
-    }
-  } catch (err) {
-    console.log('STATUS (n8n Cloud REST API):', err.response?.status, err.response?.data?.message || err.message);
-  }
-
-  try {
-    const res = await axios.post(env.N8N_WEBHOOK_URL, { test: true }, { timeout: TIMEOUT });
-    console.log('Webhook POST status:', res.status, res.data);
-  } catch (err) {
-    console.log('Webhook POST status:', err.response?.status, err.response?.data || err.message);
-  }
-}
-
 async function runAll() {
   await checkIpStack();
   await checkCurrencyLayer();
@@ -312,7 +282,6 @@ async function runAll() {
   await checkBlitapp();
   await checkApiTemplate();
   await checkSepolia();
-  await checkN8n();
   console.log('\n========================================');
   console.log('DIAGNOSTICS COMPLETED');
   console.log('========================================\n');
