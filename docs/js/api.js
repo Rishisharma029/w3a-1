@@ -155,30 +155,6 @@ const ApiService = {
     return this.fundBudget(amountUSD);
   },
 
-  async getN8nStatus() {
-    try {
-      const res = await fetch(`${this.baseUrl}/api/orchestrate/n8n/status`);
-      if (res.ok) return await res.json();
-    } catch (_) {}
-    return {
-      connected: true,
-      workflowId: "cveIFBZn9aM1CNLF",
-      workflowName: "W3A-1 — Autonomous x402 Purchase Orchestrator",
-      webhookUrl: "https://rishisharma029.app.n8n.cloud/webhook/w3a1/purchase",
-      executionCount: 0,
-    };
-  },
-
-  async orchestrateN8n(options = {}) {
-    const res = await fetch(`${this.baseUrl}/api/orchestrate/n8n`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(options),
-    });
-    const data = await res.json();
-    await this.syncAll();
-    return data;
-  },
 
   async getServices() {
     try {

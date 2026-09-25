@@ -20,49 +20,13 @@ function createDashboardServer({
   // Serve static files
   app.use(express.static(path.join(__dirname, "public")));
 
-  // Mount n8n Orchestrator & x402 Internal Endpoints
-  const { createN8nRouter } = require("../orchestrator/n8n-connector");
+  // Core dashboard services and event stream
   const { globalEventBus } = require("../shared/event-bus");
   const { AuditEvent } = require("../shared/events");
 
-  // High-Performance In-Memory Query Cache with Invalidation & TTL for Expensive Queries
-  const serverQueryCache = new Map();
-  function getCachedQuery(key) {
-    const item = serverQueryCache.get(key);
-    if (!item) return null;
-    if (Date.now() > item.expiresAt) {
-      serverQueryCache.delete(key);
-      return null;
-    }
-    return item.data;
-  }
-  function setCachedQuery(key, data, ttlMs = 5000) {
-    serverQueryCache.set(key, { data, expiresAt: Date.now() + ttlMs, cachedAt: Date.now() });
-  }
-  function invalidateQueryCache(prefix) {
-    if (!prefix) { serverQueryCache.clear(); return; }
-    for (const key of serverQueryCache.keys()) {
-      if (key.includes(prefix)) serverQueryCache.delete(key);
-    }
-  }
-
-  // Invalidate on live events
-  globalEventBus.on("audit_event", () => {
-    invalidateQueryCache("budget");
-    invalidateQueryCache("transactions");
-    invalidateQueryCache("sepolia");
-  });
-
-  const n8nRouter = createN8nRouter({
-    enforcerContract,
-    tokenContract,
-    agentSigner,
-    indexer,
-    facilitator,
-    marketplaceUrl,
-    dashboardUrl: `http://localhost:${port}`,
-  });
-  app.use(n8nRouter);
+  // Local orchestration endpoint: keeps the purchase flow in-process and self-contained.
+  const { createLocalOrchestratorRouter } = require("../orchestrator/local-orchestrator");
+  app.use(createLocalOrchestratorRouter({ enforcerContract, agentSigner, indexer, marketplaceUrl }));
 
   // Gateway: Forward /x402 and /registry requests to Marketplace
   // Allows the public tunnel to serve both Dashboard and Marketplace on one URL

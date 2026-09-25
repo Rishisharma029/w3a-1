@@ -39,10 +39,6 @@ const defaultEnv = [
   "AUTHORIZED_BUDGET=20.00",
   "DEFAULT_SPEND_CAP=5.00",
   "",
-  "# ---- Cloud Orchestrator (n8n Cloud & MCP Gateway) ----",
-  "N8N_WEBHOOK_URL=https://rishisharma029.app.n8n.cloud/webhook/w3a1/purchase",
-  "N8N_MCP_URL=https://rishisharma029.app.n8n.cloud/mcp-server/http",
-  `N8N_ACCESS_KEY=${process.env.N8N_ACCESS_KEY || (fs.existsSync(envPath) ? (fs.readFileSync(envPath, 'utf8').match(/N8N_ACCESS_KEY=([^\r\n]+)/) || [])[1] : '') || ''}`,
   "",
   "# ---- Phase 2 (Sepolia Testnet Configuration) ----",
   "# SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY",
@@ -74,5 +70,4 @@ console.log('AGENT_ADDRESS:         0x70997970C51812dc3A010C7d01b50e0d17dc79C8')
 console.log('PROVIDER_ALPHA:        0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC');
 console.log('MARKETPLACE_PORT:      14210');
 console.log('DASHBOARD_PORT:        14300');
-console.log('N8N CLOUD:             https://rishisharma029.app.n8n.cloud');
 console.log('---------------------------\n');
