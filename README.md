@@ -20,7 +20,6 @@
 * **Owner Control Center (Dashboard)**: [https://rishisharma029.github.io/w3a-1/](https://rishisharma029.github.io/w3a-1/)
 * **Autonomous AI Marketplace**: [https://rishisharma029.github.io/w3a-1/marketplace/](https://rishisharma029.github.io/w3a-1/marketplace/)
 * **Cryptographic Receipt & Proof Verifier**: [https://rishisharma029.github.io/w3a-1/verify.html](https://rishisharma029.github.io/w3a-1/verify.html)
-* **n8n Cloud Webhook Gateway**: `https://rishisharma029.app.n8n.cloud/webhook/w3a1/purchase`
 * **Sepolia Enforcer Contract**: [`0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e`](https://sepolia.etherscan.io/address/0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e)
 * **Sepolia MockUSDC Token**: [`0xAaa008Df25A46dc501B5B712ac18B47901AF99A7`](https://sepolia.etherscan.io/address/0xAaa008Df25A46dc501B5B712ac18B47901AF99A7)
 
@@ -145,7 +144,6 @@ sequenceDiagram
 | **Relational Database** | **MySQL 8.0 (InnoDB Engine)** | Normalized relational schema: `services`, `providers`, `categories`, `orders`, `transactions`, `reviews`, `users`. |
 | **Backend Microservice** | **PHP 8.3 (PDO MySQL)** | High-speed REST API, Pareto Frontier SQL decision engine, parameter-bound query security. |
 | **Application Gateway** | **Node.js v20+**, Express, Axios, Ethers.js v6 | Orchestration bridge, SSE telemetry streaming, x402 proxy facilitator. |
-| **Autonomous Workflow** | **n8n Cloud Webhook Orchestration** | 11-stage autonomous purchasing pipeline, webhook trigger, agent telemetry ingest. |
 | **Frontend HUD** | **HTML5, CSS3, Vanilla ES6+ JavaScript** | Cyber HUD design, reactive state management, Zero-page-reload SSE stream, cryptographic verifier. |
 
 ---
@@ -320,7 +318,7 @@ W3A-1 is verified by an exhaustive 15-suite automated test matrix covering smart
 ```
 
 ### End-to-End Product Integration Suite
-Run the 18-step full system integration test covering live discovery, selection, n8n orchestration, x402 wire negotiation, Sepolia settlement, delivery verification, and overspend defense:
+Run the 18-step full system integration test covering live discovery, selection, backend workflow orchestration, x402 wire negotiation, Sepolia settlement, delivery verification, and overspend defense:
 
 ```bash
 node scripts/test-product-integration.js
@@ -421,8 +419,6 @@ For full threat model, vulnerability disclosures, and security guidelines, see [
 ├── dashboard/                        # Human Owner Control Center
 │   ├── server.js                     # Telemetry aggregator, SSE stream, Sepolia bridge
 │   └── public/                       # Real-time dashboard UI, transaction feeds, threat logs
-├── orchestrator/                     # Cloud Workflow Orchestration
-│   └── n8n-connector.js              # Full integration bridge for n8n autonomous purchasing
 ├── agent/                            # Autonomous AI Agent Reasoning & Execution
 │   ├── llm-client.js                 # Gemini 1.5-flash parser & deterministic fallback
 │   ├── provider-selector.js          # Heuristic multi-criteria ranking algorithm
