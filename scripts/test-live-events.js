@@ -130,9 +130,9 @@ async function testLiveEventStream() {
     throw new Error('Failed to receive SSE handshake within timeout.');
   }
 
-  // Step 3: Trigger an n8n purchase orchestration to generate live event sequence
-  console.log('\n3. Triggering automated agent purchase (/api/orchestrate/n8n)...');
-  const triggerRes = await postJSON('/api/orchestrate/n8n', {
+  // Step 3: Trigger an autonomous purchase orchestration to generate live event sequence
+  console.log('\n3. Triggering automated agent purchase (/api/orchestrate/ai-purchase)...');
+  const triggerRes = await postJSON('/api/orchestrate/ai-purchase', {
     task: 'Translate security incident audit report into French',
     service: 'translation',
     maxBudget: 5.0
