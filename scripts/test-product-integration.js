@@ -55,7 +55,7 @@ async function run() {
   
   mark('AI discovers it', `Discovered ${aiData.candidateEvaluations ? aiData.candidateEvaluations.length : 3} candidates`);
   mark('AI selects it', `Selected: ${aiData.selectedProvider.name} (Quality: ${aiData.selectedProvider.quality}, Price: $${aiData.selectedProvider.price})`);
-  mark('n8n orchestrates', `RunId: ${aiData.runId || 'N8N-RUN'}, Webhook dispatched`);
+  mark('Local orchestration', `RunId: ${aiData.runId || 'LOCAL-RUN'}, purchase flow executed in-process`);
 
   // 7. Real x402 402 appears
   const trace = aiData.trace || {};
@@ -103,7 +103,7 @@ async function run() {
 
   // 17. Overspend attack visibly fails
   console.log(chalk.blue('[Step 17] Testing Overspend Attack Defense...'));
-  const overspendResp = await axios.post(`${DASHBOARD_URL}/api/orchestrate/n8n`, {
+  const overspendResp = await axios.post(`${DASHBOARD_URL}/api/orchestrate/ai-purchase`, {
     simulateOverspend: true,
     amountAtomic: '999999000000'
   });
