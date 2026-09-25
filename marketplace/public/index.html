@@ -186,6 +186,117 @@ main { max-width: 1380px; margin: 0 auto; padding: clamp(1.5rem, 4vw, 3.5rem) cl
   background: rgba(13,27,24,0.7) !important;
 }
 </style>
+<style>
+
+/* W3A-1 UI REDESIGN — restrained operations console */
+:root{
+  --bg:#f3f5f2; --surface:#ffffff; --surface-2:#f7f8f6; --surface-3:#ecefeb;
+  --line:#dfe4df; --line-strong:#cbd3cc; --text:#18201c; --muted:#68736d; --muted-2:#8a948e;
+  --mint:#216a57; --aqua:#2f5f82; --lavender:#6f6295; --amber:#a86616; --red:#b44a43;
+  --ink:#131816; --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --font-mono:var(--mono); --font-sans:var(--sans); --accent-cyan:var(--aqua);
+  --accent-emerald:var(--mint); --accent-amber:var(--amber); --accent-red:var(--red);
+  --text-muted:var(--muted); --bg-surface:var(--surface-2); --bg-card:var(--surface); --border-color:var(--line);
+}
+html,body{background:var(--bg)!important;color:var(--text)!important}
+body{font-family:var(--sans)!important;background:var(--bg)!important}
+body::before{display:none!important}
+#w3aMarketplaceShaderBg{display:none!important}
+header{
+  position:sticky!important;background:rgba(255,255,255,.96)!important;backdrop-filter:none!important;
+  border-bottom:1px solid var(--line)!important;box-shadow:0 1px 0 rgba(24,32,28,.03)
+}
+.brand{gap:10px!important}
+.brand-title{font-family:var(--sans)!important;color:var(--text)!important;letter-spacing:-.03em!important}
+.brand-title::before{
+  content:"W1"!important;width:30px!important;height:30px!important;margin-right:9px!important;border-radius:8px!important;
+  background:var(--ink)!important;border:0!important;color:#fff!important;font:800 .63rem/30px var(--mono)!important;
+  vertical-align:0!important;text-align:center!important
+}
+.brand-badge{background:#eef4f0!important;border:1px solid #d2dfd8!important;color:#2b6353!important;border-radius:7px!important;box-shadow:none!important}
+.pulsing-dot{width:6px!important;height:6px!important;background:#2c8a6c!important;box-shadow:none!important;animation:none!important}
+.btn{
+  border-radius:8px!important;font-family:var(--sans)!important;box-shadow:none!important;
+  transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .15s ease!important
+}
+.btn:hover{transform:translateY(-1px)!important;box-shadow:0 4px 12px rgba(24,32,28,.08)!important}
+.btn-dashboard,.btn-fund{color:#37423c!important;background:#fff!important;border:1px solid var(--line-strong)!important}
+.btn-dashboard:hover,.btn-fund:hover{background:#f4f6f3!important}
+.btn-publish,.btn-buy-ai{color:#fff!important;background:var(--ink)!important;border:1px solid var(--ink)!important;box-shadow:none!important}
+.btn-publish:hover,.btn-buy-ai:hover{background:#2a332e!important;box-shadow:0 4px 12px rgba(19,24,22,.16)!important}
+main{max-width:1440px!important;padding:28px clamp(1rem,3vw,2.8rem) 5rem!important}
+.ai-hero-box{
+  background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:14px!important;
+  box-shadow:0 8px 30px rgba(24,32,28,.06)!important;padding:clamp(1.2rem,3vw,2rem)!important;margin-bottom:24px!important
+}
+.ai-hero-box::before,.ai-hero-box::after{display:none!important}
+.ai-hero-title{font-family:var(--sans)!important;color:var(--text)!important;letter-spacing:-.055em!important}
+.ai-hero-sub{color:var(--mint)!important;font-family:var(--mono)!important;letter-spacing:.06em!important}
+.ai-prompt-box{
+  background:#fbfcfa!important;color:var(--text)!important;border:1px solid var(--line-strong)!important;
+  border-radius:9px!important;font-family:var(--sans)!important;box-shadow:none!important
+}
+.ai-prompt-box:focus{border-color:var(--mint)!important;box-shadow:0 0 0 3px rgba(33,106,87,.09)!important}
+.preset-chip{color:#59645e!important;background:#f4f6f3!important;border:1px solid var(--line)!important;border-radius:7px!important;font-family:var(--mono)!important}
+.preset-chip:hover{color:var(--text)!important;background:#edf1ed!important;border-color:#cbd5ce!important}
+.ai-action-row{border-top:1px solid var(--line)!important}
+.ai-notice{color:var(--muted)!important;font-family:var(--sans)!important}
+#marketBudgetRemaining{color:var(--mint)!important}
+.eval-container{background:#171d19!important;border:1px solid #2c3730!important;border-radius:10px!important;padding:12px!important}
+.eval-container>div{background:#202721!important;border-color:#334037!important;border-radius:9px!important}
+.eval-container [style*="background: #000"],.live-tx-step [style*="background: #000"]{background:#111612!important;border-color:#2f3933!important}
+.live-tx-step{background:#202721!important;border:1px solid #344039!important;border-radius:8px!important;box-shadow:none!important}
+.hero-banner{
+  display:flex!important;justify-content:space-between!important;align-items:end!important;gap:16px!important;flex-wrap:wrap!important;
+  margin:30px 0 12px!important;padding-bottom:8px!important;border-bottom:1px solid var(--line)!important
+}
+.hero-banner h1{font-family:var(--sans)!important;color:var(--text)!important;letter-spacing:-.045em!important}
+.hero-banner [style*="border-radius: 9999px"]{background:#fff!important;border:1px solid var(--line)!important;border-radius:7px!important;padding:.4rem .65rem!important}
+.filter-bar{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:9px!important;box-shadow:none!important;padding:8px!important}
+.cat-btn{color:#69746e!important;border-radius:7px!important;font-family:var(--sans)!important}
+.cat-btn:hover{background:#f2f5f2!important;border-color:var(--line)!important;color:var(--text)!important}
+.cat-btn.active{background:var(--ink)!important;color:#fff!important;border-color:var(--ink)!important}
+.search-box{background:#fbfcfa!important;color:var(--text)!important;border:1px solid var(--line-strong)!important;border-radius:7px!important;font-family:var(--sans)!important}
+.search-box:focus{border-color:var(--mint)!important;box-shadow:0 0 0 3px rgba(33,106,87,.08)!important}
+.services-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,310px),1fr))!important;gap:12px!important}
+.service-card{
+  min-height:270px!important;padding:18px!important;border-radius:10px!important;background:var(--surface)!important;
+  border:1px solid var(--line)!important;box-shadow:0 3px 12px rgba(24,32,28,.035)!important
+}
+.service-card::before{display:none!important}
+.service-card:hover{transform:translateY(-2px)!important;border-color:#bcc8c0!important;box-shadow:0 8px 22px rgba(24,32,28,.07)!important}
+.card-title{font-family:var(--sans)!important;color:var(--text)!important}
+.card-provider{color:var(--aqua)!important;font-family:var(--mono)!important}
+.card-desc{color:var(--muted)!important}
+.metrics-row{background:#f7f9f7!important;border:1px solid var(--line)!important;border-radius:8px!important}
+.metric-label{color:var(--muted-2)!important}.metric-value{color:var(--text)!important}
+.card-footer{border-top:1px solid var(--line)!important}
+.badge-v2,.badge-avail{border-radius:6px!important;font-family:var(--mono)!important}
+.badge-v2{color:#675b88!important;background:#f0edf7!important;border:1px solid #ddd6ec!important}
+.badge-avail{color:#2d705c!important;background:#edf5f0!important;border:1px solid #d1e1d8!important}
+.btn-view{color:#34413b!important;background:#fff!important;border:1px solid var(--line-strong)!important;border-radius:7px!important;font-family:var(--mono)!important}
+.btn-view:hover{color:#fff!important;background:var(--ink)!important;border-color:var(--ink)!important}
+.modal-backdrop{background:rgba(20,28,24,.46)!important;backdrop-filter:blur(4px)!important}
+.modal-box{max-width:640px!important;background:#fff!important;border:1px solid var(--line-strong)!important;border-radius:12px!important;box-shadow:0 22px 60px rgba(18,26,22,.18)!important}
+.modal-header{border-bottom:1px solid var(--line)!important}.modal-title{font-family:var(--sans)!important;color:var(--text)!important}
+.modal-body{background:#fff!important}.modal-footer{background:#f7f8f6!important;border-top:1px solid var(--line)!important}
+.form-label{color:var(--muted)!important;font-family:var(--mono)!important}
+.form-input{background:#fbfcfa!important;color:var(--text)!important;border:1px solid var(--line-strong)!important;border-radius:7px!important}
+.form-input:focus{border-color:var(--mint)!important;box-shadow:0 0 0 3px rgba(33,106,87,.08)!important}
+.wire-console{background:#111612!important;border:1px solid #2f3933!important;color:#b9d9c9!important;border-radius:8px!important}
+.skeleton-shimmer,.skeleton-shimmer-cyan,.skeleton-shimmer-emerald{background:#e9edea!important;animation:none!important}
+.skeleton-card{background:#fff!important;border:1px solid var(--line)!important}
+#marketStatsStrip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 22px}
+.market-stat{background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 14px}
+.market-stat .label{display:block;color:var(--muted-2);font:600 .62rem var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.market-stat .value{display:block;color:var(--text);font:700 .9rem var(--sans)}
+.market-stat .detail{display:block;color:var(--muted);margin-top:2px;font-size:.7rem}
+@media(max-width:900px){#marketStatsStrip{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.header-actions{width:100%!important}.header-actions .btn{flex:1!important}.ai-action-row>div:last-child{width:100%!important}}
+@media(max-width:450px){#marketStatsStrip{grid-template-columns:1fr 1fr}}
+
+</style>
 </head>
 <body>
 
@@ -217,16 +328,16 @@ main { max-width: 1380px; margin: 0 auto; padding: clamp(1.5rem, 4vw, 3.5rem) cl
 
   <main>
     <!-- ================================================================= -->
-    <!-- ASK YOUR AI AGENT — HERO SECTION -->
+    <!-- AGENT SERVICE DESK — HERO SECTION -->
     <!-- ================================================================= -->
     <div class="ai-hero-box">
       <div class="ai-hero-header">
         <div>
-          <div class="ai-hero-title">ASK YOUR AI AGENT</div>
-          <div class="ai-hero-sub">What should I buy?</div>
+          <div class="ai-hero-title">AGENT SERVICE DESK</div>
+          <div class="ai-hero-sub">Describe the job you need done</div>
         </div>
         <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan); background: rgba(0,242,255,0.1); border: 1px solid rgba(0,242,255,0.3); padding: 0.3rem 0.6rem; border-radius: 4px;">
-          ● DYNAMIC MARKET DISCOVERY
+          ROUTING · MARKETPLACE FIRST
         </div>
       </div>
 
@@ -234,7 +345,7 @@ main { max-width: 1380px; margin: 0 auto; padding: clamp(1.5rem, 4vw, 3.5rem) cl
 Highest quality under $5.</textarea>
 
       <div class="presets-row">
-        <span class="preset-label">Quick intent presets:</span>
+        <span class="preset-label">Common requests:</span>
         <button class="preset-chip" onclick="setAiPrompt('Translate this legal contract to English.\nHighest quality under $5.')">Translate PDF to Hindi (Quality &lt; $5)</button>
         <button class="preset-chip" onclick="setAiPrompt('Process statistical datasets under $4.\nFastest compute turnaround.')">Process Dataset (&lt; $4)</button>
         <button class="preset-chip" onclick="setAiPrompt('Fastest image object analysis under $3.\nDetect bounding boxes.')">Image Analysis (&lt; $3)</button>
@@ -243,7 +354,7 @@ Highest quality under $5.</textarea>
 
       <div class="ai-action-row">
         <div class="ai-notice">
-          The AI doesn't get a predefined provider. It dynamically queries your marketplace, scores candidates on quality, latency, and price, and settles autonomously via x402 V2.
+          The agent queries the live catalog, applies marketplace constraints, selects an eligible provider, then proceeds through x402 V2 payment.
         </div>
         <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
           <div style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-surface); padding: 0.55rem 0.9rem; border-radius: 6px; border: 1px solid var(--border-color);">
@@ -252,7 +363,7 @@ Highest quality under $5.</textarea>
             <button onclick="openFundModal()" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--accent-emerald); font-weight: 700; border-radius: 4px; padding: 0.15rem 0.5rem; font-size: 0.75rem; cursor: pointer;">+ Fund</button>
           </div>
           <button class="btn-buy-ai" id="btnBuyAi" onclick="executeAiPurchase()">
-            [ BUY WITH AI &rarr; ]
+            RUN AGENT PURCHASE &rarr;
           </button>
         </div>
       </div>
@@ -261,6 +372,13 @@ Highest quality under $5.</textarea>
       <div class="eval-container" id="evalContainer">
         <!-- Injected via JavaScript -->
       </div>
+    </div>
+
+    <div id="marketStatsStrip" aria-label="Marketplace summary">
+      <div class="market-stat"><span class="label">Catalog</span><span class="value">52 services</span><span class="detail">Available across the marketplace</span></div>
+      <div class="market-stat"><span class="label">Providers</span><span class="value">14 nodes</span><span class="detail">Multiple providers per service class</span></div>
+      <div class="market-stat"><span class="label">Routing</span><span class="value">Constraint-based</span><span class="detail">Price and quality filters</span></div>
+      <div class="market-stat"><span class="label">Settlement</span><span class="value">x402 V2</span><span class="detail">Payment + delivery receipt flow</span></div>
     </div>
 
     <div class="hero-banner">
