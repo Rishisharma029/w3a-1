@@ -28,6 +28,10 @@ function createTokenMarketplace({
     res.sendFile(path.join(__dirname, "public", "index.html"));
   });
 
+  // Local orchestration endpoint: keeps purchase flow in-process and self-contained.
+  const { createLocalOrchestratorRouter } = require("../orchestrator/local-orchestrator");
+  app.use(createLocalOrchestratorRouter({ enforcerContract: enforcerContract || (facilitator ? facilitator.enforcerContract : null), agentSigner, indexer, facilitator, marketplaceUrl: `http://localhost:${port}` }));
+
   // Forward funding and budget endpoints to Dashboard server (port 14300)
   app.post("/api/fund", async (req, res) => {
     try {
