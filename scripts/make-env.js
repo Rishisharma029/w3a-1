@@ -125,7 +125,9 @@ function displayValue(key, value) {
   return value || '[not set]';
 }
 
-const summaryEnv = force ? parseEnvFile(envPath) : { ...safeDefaults, ...existingEnv, ...process.env };
+const summaryEnv = fs.existsSync(envPath)
+  ? parseEnvFile(envPath)
+  : { ...safeDefaults };
 
 console.log('\n--- Environment Summary ---');
 console.log(`NETWORK:               ${displayValue('NETWORK', summaryEnv.NETWORK)}`);
