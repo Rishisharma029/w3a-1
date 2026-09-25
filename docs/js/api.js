@@ -156,17 +156,6 @@ const ApiService = {
   },
 
 
-) {
-    const res = await fetch(`${this.baseUrl}/api/orchestrate/n8n`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(options),
-    });
-    const data = await res.json();
-    await this.syncAll();
-    return data;
-  },
-
   async getServices() {
     try {
       const data = await ClientQueryCache.fetch("services", 15000, async () => {
