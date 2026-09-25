@@ -47,8 +47,8 @@ async function run() {
   const prompt = 'Translate this legal contract to English using Legal Document Translation by Alpha Translate. Highest quality under $5.';
   mark('Human asks AI to buy it', `Prompt: "${prompt}"`);
 
-  // 4. AI discovers it & 5. AI selects it & 6. n8n orchestrates
-  console.log(chalk.blue('[Steps 4-6] AI Discovers, Selects, and n8n Orchestrates...'));
+  // 4. AI discovers it & 5. AI selects it & 6. the backend orchestrates
+  console.log(chalk.blue('[Steps 4-6] AI Discovers, Selects, and backend orchestrates...'));
   const aiPurchaseResp = await axios.post(`${DASHBOARD_URL}/api/orchestrate/ai-purchase`, { prompt });
   const aiData = aiPurchaseResp.data;
   if (!aiData.success) throw new Error('AI purchase orchestration failed: ' + (aiData.error || 'unknown'));
