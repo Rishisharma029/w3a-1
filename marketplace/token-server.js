@@ -8,7 +8,6 @@ const { createTokenProviderRouter } = require("./token-provider-router");
 const { createX402ProviderRouter } = require("./x402-provider-router");
 const { createReceiptStore } = require("../provider/receipt-store");
 const { createQuoteStore } = require("./quote-store");
-const { createN8nRouter } = require("../orchestrator/n8n-connector");
 
 function createTokenMarketplace({
   port = 14202,
@@ -28,17 +27,6 @@ function createTokenMarketplace({
   app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
   });
-
-  // Mount n8n Orchestrator & x402 Internal Endpoints
-  const n8nRouter = createN8nRouter({
-    enforcerContract: enforcerContract || (facilitator ? facilitator.enforcerContract : null),
-    tokenContract: null,
-    agentSigner,
-    indexer,
-    facilitator,
-    marketplaceUrl: `http://localhost:${port}`,
-  });
-  app.use(n8nRouter);
 
   // Forward funding and budget endpoints to Dashboard server (port 14300)
   app.post("/api/fund", async (req, res) => {
