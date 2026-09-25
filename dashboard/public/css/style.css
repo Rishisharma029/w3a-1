@@ -55,17 +55,31 @@ button, input, select, textarea { font: inherit; }
 .font-mono { font-family: var(--font-mono); }
 
 /* Material Symbols Icon Sizing */
+/* Material Symbols Icon Fallback & Replacement Support */
 .material-symbols-outlined {
-  font-family: 'Material Symbols Outlined';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 18px;
-  line-height: 1;
-  display: inline-block;
-  letter-spacing: normal;
-  white-space: nowrap;
-  -webkit-font-smoothing: antialiased;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  color: transparent !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   vertical-align: middle;
+  min-width: 14px;
+  min-height: 14px;
+}
+
+.material-symbols-outlined > *,
+.app-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+.app-icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
 }
 
 /* App Shell */
@@ -229,7 +243,7 @@ main#mainContent {
 }
 
 /* Common Card & Panel Surfaces */
-.panel {
+.panel, .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);

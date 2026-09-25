@@ -703,18 +703,18 @@
       </div>
       <div class="stat-card">
         <div class="stat-label">Providers</div>
-        <div class="stat-val">14 Nodes</div>
-        <div class="stat-desc">Multi-provider redundant clusters</div>
+        <div class="stat-val" id="statProviderCount">14 Providers</div>
+        <div class="stat-desc">Independent compute nodes</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Routing</div>
-        <div class="stat-val">Constraint-Based</div>
-        <div class="stat-desc">Price, quality, and eligibility ranking</div>
+        <div class="stat-label">Categories</div>
+        <div class="stat-val" id="statCategoryCount">10 Categories</div>
+        <div class="stat-desc">Machine service classes</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Settlement</div>
-        <div class="stat-val">x402 V2</div>
-        <div class="stat-desc">EIP-712 auth &amp; TokenBudgetEnforcer</div>
+        <div class="stat-val">ERC-20 USDC</div>
+        <div class="stat-desc">x402 V2 &amp; TokenBudgetEnforcer</div>
       </div>
     </div>
 
@@ -797,7 +797,7 @@ Highest quality under $5.</textarea>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeViewModal()">Close</button>
-        <button class="btn btn-primary" id="btnUseInRequest" onclick="useInspectedServiceInRequest()">Use in Request</button>
+        <button class="btn btn-primary" id="btnUseInRequest" onclick="useInspectedServiceInRequest()">Request Service &rarr;</button>
       </div>
     </div>
   </div>
@@ -975,8 +975,20 @@ Highest quality under $5.</textarea>
         allServices = window.DEFAULT_MARKET_SERVICES || [];
       }
 
+      // Calculate distinct providers and categories dynamically
+      const distinctProviders = new Set();
+      const distinctCategories = new Set();
+      allServices.forEach(s => {
+        distinctProviders.add(s.providerName || s.providerId || 'Provider');
+        if (s.category) distinctCategories.add(s.category.toLowerCase());
+      });
+
       const countEl = document.getElementById('statCatalogCount');
       if (countEl) countEl.textContent = `${allServices.length} Services`;
+      const provEl = document.getElementById('statProviderCount');
+      if (provEl) provEl.textContent = `${distinctProviders.size} Providers`;
+      const catEl = document.getElementById('statCategoryCount');
+      if (catEl) catEl.textContent = `${distinctCategories.size} Categories`;
 
       renderServices();
     }
@@ -1034,9 +1046,11 @@ Highest quality under $5.</textarea>
       }
 
       grid.innerHTML = filtered.map(s => {
-        const priceDisplay = s.priceFormatted || (typeof s.price === 'number' ? `$${s.price.toFixed(2)} USDC` : (s.price || '$4.00 USDC'));
-        const qualityDisplay = typeof s.quality === 'number' ? s.quality.toFixed(2) : (s.quality || '0.90');
-        const latencyDisplay = s.latency || (s.latencyMs ? `${s.latencyMs}ms` : '200ms');
+        const id = s.id || s.serviceId || s.name;
+        const priceDisplay = s.priceFormatted || (typeof s.price === 'number' ? `$${s.price.toFixed(2)} / request` : `${s.price || '$4.00'} / request`);
+        const qualityDisplay = typeof s.quality === 'number' ? s.quality.toFixed(2) : (s.quality || '0.92');
+        const latencyDisplay = s.latency || (s.latencyMs ? `${s.latencyMs} ms` : '210 ms');
+        const providerName = s.providerName || s.providerId || 'Alpha Translation Services';
 
         return `
           <div class="service-card">
@@ -1045,35 +1059,69 @@ Highest quality under $5.</textarea>
                 <div class="card-title">${escapeHtml(s.name)}</div>
                 <span class="badge">${escapeHtml(s.category || 'general')}</span>
               </div>
-              <div class="card-provider">by ${escapeHtml(s.providerName || s.providerId || 'Provider')}</div>
-              <div class="card-desc">${escapeHtml(s.description || 'Machine computational microservice.')}</div>
-              
-              <div class="card-metrics">
-                <div class="metric-col">
-                  <span>Price</span>
-                  <span>${escapeHtml(priceDisplay)}</span>
+              <div class="card-provider">${escapeHtml(providerName)}</div>
+
+              <div style="font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 10px;">
+                ${escapeHtml(priceDisplay)}
+              </div>
+
+              <div class="card-desc" style="font-size: 12px; margin-bottom: 12px;">
+                ${escapeHtml(s.description || 'Machine operational microservice.')}
+              </div>
+
+              <div style="background: var(--surface-subtle); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; font-family: var(--font-mono); font-size: 11px; margin-bottom: 12px; line-height: 1.7;">
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--text-muted);">Quality:</span>
+                  <span style="color: var(--success); font-weight: 600;">${escapeHtml(qualityDisplay)}</span>
                 </div>
-                <div class="metric-col">
-                  <span>Quality</span>
-                  <span style="color: var(--success);">${escapeHtml(qualityDisplay)}</span>
-                </div>
-                <div class="metric-col">
-                  <span>Latency</span>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--text-muted);">Latency:</span>
                   <span>${escapeHtml(latencyDisplay)}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--text-muted);">Settlement:</span>
+                  <span style="color: var(--accent);">ERC-20 USDC</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--text-muted);">x402:</span>
+                  <span style="color: var(--success); font-weight: 600;">Supported</span>
                 </div>
               </div>
             </div>
 
             <div class="card-bottom">
-              <div style="display: flex; gap: 4px; align-items: center;">
-                <span class="badge">${escapeHtml(s.protocol || 'x402 V2')}</span>
-                <span class="badge success">${escapeHtml(s.status || 'AVAILABLE')}</span>
-              </div>
-              <button class="btn btn-secondary btn-sm" onclick="inspectService('${escapeHtml(s.id || s.name)}')">View Service</button>
+              <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="inspectService('${escapeHtml(id)}')">View Service</button>
+              <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="requestServiceDirectly('${escapeHtml(id)}')">Request</button>
             </div>
           </div>
         `;
       }).join('');
+    }
+
+    function requestServiceDirectly(id) {
+      const s = allServices.find(item => (item.id === id || item.serviceId === id || item.name === id));
+      if (!s) return;
+      let prompt = `Execute ${s.name} from ${s.providerName || s.providerId}. Budget $${Math.ceil(s.priceNum || 4)}`;
+      if (s.id === 'open-meteo-weather' || s.serviceId === 'open-meteo-weather') {
+        prompt = 'I need a weather service for Delhi under $1.';
+      } else if (s.id === 'currencylayer-live' || s.serviceId === 'currencylayer-live') {
+        prompt = 'Find me a currency conversion service for USD to EUR, GBP, and INR under $2.';
+      } else if (s.id === 'ipstack-lookup' || s.serviceId === 'ipstack-lookup') {
+        prompt = 'Lookup IP address geolocation for 134.201.250.155 under $2.';
+      } else if (s.id === 'amazon-product-data' || s.serviceId === 'amazon-product-data') {
+        prompt = 'Scrape Amazon product details for ASIN B08N5WRWNW under $3.';
+      } else if (s.id === 'giphy-search' || s.serviceId === 'giphy-search') {
+        prompt = 'Search Giphy for autonomous machine payments GIF under $2.';
+      } else if (s.id === 'apiflash-capture' || s.serviceId === 'apiflash-capture') {
+        prompt = 'Capture website screenshot for https://ethereum.org under $3.';
+      }
+      setAiPrompt(prompt);
+      const reqPanel = document.querySelector('.request-panel');
+      if (reqPanel) {
+        reqPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const aiPromptInput = document.getElementById('aiPrompt');
+        if (aiPromptInput) aiPromptInput.focus();
+      }
     }
 
     function filterCategory(cat, btn) {
@@ -1089,13 +1137,14 @@ Highest quality under $5.</textarea>
     }
 
     function inspectService(id) {
-      const s = allServices.find(item => item.id === id || item.name === id);
+      const s = allServices.find(item => item.id === id || item.serviceId === id || item.name === id);
       if (!s) return;
       inspectedService = s;
 
-      const priceDisplay = s.priceFormatted || (typeof s.price === 'number' ? `$${s.price.toFixed(2)} USDC` : (s.price || '$4.00 USDC'));
-      const qualityDisplay = typeof s.quality === 'number' ? s.quality.toFixed(2) : (s.quality || '0.90');
-      const latencyDisplay = s.latency || (s.latencyMs ? `${s.latencyMs}ms` : '200ms');
+      const priceDisplay = s.priceFormatted || (typeof s.price === 'number' ? `$${s.price.toFixed(2)} / request` : `${s.price || '$4.00'} / request`);
+      const qualityDisplay = typeof s.quality === 'number' ? s.quality.toFixed(2) : (s.quality || '0.92');
+      const latencyDisplay = s.latency || (s.latencyMs ? `${s.latencyMs} ms` : '210 ms');
+      const providerAddr = s.providerAddress || '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC';
 
       document.getElementById('viewModalTitle').textContent = s.name;
       document.getElementById('viewModalBody').innerHTML = `
@@ -1113,11 +1162,17 @@ Highest quality under $5.</textarea>
           ${escapeHtml(s.description || 'Machine operational microservice.')}
         </p>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--surface-subtle); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-bottom: 16px; font-family: var(--font-mono); font-size: 12px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--surface-subtle); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-bottom: 16px; font-family: var(--font-mono); font-size: 12px; line-height: 1.6;">
           <div><span style="color: var(--text-muted);">Price:</span> <strong>${escapeHtml(priceDisplay)}</strong></div>
-          <div><span style="color: var(--text-muted);">Quality:</span> <strong style="color: var(--success);">${escapeHtml(qualityDisplay)}</strong></div>
-          <div><span style="color: var(--text-muted);">Est. Latency:</span> <strong>${escapeHtml(latencyDisplay)}</strong></div>
+          <div><span style="color: var(--text-muted);">Quality SLA:</span> <strong style="color: var(--success);">${escapeHtml(qualityDisplay)}</strong></div>
+          <div><span style="color: var(--text-muted);">Latency:</span> <strong>${escapeHtml(latencyDisplay)}</strong></div>
           <div><span style="color: var(--text-muted);">Category:</span> <strong>${escapeHtml(s.category || 'general')}</strong></div>
+          <div><span style="color: var(--text-muted);">Settlement:</span> <strong style="color: var(--accent);">ERC-20 USDC</strong></div>
+          <div><span style="color: var(--text-muted);">x402 Support:</span> <strong style="color: var(--success);">Supported (V2)</strong></div>
+          <div style="grid-column: 1 / -1; border-top: 1px solid var(--border); padding-top: 6px; margin-top: 2px;">
+            <span style="color: var(--text-muted);">Provider Address:</span>
+            <code style="font-size: 11px;">${escapeHtml(providerAddr)}</code>
+          </div>
         </div>
 
         <details>
