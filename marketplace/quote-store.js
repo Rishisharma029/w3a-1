@@ -1,35 +1,14 @@
-﻿"use strict";
+"use strict";
 
 class QuoteStore {
   constructor() {
-    /** @type {Map<string, {serviceId: string, price: number, expiresAt: number, providerId: string}>} */
     this._store = new Map();
   }
 
-  /**
-   * Record a newly issued pending quote.
-   * @param {string} reqId
-   * @param {object} quote
-   * @param {string} quote.serviceId
-   * @param {number} quote.price
-   * @param {number} quote.expiresAt  - Unix timestamp (seconds)
-   * @param {string} quote.providerId
-   */
   set(reqId, quote) {
     this._store.set(reqId, quote);
   }
 
-  /**
-   * Validate a pending quote.
-   *
-   * Returns { valid: true } on success.
-   * Returns { valid: false, reason: string } on failure.
-   *
-   * @param {string} reqId
-   * @param {string} serviceId   - Must match the quote
-   * @param {number} amount      - Must match the quoted price exactly
-   * @returns {{ valid: boolean, reason?: string, quote?: object }}
-   */
   validate(reqId, serviceId, amount) {
     const quote = this._store.get(reqId);
 
@@ -58,24 +37,15 @@ class QuoteStore {
     return { valid: true, quote };
   }
 
-  /**
-   * Remove a pending quote (called after successful delivery).
-   * @param {string} reqId
-   */
   delete(reqId) {
     this._store.delete(reqId);
   }
 
-  /** Clear all pending quotes (for tests). */
   clear() {
     this._store.clear();
   }
 }
 
-/**
- * Factory — create a new QuoteStore instance.
- * Each provider gets its own store.
- */
 function createQuoteStore() {
   return new QuoteStore();
 }

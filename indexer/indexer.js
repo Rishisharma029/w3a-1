@@ -1,28 +1,24 @@
-﻿"use strict";
+"use strict";
 
-const fs = require("fs");
+const fs   = require("fs");
+const fsp  = require("fs").promises;
 const path = require("path");
 const { globalEventBus } = require("../shared/event-bus");
 const { AuditEvent } = require("../shared/events");
 
 class EventIndexer {
-  /**
-   * @param {object} opts
-   * @param {ethers.Contract} opts.contract - TokenBudgetEnforcer contract
-   * @param {string} [opts.storagePath]     - Optional persistence path
-   */
   constructor({ contract, storagePath } = {}) {
-    this.contract = contract;
-    this.storagePath = storagePath;
-    this.events = [];
-    this.transactions = [];
+    this.contract       = contract;
+    this.storagePath    = storagePath;
+    this.events         = [];
+    this.transactions   = [];
     this.securityAlerts = [];
     this.x402Transactions = [];
+    this._saveTimer     = null;
   }
 
-  /**
-   * Start listening for contract events and index historical logs.
-   */
+
+
   async start(fromBlock = 0) {
     if (!this.contract) return;
 
@@ -36,9 +32,9 @@ class EventIndexer {
           if (parsed) {
             this._processEvent(parsed.name, parsed.args, log.transactionHash, log.blockNumber);
           }
-        } catch (_) {}
+        } catch (err) { /* ignore */ }
       }
-    } catch (_) {}
+    } catch (err) { /* ignore */ }
 
     // Listen to live events
     this.contract.on("*", (eventPayload) => {
@@ -48,13 +44,10 @@ class EventIndexer {
         if (parsed) {
           this._processEvent(parsed.name, parsed.args, log.transactionHash, log.blockNumber);
         }
-      } catch (_) {}
+      } catch (err) { /* ignore */ }
     });
   }
 
-  /**
-   * Process a parsed contract event.
-   */
   _processEvent(name, args, txHash = "0x", blockNumber = 0) {
     const timestamp = new Date().toISOString();
     const entry = {
@@ -68,21 +61,51 @@ class EventIndexer {
     this.events.push(entry);
 
     if (name === "PaymentSettled") {
-      this.transactions.push({
+      const pAddr = String(args.provider || "").toLowerCase();
+      const pName = pAddr.includes("3c44") ? "Alpha Translation Services"
+                  : pAddr.includes("90f7") ? "Delta Compute Engine"
+                  : pAddr.includes("15d3") ? "Beta Translate (Budget)"
+                  : pAddr.includes("9965") ? "Gamma Premium Translation"
+                  : pAddr.includes("976e") ? "Epsilon Vision AI"
+                  : "Alpha Translation Services";
+      const amtAtomic = args.amount.toString();
+      const amtUSD = (Number(amtAtomic) / 1e6).toFixed(2);
+      const isSepolia = Boolean(this.contract && (this.contract.target || "").toLowerCase() === (process.env.SEPOLIA_ENFORCER_ADDRESS || "0xf9f296e97062f49ad3d13af96729f7c35a7ea75e").toLowerCase());
+
+      const txRecord = {
         reqId: args.reqId,
         provider: args.provider,
-        amount: args.amount.toString(),
+        providerName: pName,
+        serviceName: "Neural Text Translation",
+        serviceId: "text-translate",
+        amount: amtAtomic,
+        amountUSD: amtUSD,
         deliveryHash: args.deliveryHash,
         status: "SETTLED",
         txHash,
+        blockNumber,
+        network: isSepolia ? "Ethereum Sepolia Testnet" : "Local Hardhat EVM",
+        chainId: isSepolia ? 11155111 : 31337,
+        caip2: isSepolia ? "eip155:11155111" : "eip155:31337",
+        etherscanUrl: isSepolia ? `https://sepolia.etherscan.io/tx/${txHash}` : null,
         timestamp,
-      });
+      };
+
+      const existingIdx = this.transactions.findIndex(t => (t.txHash && t.txHash.toLowerCase() === txHash.toLowerCase()) || (t.reqId && t.reqId.toLowerCase() === args.reqId.toLowerCase()));
+      if (existingIdx >= 0) {
+        this.transactions[existingIdx] = { ...this.transactions[existingIdx], ...txRecord };
+      } else {
+        this.transactions.unshift(txRecord);
+      }
+
       globalEventBus.emitEvent(AuditEvent.SETTLEMENT_CONFIRMED, {
         reqId: args.reqId,
         providerId: args.provider,
-        amountAtomic: args.amount.toString(),
+        amountAtomic: amtAtomic,
+        amountUSD: amtUSD,
         deliveryHash: args.deliveryHash,
         txHash,
+        network: isSepolia ? "eip155:11155111" : "eip155:31337",
       });
     } else if (name === "PaymentAuthorized") {
       this.transactions.push({
@@ -139,9 +162,6 @@ class EventIndexer {
     this._save();
   }
 
-  /**
-   * Manually record an off-chain security or delivery event (e.g. delivery tampering).
-   */
   recordSecurityAlert(alert) {
     this.securityAlerts.push({
       timestamp: new Date().toISOString(),
@@ -168,27 +188,24 @@ class EventIndexer {
   }
 
   _save() {
-    if (this.storagePath) {
-      try {
-        fs.writeFileSync(
-          this.storagePath,
-          JSON.stringify(
-            {
-              events: this.events,
-              transactions: this.transactions,
-              securityAlerts: this.securityAlerts,
-            },
-            null,
-            2
-          )
-        );
-      } catch (_) {}
-    }
+    if (!this.storagePath) return;
+    if (this._saveTimer) clearTimeout(this._saveTimer);
+    this._saveTimer = setTimeout(() => {
+      fs.promises.writeFile(
+        this.storagePath,
+        JSON.stringify(
+          {
+            events: this.events,
+            transactions: this.transactions,
+            securityAlerts: this.securityAlerts,
+          },
+          null,
+          2
+        )
+      ).catch(() => { /* ignore */ });
+    }, 500);
   }
 
-  /**
-   * Manually record a completed transaction (e.g. from Sepolia settlement or AI purchase).
-   */
   recordTransaction(tx) {
     if (!tx) return;
     const existing = this.transactions.find((t) => t.reqId === tx.reqId || (t.txHash && t.txHash === tx.txHash));
@@ -216,9 +233,6 @@ class EventIndexer {
     this._save();
   }
 
-  /**
-   * Record a full official x402 V2 payment transaction for dashboard and audit inspection.
-   */
   recordX402Payment(meta) {
     const entry = {
       x402Version: 2,

@@ -469,7 +469,7 @@
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
               <span class="text-xs font-mono uppercase tracking-wider font-bold text-outline">
-                ACETERNITY UI &bull; PROTOCOL TELEMETRY BENTO DECK
+                GENOVA &bull; PROTOCOL TELEMETRY DECK
               </span>
             </div>
             <span class="text-[11px] font-mono text-on-surface-variant flex items-center gap-1">

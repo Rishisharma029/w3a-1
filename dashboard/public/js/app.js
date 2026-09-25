@@ -1,4 +1,4 @@
-﻿const App = {
+const App = {
   views: {
     overview: OverviewView,
     current: CurrentTransactionView,
@@ -453,7 +453,7 @@
                 <span class="material-symbols-outlined text-xs">link</span>
                 BLOCKCHAIN
               </span>
-              <span class="text-[10px] text-outline">Hardhat EVM (eip155:31337)</span>
+              <span class="text-[10px] text-outline">${(tx.chainId === 11155111 || (tx.network && String(tx.network).includes('Sepolia'))) ? 'Sepolia Testnet (11155111)' : 'Hardhat EVM (31337)'}</span>
             </div>
             <div class="space-y-2 text-xs">
               <div class="flex items-center justify-between">
@@ -475,7 +475,8 @@
                 <div class="flex justify-between"><span class="text-outline">ERC-20 Settlement:</span> <span class="text-tertiary font-bold">$${tx.amountUSD} MockUSDC &rarr; ${UIFormatter.formatAddress(tx.provider)}</span></div>
                 <div class="flex justify-between pt-1 border-t border-outline-variant/15"><span class="text-outline">Escrow Balance After:</span> <span class="text-white font-bold">$${tx.budgetAfter || "26.00"} USDC</span></div>
                 <div class="pt-2 border-t border-outline-variant/15 flex items-center justify-between">
-                  <span class="text-outline">Sepolia Blockchain:</span>
+                  <span class="text-outline">Blockchain Proof:</span>
+                  ${(tx.chainId === 11155111 || (tx.network && String(tx.network).includes('Sepolia'))) ? `
                   <a 
                     href="https://sepolia.etherscan.io/tx/${tx.txHash}" 
                     target="_blank" 
@@ -485,7 +486,15 @@
                   >
                     <span>Verify on Sepolia Etherscan Directly</span>
                     <span class="material-symbols-outlined text-[13px]">open_in_new</span>
-                  </a>
+                  </a>` : `
+                  <a 
+                    href="/?view=verify&tx=${tx.txHash}" 
+                    class="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 text-[10.5px] transition"
+                    title="Verify in Local Hardhat EVM Verifier"
+                  >
+                    <span>Verified on Local Hardhat EVM (31337)</span>
+                    <span class="material-symbols-outlined text-[13px]">verified</span>
+                  </a>`}
                 </div>
               </div>
             </div>
@@ -806,6 +815,52 @@ ${JSON.stringify(
       this.toast(`Failed to update freeze state: ${err.message}`, "error");
     }
   },
+
+  // Open Detailed Blockchain Information & Architecture Modal
+  openBlockchainInfoModal() {
+    const modal = document.getElementById("blockchainInfoModal");
+    if (!modal) return;
+
+    // Dynamically refresh latest confirmed on-chain transaction data
+    const latestTx = (AppState.transactions && AppState.transactions[0]) || null;
+    const txHashEl = document.getElementById("modalBcLatestTxHash");
+    const txLinkEl = document.getElementById("modalBcLatestTxLink");
+    const blockEl = document.getElementById("modalBcBlockNumber");
+
+    if (latestTx && latestTx.txHash) {
+      const hash = latestTx.txHash;
+      if (txHashEl) txHashEl.textContent = hash;
+      if (txLinkEl) txLinkEl.href = `https://sepolia.etherscan.io/tx/${hash}`;
+      if (blockEl && latestTx.blockNumber) {
+        blockEl.textContent = `Block #${latestTx.blockNumber}`;
+      }
+    }
+
+    modal.classList.remove("hidden");
+
+    // Close on backdrop click & ESC key
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        this.closeBlockchainInfoModal();
+        window.removeEventListener("keydown", onKey);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+
+    const onBackdrop = (e) => {
+      if (e.target === modal) {
+        this.closeBlockchainInfoModal();
+        modal.removeEventListener("click", onBackdrop);
+      }
+    };
+    modal.addEventListener("click", onBackdrop);
+  },
+
+  closeBlockchainInfoModal() {
+    const modal = document.getElementById("blockchainInfoModal");
+    if (modal) modal.classList.add("hidden");
+  },
+
   // Interactive AI Payment Confirmation Popup Modal
   confirmAiPayment(details = {}) {
     return new Promise((resolve) => {

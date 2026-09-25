@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 const PROVIDERS = [
   // 1. Alpha Translation Labs (Translation Node - High Precision)
@@ -1243,6 +1243,358 @@ const PROVIDERS = [
       },
     },
   },
+  // 15. IPStack Geolocation (API-Backed Service)
+  {
+    providerId: "ipstack-geo",
+    name: "IPStack Geolocation",
+    serviceType: "data-compute",
+    qualityScore: 0.95,
+    estimatedLatencyMs: 120,
+    availability: 1.0,
+    isApiBacked: true,
+    adapterType: "REST",
+    authType: "QUERY_PARAM",
+    documentationUrl: "https://ipstack.com/documentation",
+    termsUrl: "https://ipstack.com/terms",
+    sourceUrl: "https://ipstack.com",
+    services: {
+      "ipstack-lookup": {
+        id: "ipstack-lookup",
+        name: "IP Location Intelligence",
+        price: 1.5,
+        category: "data-compute",
+        quality: 0.95,
+        latencyMs: 120,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "QUERY_PARAM",
+        documentationUrl: "https://ipstack.com/documentation",
+        termsUrl: "https://ipstack.com/terms",
+        sourceUrl: "https://ipstack.com",
+        description: "Real-time IPv4/IPv6 geolocation, continent/country lookup, carrier identification, and timezone coordinates.",
+        generate(reqId, payload = {}) {
+          const { getAdapterByService } = require("../integrations/adapters");
+          const adapter = getAdapterByService("ipstack-lookup");
+          const data = adapter ? adapter.callLocalSimulation(payload) : { ip: payload.ip || "134.201.250.155", city: "Los Angeles", simulated: true };
+          return {
+            provider: "ipstack-geo",
+            service: "ipstack-lookup",
+            reqId,
+            ...data,
+            generatedAt: new Date().toISOString(),
+          };
+        },
+      },
+    },
+  },
+  // 16. CurrencyLayer FX (API-Backed Service)
+  {
+    providerId: "currencylayer-fx",
+    name: "CurrencyLayer FX",
+    serviceType: "data-compute",
+    qualityScore: 0.96,
+    estimatedLatencyMs: 95,
+    availability: 1.0,
+    isApiBacked: true,
+    adapterType: "REST",
+    authType: "QUERY_PARAM",
+    documentationUrl: "https://currencylayer.com/documentation",
+    termsUrl: "https://currencylayer.com/terms",
+    sourceUrl: "https://currencylayer.com",
+    services: {
+      "currencylayer-live": {
+        id: "currencylayer-live",
+        name: "Real-Time Forex & FX Rates",
+        price: 1.0,
+        category: "data-compute",
+        quality: 0.96,
+        latencyMs: 95,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "QUERY_PARAM",
+        documentationUrl: "https://currencylayer.com/documentation",
+        termsUrl: "https://currencylayer.com/terms",
+        sourceUrl: "https://currencylayer.com",
+        description: "Live real-time foreign exchange rates for 168 world currencies with sub-minute institutional quotes.",
+        generate(reqId, payload = {}) {
+          const { getAdapterByService } = require("../integrations/adapters");
+          const adapter = getAdapterByService("currencylayer-live");
+          const data = adapter ? adapter.callLocalSimulation(payload) : { source: "USD", quotes: { USDEUR: 0.9234, USDGBP: 0.7891 }, simulated: true };
+          return {
+            provider: "currencylayer-fx",
+            service: "currencylayer-live",
+            reqId,
+            ...data,
+            generatedAt: new Date().toISOString(),
+          };
+        },
+      },
+    },
+  },
+  // 17. Giphy Media Engine (API-Backed Service)
+  {
+    providerId: "giphy-media",
+    name: "Giphy Media Engine",
+    serviceType: "image-video",
+    qualityScore: 0.92,
+    estimatedLatencyMs: 150,
+    availability: 1.0,
+    isApiBacked: true,
+    adapterType: "REST",
+    authType: "QUERY_PARAM",
+    documentationUrl: "https://developers.giphy.com/docs/api/endpoint",
+    termsUrl: "https://support.giphy.com/hc/en-us/articles/360020027752-GIPHY-User-Terms-of-Service",
+    sourceUrl: "https://giphy.com",
+    services: {
+      "giphy-search": {
+        id: "giphy-search",
+        name: "Giphy Animated Media & Search",
+        price: 0.8,
+        category: "image-video",
+        quality: 0.92,
+        latencyMs: 150,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "QUERY_PARAM",
+        documentationUrl: "https://developers.giphy.com/docs/api/endpoint",
+        termsUrl: "https://support.giphy.com/hc/en-us/articles/360020027752-GIPHY-User-Terms-of-Service",
+        sourceUrl: "https://giphy.com",
+        description: "Contextual GIF search, meme extraction, and animated visual assets powered by Giphy's knowledge engine.",
+        generate(reqId, payload = {}) {
+          const { getAdapterByService } = require("../integrations/adapters");
+          const adapter = getAdapterByService("giphy-search");
+          const data = adapter ? adapter.callLocalSimulation(payload) : { data: [{ id: "mock_gif", url: "https://giphy.com" }], simulated: true };
+          return {
+            provider: "giphy-media",
+            service: "giphy-search",
+            reqId,
+            ...data,
+            generatedAt: new Date().toISOString(),
+          };
+        },
+      },
+    },
+  },
+  // 18. ApiFlash Chrome Cloud (API-Backed Service)
+  {
+    providerId: "apiflash-render",
+    name: "ApiFlash Chrome Cloud",
+    serviceType: "vision-ocr",
+    qualityScore: 0.94,
+    estimatedLatencyMs: 480,
+    availability: 1.0,
+    isApiBacked: true,
+    adapterType: "REST",
+    authType: "QUERY_PARAM",
+    documentationUrl: "https://apiflash.com/documentation",
+    termsUrl: "https://apiflash.com/terms",
+    sourceUrl: "https://apiflash.com",
+    services: {
+      "apiflash-capture": {
+        id: "apiflash-capture",
+        name: "Automated Web Capture & Snapshot",
+        price: 2.0,
+        category: "vision-ocr",
+        quality: 0.94,
+        latencyMs: 480,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "QUERY_PARAM",
+        documentationUrl: "https://apiflash.com/documentation",
+        termsUrl: "https://apiflash.com/terms",
+        sourceUrl: "https://apiflash.com",
+        description: "Headless Chromium high-DPI full-page website screenshots with JavaScript execution and ad-blocking.",
+        generate(reqId, payload = {}) {
+          const { getAdapterByService } = require("../integrations/adapters");
+          const adapter = getAdapterByService("apiflash-capture");
+          const data = adapter ? adapter.callLocalSimulation(payload) : { url: "https://cdn.apiflash.com/mock.jpeg", simulated: true };
+          return {
+            provider: "apiflash-render",
+            service: "apiflash-capture",
+            reqId,
+            ...data,
+            generatedAt: new Date().toISOString(),
+          };
+        },
+      },
+    },
+  },
+  // 19. Amazon Web Intelligence (API-Backed Service)
+  {
+    providerId: "amazon-scraper",
+    name: "Amazon Web Intelligence",
+    serviceType: "data-compute",
+    qualityScore: 0.93,
+    estimatedLatencyMs: 350,
+    availability: 1.0,
+    isApiBacked: true,
+    adapterType: "REST",
+    authType: "QUERY_PARAM",
+    documentationUrl: "https://amazonscraperapi.com",
+    termsUrl: "https://amazonscraperapi.com/terms",
+    sourceUrl: "https://amazonscraperapi.com",
+    services: {
+      "amazon-product-data": {
+        id: "amazon-product-data",
+        name: "Amazon E-Commerce Scraper",
+        price: 2.5,
+        category: "data-compute",
+        quality: 0.93,
+        latencyMs: 350,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "QUERY_PARAM",
+        documentationUrl: "https://amazonscraperapi.com",
+        termsUrl: "https://amazonscraperapi.com/terms",
+        sourceUrl: "https://amazonscraperapi.com",
+        description: "Structured Amazon product catalog extraction: pricing, buy-box owner, rating, reviews count, and stock availability.",
+        generate(reqId, payload = {}) {
+          const { getAdapterByService } = require("../integrations/adapters");
+          const adapter = getAdapterByService("amazon-product-data");
+          const data = adapter ? adapter.callLocalSimulation(payload) : { asin: payload.asin || "B08N5WRWNW", title: "Apple MacBook", simulated: true };
+          return {
+            provider: "amazon-scraper",
+            service: "amazon-product-data",
+            reqId,
+            ...data,
+            generatedAt: new Date().toISOString(),
+          };
+        },
+      },
+    },
+  },
+  // 20. Blitapp Automated Snapshots (API-Backed Service)
+  {
+    providerId: "blitapp-cloud",
+    name: "Blitapp Automated Snapshots",
+    serviceType: "vision-ocr",
+    qualityScore: 0.91,
+    estimatedLatencyMs: 410,
+    availability: 1.0,
+    isApiBacked: true,
+    adapterType: "REST",
+    authType: "HEADER",
+    documentationUrl: "https://blitapp.com/docs",
+    termsUrl: "https://blitapp.com/terms",
+    sourceUrl: "https://blitapp.com",
+    services: {
+      "blitapp-snapshot": {
+        id: "blitapp-snapshot",
+        name: "Blitapp Cloud Visual Monitor",
+        price: 2.2,
+        category: "vision-ocr",
+        quality: 0.91,
+        latencyMs: 410,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "HEADER",
+        documentationUrl: "https://blitapp.com/docs",
+        termsUrl: "https://blitapp.com/terms",
+        sourceUrl: "https://blitapp.com",
+        description: "Automated recurring visual snapshots with CDN delivery, viewport customization, and visual diff detection.",
+        generate(reqId, payload = {}) {
+          const { getAdapterByService } = require("../integrations/adapters");
+          const adapter = getAdapterByService("blitapp-snapshot");
+          const data = adapter ? adapter.callLocalSimulation(payload) : { capture_id: "blit_mock", image_url: "https://blitapp.com/mock.png", simulated: true };
+          return {
+            provider: "blitapp-cloud",
+            service: "blitapp-snapshot",
+            reqId,
+            ...data,
+            generatedAt: new Date().toISOString(),
+          };
+        },
+      },
+    },
+  },
+  // 21. APITemplate PDF Engine (API-Backed Service)
+  {
+    providerId: "apitemplate-docs",
+    name: "APITemplate PDF Engine",
+    serviceType: "document-research",
+    qualityScore: 0.95,
+    estimatedLatencyMs: 320,
+    availability: 1.0,
+    isApiBacked: true,
+    adapterType: "REST",
+    authType: "HEADER",
+    documentationUrl: "https://apitemplate.io/docs",
+    termsUrl: "https://apitemplate.io/terms",
+    sourceUrl: "https://apitemplate.io",
+    services: {
+      "apitemplate-pdf": {
+        id: "apitemplate-pdf",
+        name: "APITemplate Document Generation",
+        price: 3.0,
+        category: "document-research",
+        quality: 0.95,
+        latencyMs: 320,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "HEADER",
+        documentationUrl: "https://apitemplate.io/docs",
+        termsUrl: "https://apitemplate.io/terms",
+        sourceUrl: "https://apitemplate.io",
+        description: "Dynamic enterprise PDF and image generation from reusable templates, JSON schemas, and HTML/CSS canvas.",
+        generate(reqId, payload = {}) {
+          const { getAdapterByService } = require("../integrations/adapters");
+          const adapter = getAdapterByService("apitemplate-pdf");
+          const data = adapter ? adapter.callLocalSimulation(payload) : { status: "success", download_url: "https://cdn.apitemplate.io/mock.pdf", simulated: true };
+          return {
+            provider: "apitemplate-docs",
+            service: "apitemplate-pdf",
+            reqId,
+            ...data,
+            generatedAt: new Date().toISOString(),
+          };
+        },
+      },
+    },
+  },
+  // 22. Open-Meteo Weather API (API-Backed Service)
+  {
+    providerId: "open-meteo",
+    name: "Open-Meteo Weather API",
+    serviceType: "data-compute",
+    qualityScore: 0.97,
+    estimatedLatencyMs: 80,
+    availability: 1.0,
+    isApiBacked: true,
+    adapterType: "REST",
+    authType: "NONE",
+    documentationUrl: "https://open-meteo.com/en/docs",
+    termsUrl: "https://open-meteo.com/en/terms",
+    sourceUrl: "https://open-meteo.com",
+    services: {
+      "open-meteo-weather": {
+        id: "open-meteo-weather",
+        name: "Open-Meteo Global Weather",
+        price: 0.5,
+        category: "data-compute",
+        quality: 0.97,
+        latencyMs: 80,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "NONE",
+        documentationUrl: "https://open-meteo.com/en/docs",
+        termsUrl: "https://open-meteo.com/en/terms",
+        sourceUrl: "https://open-meteo.com",
+        description: "High-resolution meteorological forecast, real-time temperature, wind speed, and atmospheric conditions worldwide.",
+        generate(reqId, payload = {}) {
+          const { getAdapterByService } = require("../integrations/adapters");
+          const adapter = getAdapterByService("open-meteo-weather");
+          const data = adapter ? adapter.callLocalSimulation(payload) : { location_name: "Delhi", current_weather: { temperature: 28.4 }, simulated: true };
+          return {
+            provider: "open-meteo",
+            service: "open-meteo-weather",
+            reqId,
+            ...data,
+            generatedAt: new Date().toISOString(),
+          };
+        },
+      },
+    },
+  },
 ];
 // Lookup helpers
 
@@ -1347,6 +1699,13 @@ function listAllServices() {
         protocol: "x402 V2",
         status: "AVAILABLE",
         x402Enabled: true,
+        isApiBacked: Boolean(s.isApiBacked || p.isApiBacked),
+        adapterType: s.adapterType || p.adapterType || null,
+        authType: s.authType || p.authType || "NONE",
+        documentationUrl: s.documentationUrl || p.documentationUrl || null,
+        termsUrl: s.termsUrl || p.termsUrl || null,
+        sourceUrl: s.sourceUrl || p.sourceUrl || null,
+        healthStatus: s.healthStatus || p.healthStatus || "AVAILABLE",
       });
     }
   }

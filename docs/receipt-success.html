@@ -199,7 +199,7 @@
               </div>
               <h2 class="text-sm font-bold tracking-widest uppercase text-zinc-950 font-body">W3A-1 AUTONOMOUS COMMERCE</h2>
               <p class="text-[11px] text-zinc-600 font-medium">Safe-Spend & x402 V2 Settlement Protocol</p>
-              <p class="text-[10px] text-blue-700 font-semibold mt-0.5">Network: eip155:11155111 • Ethereum Sepolia Testnet</p>
+              <p id="receiptNetworkSubtitle" class="text-[10px] text-blue-700 font-semibold mt-0.5">Network: eip155:11155111 • Ethereum Sepolia Testnet</p>
             </div>
 
             <!-- Metadata Info (Real Date, Order/Tx ID, Provider, Signer) -->
@@ -293,16 +293,18 @@
             <div class="py-2.5 border-b border-dashed border-zinc-300 text-[10px] font-mono text-zinc-700 space-y-1.5">
               <div>
                 <span class="text-zinc-400 block text-[9px] uppercase font-bold">On-Chain Tx Hash:</span>
-                <code id="proofTxHash" class="font-bold text-zinc-900 break-all select-all block text-[9.5px]">0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136</code>
+                <a id="proofTxHashLink" href="https://sepolia.etherscan.io/tx/0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069" target="_blank" rel="noopener noreferrer" class="font-bold text-blue-700 hover:text-blue-900 break-all select-all block text-[9.5px] underline underline-offset-2" title="Open on Sepolia Etherscan">
+                  <span id="proofTxHash">0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069</span> ↗
+                </a>
               </div>
               <div>
                 <span class="text-zinc-400 block text-[9px] uppercase font-bold">SHA-256 Delivery Hash:</span>
-                <code id="proofDeliveryHash" class="text-zinc-800 break-all select-all block text-[9.5px]">0x23d0e64c4c2c4db5974856d5194e33920ab22a0bb6522c0f115ce2a1dc779ddd</code>
+                <code id="proofDeliveryHash" class="text-zinc-800 break-all select-all block text-[9.5px]">0x6f3e1b092df48641a9985923b7e411c50064f2ab72e424e8e040c5b367098412</code>
               </div>
               <div class="pt-1">
                 <span class="text-zinc-400 block text-[9px] uppercase font-bold">Delivered Payload Output:</span>
                 <p id="proofPayload" class="text-[10px] text-zinc-800 font-sans italic line-clamp-3 bg-zinc-100 p-2 rounded border border-zinc-200 mt-0.5">
-                  "El presente Acuerdo de Confidencialidad se celebra y entra en vigencia a partir de la fecha de suscripción..."
+                  "This legal agreement is verified, secure, and confidential. Under the W3A-1 protocol, payment was settled directly on Ethereum Sepolia and SHA-256 cryptographic verification succeeded."
                 </p>
               </div>
             </div>
@@ -360,18 +362,18 @@
 
               <!-- Barcode alphanumeric verification code -->
               <p id="barcodeText" class="text-[9px] font-mono tracking-widest text-zinc-600 mt-0.5 font-bold">
-                *W3A1-4USDC-B1ED8D*
+                *W3A1-4USDC-FEFB37*
               </p>
 
               <p class="text-[8.5px] text-zinc-400 mt-1 text-center font-mono">
-                Block #11766264 • Sepolia Enforcer: 0xf9f2...A75e
+                Block #11779302 • Sepolia Enforcer: 0xf9f2...A75e
               </p>
 
               <!-- Direct Action: Sepolia Etherscan & Blockchain Verifier -->
               <div class="mt-2.5 w-full space-y-1.5">
                 <a 
                   id="receiptEtherscanDirect"
-                  href="https://sepolia.etherscan.io/tx/0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136" 
+                  href="https://sepolia.etherscan.io/tx/0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   class="w-full py-2 px-2.5 rounded bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-mono font-bold flex items-center justify-center gap-1.5 shadow-md shadow-blue-900/30 transition active:scale-95 text-center cursor-pointer"
@@ -477,25 +479,46 @@
       const proofPayload = document.getElementById("proofPayload");
       const barcodeText = document.getElementById("barcodeText");
 
-      // Dynamic real-time fetch from backend API (Sepolia priority & ?tx= support)
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const queryTx = urlParams.get('tx');
+      // Dynamic real-time fetch from backend API with SSE & polling
+      async function loadReceiptData(explicitTx) {
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const queryTx = explicitTx || urlParams.get('tx');
 
-        let res = await fetch('/api/sepolia/transactions');
-        if (!res.ok) res = await fetch('/api/transactions');
-        
-        if (res.ok) {
-          const data = await res.json();
-          const txs = data.transactions || [];
+          // Fetch all transactions from unified API
+          let txs = [];
+          try {
+            const resAll = await fetch('/api/transactions?t=' + Date.now());
+            if (resAll.ok) {
+              const dataAll = await resAll.json();
+              if (dataAll.transactions && dataAll.transactions.length > 0) {
+                txs = dataAll.transactions;
+              }
+            }
+          } catch (_) {}
+
+          if (txs.length === 0) {
+            try {
+              const resSep = await fetch('/api/sepolia/transactions?t=' + Date.now());
+              if (resSep.ok) {
+                const dataSep = await resSep.json();
+                txs = dataSep.transactions || [];
+              }
+            } catch (_) {}
+          }
+
           if (txs.length > 0) {
             // Get query matching transaction or most recent
             let latest = txs[0];
             if (queryTx) {
-              const matched = txs.find(t => (t.txHash || "").toLowerCase() === queryTx.toLowerCase());
+              const matched = txs.find(t => (t.txHash || "").toLowerCase() === queryTx.toLowerCase() || (t.reqId || "").toLowerCase() === queryTx.toLowerCase());
               if (matched) latest = matched;
             }
-            
+
+            const isSepolia = (latest.chainId === 11155111) || 
+              (latest.network && String(latest.network).includes('Sepolia')) ||
+              (latest.caip2 && String(latest.caip2).includes('11155111'));
+
             // Format Amount
             const rawAmount = parseFloat(latest.amount || "4000000");
             const formattedUsdc = (rawAmount > 1000 ? (rawAmount / 1e6) : rawAmount).toFixed(2);
@@ -509,19 +532,34 @@
             }
 
             // Order No from Tx Hash
-            const hash = latest.txHash || "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136";
-            receiptOrderNo.textContent = `#TX-${hash.slice(2, 8).toUpperCase()}`;
+            const hash = latest.txHash || "0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069";
+            receiptOrderNo.textContent = `#TX-${hash.length > 8 ? hash.slice(2, 8).toUpperCase() : 'FEFB37'}`;
+
+            // Network Subtitle
+            const netSub = document.getElementById("receiptNetworkSubtitle");
+            if (netSub) {
+              netSub.textContent = isSepolia 
+                ? "Network: eip155:11155111 • Ethereum Sepolia Testnet"
+                : "Network: eip155:31337 • Local Hardhat EVM";
+              netSub.className = isSepolia 
+                ? "text-[10px] text-blue-700 font-semibold mt-0.5" 
+                : "text-[10px] text-emerald-700 font-bold mt-0.5";
+            }
 
             // Request ID
             if (latest.reqId) {
-              receiptReqId.textContent = `${latest.reqId.slice(0, 6)}...${latest.reqId.slice(-4)}`;
+              receiptReqId.textContent = latest.reqId.length > 12 ? `${latest.reqId.slice(0, 6)}...${latest.reqId.slice(-4)}` : latest.reqId;
               receiptReqId.title = latest.reqId;
             }
 
-            // Provider
-            if (latest.provider) {
-              const shortProv = `${latest.provider.slice(0, 6)}...${latest.provider.slice(-4)}`;
-              receiptProvider.textContent = `Alpha Translation (${shortProv})`;
+            // Provider & Service
+            if (latest.providerName) {
+              const shortProv = latest.provider ? ` (${latest.provider.slice(0, 6)}...${latest.provider.slice(-4)})` : "";
+              receiptProvider.textContent = `${latest.providerName}${shortProv}`;
+            }
+            if (latest.serviceName) {
+              const svcTitle = document.getElementById("serviceTitle");
+              if (svcTitle) svcTitle.textContent = latest.serviceName;
             }
 
             // Amounts
@@ -530,33 +568,83 @@
             calcTotal.textContent = amountStr;
             topSubtitle.textContent = `${amountStr} Settled On-Chain • Zero Reload Needed`;
 
-            // Hashes
-            proofTxHash.textContent = hash;
-            if (latest.deliveryHash) {
+            // Hashes & Links
+            if (proofTxHash) proofTxHash.textContent = hash;
+            const proofLink = document.getElementById("proofTxHashLink");
+            if (proofLink) {
+              if (isSepolia) {
+                proofLink.href = `https://sepolia.etherscan.io/tx/${hash}`;
+                proofLink.textContent = `${hash} ↗`;
+                proofLink.target = "_blank";
+                proofLink.title = "Open on Sepolia Etherscan";
+              } else {
+                proofLink.href = `/?view=verify&tx=${hash}`;
+                proofLink.textContent = `${hash} (Local EVM) ↗`;
+                proofLink.target = "_self";
+                proofLink.title = "Verified on Local EVM - Open in Verifier";
+              }
+            }
+            if (latest.deliveryHash && proofDeliveryHash) {
               proofDeliveryHash.textContent = latest.deliveryHash;
+            }
+            if (latest.deliveredText && proofPayload) {
+              proofPayload.textContent = `"${latest.deliveredText}"`;
             }
 
             // Barcode
-            barcodeText.textContent = `*W3A1-${parseInt(formattedUsdc)}USDC-${hash.slice(2, 8).toUpperCase()}*`;
+            barcodeText.textContent = `*W3A1-${parseInt(formattedUsdc)}USDC-${hash.length > 8 ? hash.slice(2, 8).toUpperCase() : 'FEFB37'}*`;
 
-            // Update Direct Sepolia Blockchain Links
+            // Update Direct Action Links
             const sepoliaLink = document.getElementById("receiptSepoliaDirect");
             if (sepoliaLink) {
               sepoliaLink.href = `/?view=verify&tx=${hash}`;
             }
             const etherscanLink = document.getElementById("receiptEtherscanDirect");
             if (etherscanLink) {
-              etherscanLink.href = `https://sepolia.etherscan.io/tx/${hash}`;
+              if (isSepolia) {
+                etherscanLink.href = `https://sepolia.etherscan.io/tx/${hash}`;
+                etherscanLink.target = "_blank";
+                etherscanLink.className = "w-full py-2 px-2.5 rounded bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-mono font-bold flex items-center justify-center gap-1.5 shadow-md shadow-blue-900/30 transition active:scale-95 text-center cursor-pointer";
+                etherscanLink.innerHTML = `<span>🌐</span><span>Verify on Sepolia Etherscan Directly</span><span class="text-xs">↗</span>`;
+              } else {
+                etherscanLink.href = `/?view=verify&tx=${hash}`;
+                etherscanLink.target = "_self";
+                etherscanLink.className = "w-full py-2 px-2.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-mono font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-900/30 transition active:scale-95 text-center cursor-pointer";
+                etherscanLink.innerHTML = `<span>⚡</span><span>Verified on Local EVM • Open In Verifier</span><span class="text-xs">&rarr;</span>`;
+              }
             }
             const verifierBtn = document.getElementById("verifierPageBtn");
             if (verifierBtn) {
               verifierBtn.href = `/?view=verify&tx=${hash}`;
             }
           }
+        } catch (err) {
+          console.warn("Could not fetch transactions, using fallback data:", err);
         }
-      } catch (err) {
-        console.warn("Could not fetch /api/transactions, using verified fallback data:", err);
       }
+
+      loadReceiptData();
+
+      // Rapid Real-time Listeners: SSE stream & 3s Polling
+      try {
+        const evtSource = new EventSource('/api/events/stream');
+        evtSource.onmessage = (event) => {
+          try {
+            const parsed = JSON.parse(event.data);
+            if (parsed && (parsed.event === 'SETTLEMENT_CONFIRMED' || parsed.txHash)) {
+              loadReceiptData(parsed.txHash);
+            }
+          } catch (_) {}
+        };
+      } catch (_) {}
+
+      // Fallback polling every 4 seconds to ensure rapid updates if SSE is blocked
+      setInterval(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.get('tx')) {
+          loadReceiptData();
+        }
+      }, 4000);
 
       // Web Audio API Synthesizer for Authentic Thermal Stepper Clicking
       function playMechanicalFeedSound() {

@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 const { ethers } = require("ethers");
 const { validatePaymentPayload, validatePaymentRequirements } = require("@x402/core/schemas");
@@ -17,14 +17,6 @@ const EIP712_TYPES = {
 };
 
 class PaymentFacilitator {
-  /**
-   * @param {object} opts
-   * @param {string} opts.enforcerAddress   - TokenBudgetEnforcer contract address
-   * @param {ethers.Contract} opts.enforcerContract - Contract instance
-   * @param {ethers.Signer} [opts.settlerSigner]    - Signer paying gas for settlement txs
-   * @param {number} [opts.chainId=31337]          - EVM chainId
-   * @param {string} [opts.tokenAddress]           - MockUSDC address
-   */
   constructor({ enforcerAddress, enforcerContract, settlerSigner, chainId = 31337, tokenAddress }) {
     this.enforcerAddress = enforcerAddress;
     this.enforcerContract = enforcerContract;
@@ -33,9 +25,6 @@ class PaymentFacilitator {
     this.tokenAddress = tokenAddress;
   }
 
-  /**
-   * Return the EIP-712 domain object for signing authorizations.
-   */
   getDomain() {
     return {
       name: EIP712_DOMAIN_NAME,
@@ -45,25 +34,10 @@ class PaymentFacilitator {
     };
   }
 
-  /**
-   * Return the EIP-712 types definition.
-   */
   getTypes() {
     return EIP712_TYPES;
   }
 
-  /**
-   * Verify an x402 payment payload against the provider's payment requirements.
-   *
-   * @param {object} paymentPayload
-   * @param {string} paymentPayload.reqId
-   * @param {string} paymentPayload.provider
-   * @param {number|string} paymentPayload.amount
-   * @param {number} paymentPayload.validBefore
-   * @param {string} [paymentPayload.signature]
-   * @param {object} paymentRequirements
-   * @returns {Promise<{ valid: boolean, reason?: string }>}
-   */
   async verify(paymentPayload, paymentRequirements) {
     if (!paymentPayload || !paymentRequirements) {
       return { valid: false, reason: "Missing payment payload or requirements" };
@@ -87,19 +61,22 @@ class PaymentFacilitator {
       return { valid: false, reason: `Payment authorization expired at ${paymentPayload.validBefore}` };
     }
 
-    // 2. On-chain contract checks
+    // 2. On-chain contract checks — batched in parallel
     try {
-      const isFrozen = await this.enforcerContract.isFrozen();
+      const [isFrozen, isUsed, remaining] = await Promise.all([
+        this.enforcerContract.isFrozen(),
+        this.enforcerContract.isRequestUsed(paymentPayload.reqId),
+        this.enforcerContract.remainingBudget(),
+      ]);
+
       if (isFrozen) {
         return { valid: false, reason: "Agent spending is frozen by contract owner" };
       }
 
-      const isUsed = await this.enforcerContract.isRequestUsed(paymentPayload.reqId);
       if (isUsed) {
         return { valid: false, reason: "Request ID has already been used on-chain (replay protection)" };
       }
 
-      const remaining = await this.enforcerContract.remainingBudget();
       if (BigInt(paymentPayload.amount) > remaining) {
         return { valid: false, reason: `Amount ${paymentPayload.amount} exceeds remaining budget ${remaining}` };
       }
@@ -126,14 +103,6 @@ class PaymentFacilitator {
     }
   }
 
-  /**
-   * Settle payment on-chain releasing real ERC-20 tokens to the provider.
-   * Links the delivery hash directly to the settlement transaction.
-   *
-   * @param {object} paymentPayload
-   * @param {string} deliveryHash - SHA-256 content hash of delivered resource
-   * @returns {Promise<{ settled: boolean, txHash?: string, blockNumber?: number, error?: string }>}
-   */
   async settle(paymentPayload, deliveryHash) {
     try {
       const deliveryBytes32 = deliveryHash.startsWith("0x")
@@ -179,15 +148,6 @@ class PaymentFacilitator {
     }
   }
 
-  /**
-   * Verify an official x402 V2 PaymentPayload against expected PaymentRequirements.
-   * Performs schema validation with @x402/core, requirement matching, and delegates to
-   * the on-chain TokenBudgetEnforcer budget/freeze/replay and EIP-712 signature checks.
-   *
-   * @param {object} paymentPayload - Official x402 V2 PaymentPayload
-   * @param {object} expectedRequirements - Expected PaymentRequirements
-   * @returns {Promise<{ valid: boolean, reason?: string }>}
-   */
   async verifyX402(paymentPayload, expectedRequirements) {
     if (!paymentPayload || !expectedRequirements) {
       return { valid: false, reason: "Missing x402 payment payload or requirements" };
@@ -247,13 +207,6 @@ class PaymentFacilitator {
     );
   }
 
-  /**
-   * Settle an official x402 V2 payment on-chain and return an official x402 SettlementResponse.
-   *
-   * @param {object} paymentPayload - Official x402 V2 PaymentPayload
-   * @param {string} deliveryHash - SHA-256 content hash of delivered resource
-   * @returns {Promise<{ settled: boolean, settlementResponse?: object, txHash?: string, blockNumber?: number, error?: string }>}
-   */
   async settleX402(paymentPayload, deliveryHash) {
     const inner = (paymentPayload && paymentPayload.payload) ? paymentPayload.payload : paymentPayload;
     const accepted = (paymentPayload && paymentPayload.accepted) ? paymentPayload.accepted : null;
@@ -288,9 +241,6 @@ class PaymentFacilitator {
     };
   }
 
-  /**
-   * Retrieve on-chain settlement status for an existing reqId.
-   */
   async getSettlementStatus(reqId) {
     const isUsed = await this.enforcerContract.isRequestUsed(reqId);
     if (!isUsed) {
@@ -308,9 +258,6 @@ class PaymentFacilitator {
     };
   }
 
-  /**
-   * Get total budget, spend, and unspent escrow from contract.
-   */
   async getContractBudgetState() {
     const [totalFunded, authorizedBudget, settledSpend, remaining, unspent, isFrozen, agent] = await Promise.all([
       this.enforcerContract.totalFunded(),

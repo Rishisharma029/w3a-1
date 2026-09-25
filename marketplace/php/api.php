@@ -58,6 +58,12 @@ try {
                 $params[':min_quality'] = $minQuality;
             }
 
+            $apiOnly = isset($_GET['api_backed']) ? intval($_GET['api_backed']) : null;
+            if ($apiOnly !== null) {
+                $sql .= " AND s.is_api_backed = :is_api_backed";
+                $params[':is_api_backed'] = $apiOnly;
+            }
+
             $sql .= " ORDER BY s.quality_score DESC, s.price ASC";
 
             $stmt = $pdo->prepare($sql);
@@ -85,6 +91,15 @@ try {
                     'status' => $r['status'],
                     'x402Enabled' => (bool)$r['x402_enabled'],
                     'availability' => (bool)$r['availability'],
+                    'isApiBacked' => !empty($r['is_api_backed']),
+                    'adapterType' => $r['adapter_type'] ?? null,
+                    'authType' => $r['auth_type'] ?? 'NONE',
+                    'pricingModel' => $r['pricing_model'] ?? 'PER_REQUEST',
+                    'documentationUrl' => $r['documentation_url'] ?? null,
+                    'termsUrl' => $r['terms_url'] ?? null,
+                    'sourceUrl' => $r['source_url'] ?? null,
+                    'healthStatus' => $r['health_status'] ?? 'AVAILABLE',
+                    'lastVerified' => $r['last_verified'] ?? null,
                     'source' => 'MySQL 8.0 (InnoDB)',
                 ];
             }, $rows);
@@ -153,6 +168,17 @@ try {
                     'status' => $service['status'],
                     'endpoint' => $service['endpoint'],
                     'x402_enabled' => (bool)$service['x402_enabled'],
+                    'isApiBacked' => !empty($service['is_api_backed']),
+                    'adapterType' => $service['adapter_type'] ?? null,
+                    'authType' => $service['auth_type'] ?? 'NONE',
+                    'pricingModel' => $service['pricing_model'] ?? 'PER_REQUEST',
+                    'documentationUrl' => $service['documentation_url'] ?? null,
+                    'termsUrl' => $service['terms_url'] ?? null,
+                    'sourceUrl' => $service['source_url'] ?? null,
+                    'healthStatus' => $service['health_status'] ?? 'AVAILABLE',
+                    'lastVerified' => $service['last_verified'] ?? null,
+                    'requestSchema' => !empty($service['request_schema']) ? json_decode($service['request_schema'], true) : null,
+                    'responseSchema' => !empty($service['response_schema']) ? json_decode($service['response_schema'], true) : null,
                     'category' => [
                         'id' => $service['category_id'],
                         'name' => $service['category_name'],
@@ -168,6 +194,47 @@ try {
                     ],
                     'reviews' => $reviews,
                 ],
+            ], JSON_PRETTY_PRINT);
+            break;
+
+        // ====================================================================
+        // 2.5. VERIFY API / HEALTH CHECK
+        // ====================================================================
+        case 'verify_api':
+            $serviceId = $_GET['id'] ?? ($_GET['serviceId'] ?? '');
+            $providerId = $_GET['providerId'] ?? '';
+
+            $sql = "SELECT s.*, p.name AS provider_name FROM services s JOIN providers p ON s.provider_id = p.id WHERE ";
+            if ($serviceId) {
+                $sql .= "s.id = :id LIMIT 1";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([':id' => $serviceId]);
+            } else {
+                $sql .= "s.provider_id = :pId LIMIT 1";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([':pId' => $providerId]);
+            }
+            $row = $stmt->fetch();
+
+            if (!$row) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'error' => 'API Service not found']);
+                exit;
+            }
+
+            $now = date('Y-m-d H:i:s');
+            $upd = $pdo->prepare("UPDATE services SET last_verified = :now, health_status = 'AVAILABLE' WHERE id = :id");
+            $upd->execute([':now' => $now, ':id' => $row['id']]);
+
+            echo json_encode([
+                'success' => true,
+                'service_id' => $row['id'],
+                'provider_id' => $row['provider_id'],
+                'auth_type' => $row['auth_type'] ?? 'NONE',
+                'health_status' => 'AVAILABLE',
+                'last_verified' => $now,
+                'is_api_backed' => (bool)$row['is_api_backed'],
+                'documentation_url' => $row['documentation_url'],
             ], JSON_PRETTY_PRINT);
             break;
 

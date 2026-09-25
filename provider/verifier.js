@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 const { ethers } = require("ethers");
 const path       = require("path");
@@ -13,10 +13,6 @@ const VERIFIER_ABI = [
 ];
 
 class ContractVerifier {
-  /**
-   * @param {string} contractAddress  Deployed BudgetEnforcer address
-   * @param {ethers.Provider} provider  ethers.js provider
-   */
   constructor(contractAddress, ethersProvider) {
     this.contract = new ethers.Contract(
       contractAddress,
@@ -25,21 +21,10 @@ class ContractVerifier {
     );
   }
 
-  /**
-   * Verify that reqId was authorized in the contract for exactly `amount`.
-   *
-   * @param {string} reqId   bytes32 hex string (0x-prefixed)
-   * @param {bigint} amount  Expected authorized amount in budget units
-   * @returns {Promise<boolean>}
-   */
   async verifyAuthorization(reqId, amount) {
     return this.contract.verifyAuthorization(reqId, amount);
   }
 
-  /**
-   * Convenience: return current spend state for logging.
-   * @returns {Promise<{maxBudget: bigint, totalSpent: bigint, remaining: bigint}>}
-   */
   async getBudgetState() {
     const [maxBudget, totalSpent, remaining] = await Promise.all([
       this.contract.maxBudget(),

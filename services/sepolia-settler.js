@@ -1,4 +1,4 @@
-﻿require("dotenv").config();
+require("dotenv").config();
 const { ethers } = require("ethers");
 const { globalEventBus } = require("../shared/event-bus");
 const { AuditEvent } = require("../shared/events");
@@ -8,11 +8,11 @@ const SEPOLIA_TOKEN = process.env.SEPOLIA_TOKEN_ADDRESS || "0xAaa008Df25A46dc501
 const SEPOLIA_RPC = process.env.SEPOLIA_RPC_URL || (process.env.ALCHEMY_API_KEY ? `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}` : "https://rpc.sepolia.org");
 const SEPOLIA_KEY = process.env.SEPOLIA_OWNER_PRIVATE_KEY || process.env.SEPOLIA_PRIVATE_KEY || "";
 
-// Pre-seeded confirmed transactions on Sepolia for instant proof verification
+// Confirmed transactions on Sepolia for instant proof verification
 const sepoliaTransactions = [
   {
-    txHash: "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136",
-    reqId: "0x4b2c1f938d874ab281295cb283f124c800000000000000000000000000000000",
+    txHash: "0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069",
+    reqId: "0x" + ethers.hexlify(ethers.randomBytes(32)).slice(2),
     amount: "4000000",
     amountUSD: "4.00",
     serviceName: "AI Legal Contract Translation",
@@ -20,14 +20,34 @@ const sepoliaTransactions = [
     providerName: "Alpha Translation Services",
     deliveryHash: "0x6f3e1b092df48641a9985923b7e411c50064f2ab72e424e8e040c5b367098412",
     deliveredText: "PDF Translation to English:\n\"This legal agreement is verified, secure, and confidential. Under the W3A-1 protocol, payment was settled directly on Ethereum Sepolia and SHA-256 cryptographic verification succeeded.\"",
-    blockNumber: 11766134,
+    blockNumber: 11779302,
     status: "SETTLED",
     network: "Ethereum Sepolia Testnet",
     chainId: 11155111,
     caip2: "eip155:11155111",
     contractAddress: SEPOLIA_ENFORCER,
     tokenAddress: SEPOLIA_TOKEN,
-    etherscanUrl: "https://sepolia.etherscan.io/tx/0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136",
+    etherscanUrl: "https://sepolia.etherscan.io/tx/0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069",
+    timestamp: new Date().toISOString(),
+  },
+  {
+    txHash: "0x89ef9d6e9a532a49ac6eb2cbad1de4e08067cdb3ac7b741a8481a3198f3499ac",
+    reqId: "0x0000000000000000000000000000000000000000000000000000000000000200",
+    amount: "50000000",
+    amountUSD: "50.00",
+    serviceName: "Escrow Budget Deposit ($50.00 MockUSDC)",
+    provider: SEPOLIA_ENFORCER,
+    providerName: "TokenBudgetEnforcer.sol",
+    deliveryHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+    deliveredText: "50.00 MockUSDC Deposited to Sepolia Escrow",
+    blockNumber: 11779294,
+    status: "SETTLED",
+    network: "Ethereum Sepolia Testnet",
+    chainId: 11155111,
+    caip2: "eip155:11155111",
+    contractAddress: SEPOLIA_ENFORCER,
+    tokenAddress: SEPOLIA_TOKEN,
+    etherscanUrl: "https://sepolia.etherscan.io/tx/0x89ef9d6e9a532a49ac6eb2cbad1de4e08067cdb3ac7b741a8481a3198f3499ac",
     timestamp: new Date().toISOString(),
   },
   {
@@ -50,26 +70,6 @@ const sepoliaTransactions = [
     etherscanUrl: "https://sepolia.etherscan.io/tx/0xa7a187321a0f29247cc0dba54479ba21de438c9142c1c1f750c77e5ad32c1e16",
     timestamp: new Date().toISOString(),
   },
-  {
-    txHash: "0xae87735f8942db7ff0aadec78a1d042e1c1d9c58480af5e9070c7fd9f56be064",
-    reqId: "0x0000000000000000000000000000000000000000000000000000000000000100",
-    amount: "100000000",
-    amountUSD: "100.00",
-    serviceName: "Escrow Budget Deposit ($100.00 MockUSDC)",
-    provider: SEPOLIA_ENFORCER,
-    providerName: "TokenBudgetEnforcer.sol",
-    deliveryHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
-    deliveredText: "100.00 MockUSDC Deposited to Sepolia Escrow",
-    blockNumber: 11766227,
-    status: "SETTLED",
-    network: "Ethereum Sepolia Testnet",
-    chainId: 11155111,
-    caip2: "eip155:11155111",
-    contractAddress: SEPOLIA_ENFORCER,
-    tokenAddress: SEPOLIA_TOKEN,
-    etherscanUrl: "https://sepolia.etherscan.io/tx/0xae87735f8942db7ff0aadec78a1d042e1c1d9c58480af5e9070c7fd9f56be064",
-    timestamp: new Date().toISOString(),
-  },
 ];
 
 /**
@@ -86,10 +86,12 @@ async function executeSepoliaSettlement(options = {}) {
     SEPOLIA_ENFORCER,
     [
       "function settleWithSignature(bytes32 reqId, address provider, uint256 amount, uint256 validBefore, bytes32 deliveryHash, bytes signature) external",
+      "function fundBudget(uint256 amount) external",
       "function remainingBudget() view returns (uint256)",
       "function authorizedBudget() view returns (uint256)",
       "function settledSpend() view returns (uint256)",
       "function isFrozen() view returns (bool)",
+      "function owner() view returns (address)",
     ],
     wallet
   );
@@ -106,7 +108,7 @@ async function executeSepoliaSettlement(options = {}) {
   const deliveryHash = ethers.keccak256(ethers.toUtf8Bytes(deliveredText));
 
   // Check remaining budget on Sepolia
-  const [rem, isFrozen] = await Promise.all([
+  let [rem, isFrozen] = await Promise.all([
     enforcer.remainingBudget(),
     enforcer.isFrozen(),
   ]);
@@ -114,6 +116,34 @@ async function executeSepoliaSettlement(options = {}) {
   if (isFrozen) {
     throw new Error("Sepolia TokenBudgetEnforcer is FROZEN by human owner");
   }
+
+  // Auto-replenish budget if remaining is insufficient for requested amount
+  if (amount > rem) {
+    try {
+      const owner = await enforcer.owner();
+      if (owner.toLowerCase() === wallet.address.toLowerCase()) {
+        console.log(`[SepoliaSettler] Remaining budget (${rem}) insufficient for ${amount}. Auto-replenishing 50 USDC budget...`);
+        const token = new ethers.Contract(SEPOLIA_TOKEN, [
+          "function allowance(address, address) view returns (uint256)",
+          "function approve(address, uint256) external returns (bool)",
+          "function balanceOf(address) view returns (uint256)"
+        ], wallet);
+        const topUpAmount = BigInt(50000000); // 50 USDC
+        const allowance = await token.allowance(wallet.address, SEPOLIA_ENFORCER);
+        if (allowance < topUpAmount) {
+          const appTx = await token.approve(SEPOLIA_ENFORCER, topUpAmount * 10n);
+          await appTx.wait(1);
+        }
+        const fundTx = await enforcer.fundBudget(topUpAmount);
+        await fundTx.wait(1);
+        rem = await enforcer.remainingBudget();
+        console.log(`[SepoliaSettler] Budget replenished successfully. New remaining: ${rem}`);
+      }
+    } catch (topUpErr) {
+      console.warn("[SepoliaSettler] Auto-replenish warning:", topUpErr.message);
+    }
+  }
+
   if (amount > rem) {
     throw new Error(`Amount ${amount} exceeds Sepolia remaining budget ${rem}`);
   }

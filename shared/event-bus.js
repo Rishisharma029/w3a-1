@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 const { EventEmitter } = require("events");
 const { AuditEvent } = require("./events");
@@ -14,13 +14,6 @@ class W3A1EventBus extends EventEmitter {
     this.setMaxListeners(100);
   }
 
-  /**
-   * Emit a structured W3A-1 event.
-   *
-   * @param {string} type - Event type constant from AuditEvent
-   * @param {object} payload - Event payload details
-   * @returns {object} Formatted event envelope
-   */
   emitEvent(type, payload = {}) {
     const amountUnits = payload.amountAtomic || payload.amount || "0";
     let amountUSD = payload.amountUSD || "0.00";
@@ -65,24 +58,14 @@ class W3A1EventBus extends EventEmitter {
     return envelope;
   }
 
-  /**
-   * Retrieve recent events from history.
-   * @param {number} [limit=50]
-   */
   getHistory(limit = 50) {
     return this.history.slice(0, Math.min(limit, this.history.length));
   }
 
-  /**
-   * Clear in-memory history.
-   */
   clearHistory() {
     this.history = [];
   }
 
-  /**
-   * Create an Express HTTP handler for Server-Sent Events (SSE).
-   */
   createSSEHandler() {
     return (req, res) => {
       // Set SSE headers
@@ -109,7 +92,8 @@ class W3A1EventBus extends EventEmitter {
       const onEvent = (envelope) => {
         try {
           res.write(`event: w3a1_event\ndata: ${JSON.stringify(envelope)}\n\n`);
-        } catch (_) {}
+        } catch (err) { // SSE write error — client disconnected
+        }
       };
 
       this.on("event", onEvent);
@@ -118,7 +102,8 @@ class W3A1EventBus extends EventEmitter {
       const pingInterval = setInterval(() => {
         try {
           res.write(`: keepalive ${Date.now()}\n\n`);
-        } catch (_) {}
+        } catch (err) { // SSE write error — client disconnected
+        }
       }, 15000);
 
       // 4. Cleanup on disconnect

@@ -1,4 +1,4 @@
-﻿// Client-Side In-Memory Query Cache with In-Flight Deduplication & TTL
+// Client-Side In-Memory Query Cache with In-Flight Deduplication & TTL
 const ClientQueryCache = {
   cache: new Map(),
   inFlight: new Map(),
@@ -325,9 +325,9 @@ const ApiService = {
         trace: {
           reqId: "0xmock_ai_req_" + Date.now().toString(16),
           amountUSD: "4.00",
-          txHash: "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136",
-          blockNumber: 11766134,
-          etherscanUrl: "https://sepolia.etherscan.io/tx/0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136",
+          txHash: "0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069",
+          blockNumber: 11779302,
+          etherscanUrl: "https://sepolia.etherscan.io/tx/0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069",
           network: "Ethereum Sepolia Testnet",
           caip2: "eip155:11155111",
           chainId: 11155111,

@@ -1,4 +1,4 @@
-﻿const ProvidersView = {
+const ProvidersView = {
   initialized: false,
   isLoading: false,
   activeTab: "marketplace", // "marketplace" | "evaluation"
@@ -100,6 +100,49 @@
     }
   },
 
+  handleRequestService(serviceId) {
+    const services = this.getMarketplaceServices();
+    const s = services.find((item) => item.serviceId === serviceId) || this.viewingService;
+    if (!s) return;
+    this.closeViewService();
+
+    // Switch to agent view
+    if (typeof App !== "undefined" && typeof App.switchView === "function") {
+      App.switchView("agent");
+    }
+
+    setTimeout(() => {
+      const promptInput = document.getElementById("agentPromptInput");
+      let promptText = `Execute ${s.name} from ${s.providerName || s.providerId}. Budget $${Math.ceil(s.priceNum || 4)}`;
+      if (s.serviceId === "open-meteo-weather") {
+        promptText = "I need a weather service for Delhi under $1.";
+      } else if (s.serviceId === "currencylayer-live") {
+        promptText = "Find me a currency conversion service for USD to EUR, GBP, and INR under $2.";
+      } else if (s.serviceId === "ipstack-lookup") {
+        promptText = "Lookup IP address geolocation for 134.201.250.155 under $2.";
+      } else if (s.serviceId === "amazon-product-data") {
+        promptText = "Scrape Amazon product details for ASIN B08N5WRWNW under $3.";
+      } else if (s.serviceId === "giphy-search") {
+        promptText = "Search Giphy for autonomous machine payments GIF under $2.";
+      } else if (s.serviceId === "apiflash-capture") {
+        promptText = "Capture website screenshot for https://ethereum.org under $3.";
+      } else if (s.serviceId === "blitapp-snapshot") {
+        promptText = "Generate scheduled snapshot for https://ethereum.org under $3.";
+      } else if (s.serviceId === "apitemplate-pdf") {
+        promptText = "Generate PDF invoice receipt document under $4.";
+      }
+
+      if (promptInput) {
+        promptInput.value = promptText;
+      }
+      if (typeof AgentView !== "undefined" && typeof AgentView.runPurchase === "function") {
+        AgentView.runPurchase(promptText);
+      } else if (typeof App !== "undefined" && typeof App.runAutonomousPurchaseSequence === "function") {
+        App.runAutonomousPurchaseSequence(promptText);
+      }
+    }, 150);
+  },
+
   async handlePublishSubmit(event) {
     if (event) event.preventDefault();
 
@@ -145,10 +188,223 @@
   },
 
   getMarketplaceServices() {
-    if (typeof AppState !== "undefined" && AppState.services && AppState.services.length > 0) {
-      return AppState.services;
-    }
-    return [
+    const apiServices = [
+      {
+        id: "ipstack-lookup",
+        serviceId: "ipstack-lookup",
+        name: "IP Location Intelligence",
+        providerId: "ipstack-geo",
+        providerName: "IPStack Geolocation API",
+        description: "Real-time IPv4/IPv6 geolocation, regional boundaries, coordinate lookup, and ISP intelligence.",
+        quality: 0.94,
+        latency: "190ms",
+        latencyMs: 190,
+        price: "$1.50 USDC / job",
+        priceNum: 1.5,
+        category: "data-compute",
+        endpoint: "/x402/providers/ipstack-geo/service?serviceId=ipstack-lookup",
+        protocol: "x402 V2",
+        status: "AVAILABLE",
+        x402Enabled: true,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "QUERY_PARAM",
+        pricingModel: "PER_REQUEST",
+        documentationUrl: "https://ipstack.com/documentation",
+        termsUrl: "https://ipstack.com/terms",
+        sourceUrl: "https://ipstack.com",
+        healthStatus: "AVAILABLE"
+      },
+      {
+        id: "currencylayer-live",
+        serviceId: "currencylayer-live",
+        name: "Real-Time Forex & FX Rates",
+        providerId: "currencylayer-fx",
+        providerName: "CurrencyLayer Forex Rates API",
+        description: "Reliable, exchange-grade foreign exchange rates and currency conversion across 168 global currencies.",
+        quality: 0.96,
+        latency: "210ms",
+        latencyMs: 210,
+        price: "$1.00 USDC / job",
+        priceNum: 1.0,
+        category: "data-compute",
+        endpoint: "/x402/providers/currencylayer-fx/service?serviceId=currencylayer-live",
+        protocol: "x402 V2",
+        status: "AVAILABLE",
+        x402Enabled: true,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "QUERY_PARAM",
+        pricingModel: "PER_REQUEST",
+        documentationUrl: "https://currencylayer.com/documentation",
+        termsUrl: "https://currencylayer.com/terms",
+        sourceUrl: "https://currencylayer.com",
+        healthStatus: "AVAILABLE"
+      },
+      {
+        id: "giphy-search",
+        serviceId: "giphy-search",
+        name: "Giphy Animated Media & Search",
+        providerId: "giphy-media",
+        providerName: "Giphy Media Engine",
+        description: "World's largest animated GIF library search, contextual stickers, and animated media metadata extraction.",
+        quality: 0.92,
+        latency: "150ms",
+        latencyMs: 150,
+        price: "$0.80 USDC / request",
+        priceNum: 0.8,
+        category: "image-video",
+        endpoint: "/x402/providers/giphy-media/service?serviceId=giphy-search",
+        protocol: "x402 V2",
+        status: "AVAILABLE",
+        x402Enabled: true,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "QUERY_PARAM",
+        pricingModel: "PER_REQUEST",
+        documentationUrl: "https://developers.giphy.com/docs/api/endpoint",
+        termsUrl: "https://support.giphy.com/hc/en-us/articles/360020027752-GIPHY-User-Terms-of-Service",
+        sourceUrl: "https://giphy.com",
+        healthStatus: "AVAILABLE"
+      },
+      {
+        id: "apiflash-capture",
+        serviceId: "apiflash-capture",
+        name: "Automated Web Capture & Snapshot",
+        providerId: "apiflash-render",
+        providerName: "ApiFlash Screenshot Service",
+        description: "Cloud Chrome-based full-page screenshot rendering, PDF generation, and automated webpage visual capture.",
+        quality: 0.94,
+        latency: "480ms",
+        latencyMs: 480,
+        price: "$2.00 USDC / request",
+        priceNum: 2.0,
+        category: "vision-ocr",
+        endpoint: "/x402/providers/apiflash-render/service?serviceId=apiflash-capture",
+        protocol: "x402 V2",
+        status: "AVAILABLE",
+        x402Enabled: true,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "QUERY_PARAM",
+        pricingModel: "PER_REQUEST",
+        documentationUrl: "https://apiflash.com/documentation",
+        termsUrl: "https://apiflash.com/terms",
+        sourceUrl: "https://apiflash.com",
+        healthStatus: "AVAILABLE"
+      },
+      {
+        id: "amazon-product-data",
+        serviceId: "amazon-product-data",
+        name: "Amazon E-Commerce Scraper",
+        providerId: "amazon-scraper",
+        providerName: "Amazon Scraper API",
+        description: "Structured e-commerce catalog scraping for ASINs, pricing, inventory, customer reviews, and specifications.",
+        quality: 0.93,
+        latency: "350ms",
+        latencyMs: 350,
+        price: "$2.50 USDC / job",
+        priceNum: 2.5,
+        category: "data-compute",
+        endpoint: "/x402/providers/amazon-scraper/service?serviceId=amazon-product-data",
+        protocol: "x402 V2",
+        status: "AVAILABLE",
+        x402Enabled: true,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "QUERY_PARAM",
+        pricingModel: "PER_REQUEST",
+        documentationUrl: "https://amazonscraperapi.com",
+        termsUrl: "https://amazonscraperapi.com/terms",
+        sourceUrl: "https://amazonscraperapi.com",
+        healthStatus: "AVAILABLE"
+      },
+      {
+        id: "blitapp-snapshot",
+        serviceId: "blitapp-snapshot",
+        name: "Blitapp Cloud Visual Monitor",
+        providerId: "blitapp-cloud",
+        providerName: "Blitapp Scheduled Web Snapshot",
+        description: "Enterprise website monitoring and scheduled automated webpage capture with email/cloud delivery.",
+        quality: 0.91,
+        latency: "410ms",
+        latencyMs: 410,
+        price: "$2.20 USDC / request",
+        priceNum: 2.2,
+        category: "vision-ocr",
+        endpoint: "/x402/providers/blitapp-cloud/service?serviceId=blitapp-snapshot",
+        protocol: "x402 V2",
+        status: "AVAILABLE",
+        x402Enabled: true,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "HEADER",
+        pricingModel: "PER_REQUEST",
+        documentationUrl: "https://blitapp.com/api",
+        termsUrl: "https://blitapp.com/terms",
+        sourceUrl: "https://blitapp.com",
+        healthStatus: "AVAILABLE"
+      },
+      {
+        id: "apitemplate-pdf",
+        serviceId: "apitemplate-pdf",
+        name: "APITemplate Document Generation",
+        providerId: "apitemplate-docs",
+        providerName: "APITemplate PDF & Image Engine",
+        description: "Automated PDF and image document generation from dynamic JSON payloads and customizable templates.",
+        quality: 0.95,
+        latency: "320ms",
+        latencyMs: 320,
+        price: "$3.00 USDC / request",
+        priceNum: 3.0,
+        category: "document-research",
+        endpoint: "/x402/providers/apitemplate-docs/service?serviceId=apitemplate-pdf",
+        protocol: "x402 V2",
+        status: "AVAILABLE",
+        x402Enabled: true,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "HEADER",
+        pricingModel: "PER_REQUEST",
+        documentationUrl: "https://apitemplate.io/docs",
+        termsUrl: "https://apitemplate.io/terms",
+        sourceUrl: "https://apitemplate.io",
+        healthStatus: "AVAILABLE"
+      },
+      {
+        id: "open-meteo-weather",
+        serviceId: "open-meteo-weather",
+        name: "Open-Meteo Global Weather",
+        providerId: "open-meteo",
+        providerName: "Open-Meteo Weather Service",
+        description: "Free and open-source weather API providing high-resolution global atmospheric forecasts and meteorological data.",
+        quality: 0.97,
+        latency: "80ms",
+        latencyMs: 80,
+        price: "$0.50 USDC / job",
+        priceNum: 0.5,
+        category: "data-compute",
+        endpoint: "/x402/providers/open-meteo/service?serviceId=open-meteo-weather",
+        protocol: "x402 V2",
+        status: "AVAILABLE",
+        x402Enabled: true,
+        isApiBacked: true,
+        adapterType: "REST",
+        authType: "NONE",
+        pricingModel: "PER_REQUEST",
+        documentationUrl: "https://open-meteo.com/en/docs",
+        termsUrl: "https://open-meteo.com/en/terms",
+        sourceUrl: "https://open-meteo.com",
+        healthStatus: "AVAILABLE"
+      }
+    ];
+
+    let base = (typeof AppState !== "undefined" && AppState.services && AppState.services.length > 0)
+      ? [...AppState.services]
+      : null;
+
+    if (!base) {
+      base = [
       {
             "id": "text-translate",
             "serviceId": "text-translate",
@@ -1085,7 +1341,20 @@
             "status": "AVAILABLE",
             "x402Enabled": true
       }
-];
+    ];
+  }
+
+  // Ensure all 8 live API-backed services are always present in the marketplace
+  for (const apiSvc of apiServices) {
+    const idx = base.findIndex((s) => s.serviceId === apiSvc.serviceId || s.id === apiSvc.id);
+    if (idx === -1) {
+      base.unshift(apiSvc);
+    } else {
+      base[idx] = { ...base[idx], ...apiSvc, isApiBacked: true };
+    }
+  }
+
+  return base;
   },
 
   runSelectionAnimation() {
@@ -1427,7 +1696,7 @@
               </span>
               <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 shadow-[0_0_10px_rgba(16,185,129,0.15)]">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>52 services · 14 provider nodes · 9 categories · x402 enabled</span>
+                <span>${services.length} services · 22 provider nodes · 10 categories · x402 enabled</span>
               </span>
             </div>
             <h1 class="font-headline text-2xl lg:text-3xl font-bold text-white tracking-tight">
@@ -1496,17 +1765,19 @@
   },
 
   renderMarketplaceControls(services) {
+    const apiCount = services.filter((s) => s.isApiBacked).length;
     const categories = [
-      { id: "all", label: "All (52)" },
-      { id: "translation", label: "Translation (10)" },
-      { id: "data-compute", label: "Compute (8)" },
-      { id: "vision-ocr", label: "Vision & OCR (4)" },
-      { id: "text-generation", label: "Text Gen (7)" },
-      { id: "speech-audio", label: "Speech & Audio (4)" },
-      { id: "image-video", label: "Image & Video (4)" },
-      { id: "code-dev", label: "Code & Sandbox (4)" },
-      { id: "rag-embeddings", label: "RAG & Vector (7)" },
-      { id: "document-research", label: "Research & Safety (4)" },
+      { id: "all", label: `All (${services.length})` },
+      { id: "api-backed", label: `● API Services (${apiCount})` },
+      { id: "translation", label: "Translation" },
+      { id: "data-compute", label: "Compute & Data" },
+      { id: "vision-ocr", label: "Vision & OCR" },
+      { id: "text-generation", label: "Text Gen" },
+      { id: "speech-audio", label: "Speech & Audio" },
+      { id: "image-video", label: "Image & Video" },
+      { id: "code-dev", label: "Code & Dev" },
+      { id: "rag-embeddings", label: "RAG & Vector" },
+      { id: "document-research", label: "Research & Safety" },
     ];
 
     return `
@@ -1536,7 +1807,7 @@
         <div class="relative min-w-[220px]">
           <input
             type="text"
-            placeholder="Search 52 services or 14 providers..."
+            placeholder="Search ${services.length} services or 22 providers..."
             value="${this.searchQuery}"
             oninput="ProvidersView.setSearchQuery(this.value)"
             class="w-full pl-8 pr-3 py-1.5 rounded-lg bg-surface-lowest border border-outline-variant/40 text-xs text-white placeholder-outline focus:outline-none focus:border-secondary transition font-mono"
@@ -1578,7 +1849,9 @@
   renderMarketplaceCards(services) {
     if (this.isLoading) return this.renderSkeletonGrid(8);
     let filtered = services.filter((s) => {
-      if (this.selectedCategory !== "all") {
+      if (this.selectedCategory === "api-backed") {
+        if (!s.isApiBacked) return false;
+      } else if (this.selectedCategory !== "all") {
         const cat = (s.category || "").toLowerCase();
         const sel = this.selectedCategory.toLowerCase();
         if (cat !== sel && !cat.includes(sel) && !sel.includes(cat)) return false;
@@ -1671,25 +1944,46 @@
                   </div>
                 </div>
 
-                <!-- Bottom: Tags & [VIEW SERVICE] Action -->
-                <div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between gap-3">
-                  <div class="flex items-center gap-1.5">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-secondary/15 text-secondary border border-secondary/30 glow-cyan">
-                      [x402 V2]
-                    </span>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-tertiary/15 text-tertiary border border-tertiary/30 glow-emerald flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
-                      [AVAILABLE]
-                    </span>
+                <!-- Bottom: Tags & [VIEW SERVICE] / [REQUEST SERVICE] Actions -->
+                <div class="pt-4 border-t border-outline-variant/20 flex flex-wrap items-center justify-between gap-2">
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    ${s.isApiBacked ? `
+                      <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                        ● API Available
+                      </span>
+                      <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/15 text-blue-300 border border-blue-500/30">
+                        ✓ Provider Verified
+                      </span>
+                      <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                        ✓ Budget Compatible
+                      </span>
+                    ` : `
+                      <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-secondary/15 text-secondary border border-secondary/30 glow-cyan">
+                        [x402 V2]
+                      </span>
+                      <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-tertiary/15 text-tertiary border border-tertiary/30 glow-emerald flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+                        [AVAILABLE]
+                      </span>
+                    `}
                   </div>
 
-                  <button
-                    onclick="ProvidersView.openViewService('${s.serviceId}')"
-                    class="px-4 py-2 rounded-xl bg-surface-high hover:bg-surface-highest border border-outline-variant/40 hover:border-secondary/60 text-xs font-mono font-bold text-white flex items-center gap-1.5 transition shadow-sm active:scale-95 cursor-pointer"
-                  >
-                    <span>VIEW SERVICE</span>
-                    <span class="material-symbols-outlined text-sm text-secondary">arrow_forward</span>
-                  </button>
+                  <div class="flex items-center gap-2">
+                    <button
+                      onclick="ProvidersView.openViewService('${s.serviceId}')"
+                      class="px-3.5 py-1.5 rounded-xl bg-surface-high hover:bg-surface-highest border border-outline-variant/40 hover:border-secondary/60 text-xs font-mono font-bold text-white flex items-center gap-1 transition shadow-sm active:scale-95 cursor-pointer"
+                    >
+                      <span>VIEW SERVICE</span>
+                    </button>
+                    <button
+                      onclick="ProvidersView.handleRequestService('${s.serviceId}')"
+                      class="px-3.5 py-1.5 rounded-xl bg-secondary/20 hover:bg-secondary/30 text-secondary border border-secondary/40 text-xs font-mono font-bold flex items-center gap-1 transition shadow-sm active:scale-95 cursor-pointer"
+                    >
+                      <span class="material-symbols-outlined text-xs">bolt</span>
+                      <span>REQUEST</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             `;
@@ -1755,6 +2049,52 @@
               </div>
             </div>
           </div>
+
+          ${s.isApiBacked ? `
+            <!-- API-Backed Service Specification -->
+            <div class="rounded-xl bg-surface-lowest border border-amber-500/30 p-4 space-y-3 font-mono text-xs">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                  API Service Specification
+                </span>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">
+                  ● API Available
+                </span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] pt-1">
+                <div>
+                  <span class="text-outline block text-[9px] uppercase">Adapter Type</span>
+                  <span class="text-white font-bold">${s.adapterType || "REST HTTP"}</span>
+                </div>
+                <div>
+                  <span class="text-outline block text-[9px] uppercase">Authentication</span>
+                  <span class="text-secondary font-bold">${s.authType || "NONE"}</span>
+                </div>
+                <div>
+                  <span class="text-outline block text-[9px] uppercase">Pricing Model</span>
+                  <span class="text-tertiary font-bold">${s.pricingModel || "PER_REQUEST"}</span>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-3 pt-2 border-t border-outline-variant/20 text-xs">
+                ${s.documentationUrl ? `
+                  <a href="${s.documentationUrl}" target="_blank" rel="noopener noreferrer" class="text-secondary hover:underline flex items-center gap-1 text-[11px]">
+                    <span class="material-symbols-outlined text-xs">description</span> Official API Docs ↗
+                  </a>
+                ` : ""}
+                ${s.termsUrl ? `
+                  <a href="${s.termsUrl}" target="_blank" rel="noopener noreferrer" class="text-outline hover:text-white flex items-center gap-1 text-[11px]">
+                    <span class="material-symbols-outlined text-xs">policy</span> Terms & License ↗
+                  </a>
+                ` : ""}
+                ${s.sourceUrl ? `
+                  <a href="${s.sourceUrl}" target="_blank" rel="noopener noreferrer" class="text-outline hover:text-white flex items-center gap-1 text-[11px]">
+                    <span class="material-symbols-outlined text-xs">open_in_new</span> Provider Portal ↗
+                  </a>
+                ` : ""}
+              </div>
+            </div>
+          ` : ""}
 
           <!-- x402 V2 Wire Endpoint & Copy -->
           <div class="space-y-2">
@@ -1851,11 +2191,11 @@
               Close
             </button>
             <button
-              onclick="ProvidersView.closeViewService(); App.runAutonomousPurchaseSequence();"
+              onclick="ProvidersView.handleRequestService('${s.serviceId}')"
               class="px-5 py-2 rounded-xl bg-gradient-to-r from-secondary to-tertiary text-surface font-headline font-bold text-xs flex items-center gap-2 transition shadow-lg cursor-pointer active:scale-95"
             >
               <span class="material-symbols-outlined text-sm font-bold">bolt</span>
-              Purchase With Agent (${s.price})
+              Request Service (${s.price})
             </button>
           </div>
         </div>

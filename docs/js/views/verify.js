@@ -1,4 +1,4 @@
-﻿const VerifyView = {
+const VerifyView = {
   initialized: false,
   activeTab: "sepolia", // "sepolia" | "local"
   currentHash: "0x303ae7447a4b78850a86e5ecf126d1437b8094c045b1fe9917aacb98698ec289",
@@ -17,17 +17,17 @@
       timestamp: new Date().toISOString(),
     },
     {
-      txHash: "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136",
+      txHash: "0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069",
       reqId: "0x4b2c1f938d874ab281295cb283f124c800000000000000000000000000000000",
       amountUSD: "4.00",
       serviceName: "AI Legal Translation",
       providerName: "Alpha Translation Services",
       deliveryHash: "0x6f3e1b092df48641a9985923b7e411c50064f2ab72e424e8e040c5b367098412",
-      blockNumber: 11766134,
+      blockNumber: 11779302,
       network: "Ethereum Sepolia Testnet",
       chainId: 11155111,
-      etherscanUrl: "https://sepolia.etherscan.io/tx/0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136",
-      timestamp: "2026-09-23T16:50:00.000Z",
+      etherscanUrl: "https://sepolia.etherscan.io/tx/0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069",
+      timestamp: new Date().toISOString(),
     },
     {
       txHash: "0xa7a187321a0f29247cc0dba54479ba21de438c9142c1c1f750c77e5ad32c1e16",
@@ -447,11 +447,11 @@
                 Sepolia Latest ($4.00)
               </button>
               <button 
-                onclick="VerifyView.setSampleHash('0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136')" 
+                onclick="VerifyView.setSampleHash('0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069')" 
                 class="px-2.5 py-1 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-cyan-300 border border-blue-500/30 text-[10px] cursor-pointer"
                 title="Confirmed on Sepolia"
               >
-                Sepolia #11766134
+                Sepolia #11779302
               </button>
               <button 
                 onclick="VerifyView.setSampleHash('0xae87735f8942db7ff0aadec78a1d042e1c1d9c58480af5e9070c7fd9f56be064')" 

@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 require("dotenv").config();
 
@@ -80,6 +80,12 @@ async function main() {
 
   const indexer = new EventIndexer({ contract: enforcer });
   await indexer.start();
+
+  // Pre-seed indexer with verified Sepolia transactions for complete multi-chain ledger
+  const { sepoliaTransactions } = require("../services/sepolia-settler");
+  for (const st of (sepoliaTransactions || [])) {
+    indexer.recordTransaction(st);
+  }
 
   const marketplace = createTokenMarketplace({
     port: MARKETPLACE_PORT,
@@ -181,6 +187,25 @@ async function main() {
         const settlement = decodePaymentResponseHeader(respHeader);
         const deliveredText = JSON.stringify(paidResp.data);
         const calculatedHash = computeContentHash(deliveredText);
+
+        indexer.recordTransaction({
+          reqId,
+          txHash: settlement.transaction,
+          provider: requirement.payTo,
+          providerName: "Alpha Translation Labs",
+          serviceName: "Neural Text Translation",
+          serviceId: "text-translate",
+          amount: requirement.amount,
+          amountUSD: (Number(requirement.amount) / 1e6).toFixed(2),
+          deliveryHash: calculatedHash,
+          deliveredText,
+          blockNumber: 1,
+          network: "Local Hardhat EVM",
+          chainId: 31337,
+          caip2: "eip155:31337",
+          status: "SETTLED",
+          timestamp: new Date().toISOString(),
+        });
 
         console.log(chalk.green(`  ✔ Initial seed purchase succeeded! Tx: ${settlement.transaction}`));
         console.log(chalk.green(`  ✔ Verified Delivery Hash: ${calculatedHash}`));

@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 require("dotenv").config();
 
@@ -110,7 +110,14 @@ function keywordParseIntent(text) {
   const lower = text.toLowerCase();
 
   let serviceType = null;
-  if (/translat|hindi|spanish|french|german|language/.test(lower))                   serviceType = "translation";
+  if (/weather|forecast|temperature|delhi|climate|meteorolog/.test(lower))          serviceType = "data-compute";
+  else if (/currenc|forex|fx|exchange rate|convert usd|convert inr|convert eur/.test(lower)) serviceType = "data-compute";
+  else if (/ipstack|ip address|geolocation|geo location|ip lookup|where is ip/.test(lower)) serviceType = "data-compute";
+  else if (/amazon|product price|asin|scrape amazon|ecommerce price/.test(lower))    serviceType = "data-compute";
+  else if (/giphy|gif|meme|animation|reaction gif/.test(lower))                     serviceType = "image-video";
+  else if (/apiflash|blitapp|screenshot|capture website|page snapshot|web capture/.test(lower)) serviceType = "vision-ocr";
+  else if (/apitemplate|invoice pdf|generate pdf|create pdf|pdf document/.test(lower)) serviceType = "document-research";
+  else if (/translat|hindi|spanish|french|german|language/.test(lower))             serviceType = "translation";
   else if (/compute|calculat|matrix|statist|anomal|risk|monte|process|data|analyz/.test(lower)) serviceType = "compute";
   else if (/ocr|image.analyz|vision|photo|picture|detect|receipt|invoice|face/.test(lower)) serviceType = "image-analysis";
   else if (/reason|llm|generat|story|plan|schema|json|summar|tldr|distill/.test(lower))   serviceType = "text-generation";
@@ -140,7 +147,15 @@ function keywordParseIntent(text) {
   if (langMatch) targetLanguage = langMatch[1];
 
   let preferredProvider = null;
-  if (/alpha/i.test(lower))        preferredProvider = "alpha-translate";
+  if (/weather|open-meteo/i.test(lower))           preferredProvider = "open-meteo";
+  else if (/currenc|forex|fx|exchange/i.test(lower)) preferredProvider = "currencylayer-fx";
+  else if (/ipstack|geolocation|ip lookup/i.test(lower))   preferredProvider = "ipstack-geo";
+  else if (/amazon/i.test(lower))                  preferredProvider = "amazon-scraper";
+  else if (/giphy|gif/i.test(lower))               preferredProvider = "giphy-media";
+  else if (/apiflash|web capture/i.test(lower))    preferredProvider = "apiflash-render";
+  else if (/blitapp|snapshot/i.test(lower))        preferredProvider = "blitapp-cloud";
+  else if (/apitemplate|pdf engine/i.test(lower))  preferredProvider = "apitemplate-docs";
+  else if (/alpha/i.test(lower))        preferredProvider = "alpha-translate";
   else if (/beta/i.test(lower))    preferredProvider = "beta-translate";
   else if (/gamma/i.test(lower))   preferredProvider = "gamma-translate";
   else if (/delta/i.test(lower))   preferredProvider = "delta-compute";
@@ -155,7 +170,24 @@ function keywordParseIntent(text) {
   else if (/nu/i.test(lower))      preferredProvider = "nu-rag";
   else if (/xi/i.test(lower))      preferredProvider = "xi-compliance";
 
-  return { serviceType, priority, minQuality, maxPrice, targetLanguage, preferredProvider, payload: targetLanguage ? { targetLanguage } : null };
+  let payload = null;
+  if (targetLanguage) payload = { targetLanguage };
+  else if (/weather|delhi/i.test(lower)) {
+    const cityMatch = text.match(/\b(Delhi|Tokyo|London|New York|Paris|Berlin|Mumbai|Singapore|Sydney)\b/i);
+    payload = { city: cityMatch ? cityMatch[1] : "Delhi" };
+  } else if (/currenc|forex|convert/i.test(lower)) {
+    payload = { currencies: "EUR,GBP,INR,JPY" };
+  } else if (/ip|geolocation/i.test(lower)) {
+    const ipMatch = text.match(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/);
+    payload = { ip: ipMatch ? ipMatch[0] : "134.201.250.155" };
+  } else if (/amazon|asin/i.test(lower)) {
+    const asinMatch = text.match(/\b[B0-9][A-Z0-9]{9}\b/);
+    payload = { asin: asinMatch ? asinMatch[0] : "B08N5WRWNW" };
+  } else if (/giphy|gif/i.test(lower)) {
+    payload = { query: text };
+  }
+
+  return { serviceType, priority, minQuality, maxPrice, targetLanguage, preferredProvider, payload };
 }
 
 // Weighted scoring: cost → price=0.7/quality=0.3, quality → price=0.2/quality=0.8, balanced → 0.5/0.5

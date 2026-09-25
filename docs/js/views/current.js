@@ -1,11 +1,11 @@
-﻿const CurrentTransactionView = {
+const CurrentTransactionView = {
   initialized: false,
   isExecuting: false,
   currentPrompt: "Translate this legal contract to English. Quality > 0.9. Max $5.",
   status: "COMPLETED", // "RUNNING" | "COMPLETED"
   activeStep: 10,       // 1 to 10
   expandedStep: 5,      // step 5 (HTTP 402 PAYMENT REQUIRED) expanded by default
-  txHash: "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136",
+  txHash: "0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069",
   deliveryHash: "0x6f3e1b092df48641a9985923b7e411c50064f2ab72e424e8e040c5b367098412",
   deliveredText: "This legal agreement is verified, secure, and confidential. Under the W3A-1 protocol, payment was settled directly on Ethereum Sepolia and SHA-256 cryptographic verification succeeded.",
   elapsedSeconds: 0,
@@ -15,7 +15,7 @@
 
   realTx: {
     reqId: "0xdd41c4b4e5c142e1ba1448d593e75cf600000000000000000000000000000000",
-    orderNo: "#TX-B1ED8D",
+    orderNo: "#TX-FEFB37",
     providerName: "Alpha Translation Services",
     providerId: "alpha-translate",
     providerAddress: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
@@ -25,10 +25,10 @@
     deliveredText: "This legal agreement is verified, secure, and confidential. Under the W3A-1 protocol, payment was settled directly on-chain and SHA-256 cryptographic verification succeeded.",
     amountUSD: "4.00",
     amountAtomic: "4000000",
-    txHash: "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136",
+    txHash: "0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069",
     deliveryHash: "0x23d0e64c4c2c4db5974856d5194e33920ab22a0bb6522c0f115ce2a1dc779ddd",
     timestamp: new Date(),
-    blockNumber: 11766134,
+    blockNumber: 11779302,
     status: "SETTLED",
     network: "eip155:11155111 (Ethereum Sepolia Testnet)",
     contractAddress: "0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e",
@@ -654,15 +654,15 @@
         amount: "4000000",
         amountUSD: this.realTx.amountUSD || "4.00",
         status: "SETTLED",
-        txHash: this.realTx.txHash || "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136",
-        blockNumber: this.realTx.blockNumber || 11766134,
+        txHash: this.realTx.txHash || "0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069",
+        blockNumber: this.realTx.blockNumber || 11779302,
         deliveryHash: this.realTx.deliveryHash,
         deliveredText: this.realTx.deliveredText,
         timestamp: new Date().toISOString(),
         network: "Ethereum Sepolia Testnet",
         chainId: 11155111,
         caip2: "eip155:11155111",
-        etherscanUrl: "https://sepolia.etherscan.io/tx/" + (this.realTx.txHash || "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136"),
+        etherscanUrl: "https://sepolia.etherscan.io/tx/" + (this.realTx.txHash || "0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069"),
         content: {
           translatedText: this.realTx.deliveredText,
           provider: this.realTx.providerName,
@@ -1378,7 +1378,7 @@
               </button>
               <div class="flex items-center gap-2">
                 <a
-                  href="/receipt-success.html"
+                  href="/receipt-success.html?tx=${encodeURIComponent(this.realTx.txHash || this.txHash || '0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069')}"
                   target="_blank"
                   class="px-4 py-2.5 rounded-xl bg-surface-lowest hover:bg-surface-high border border-outline-variant/40 text-xs font-mono text-zinc-300 hover:text-white flex items-center gap-1.5 transition"
                 >

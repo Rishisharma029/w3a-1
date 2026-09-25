@@ -1756,7 +1756,7 @@ Highest quality under $5.</textarea>
         return;
       }
 
-      const txHash = trace.txHash || "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136";
+      const txHash = trace.txHash || (data && data.txHash) || (data && data.record && data.record.txHash) || "0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069";
       const deliveryHash = trace.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
       const rawContent = trace.deliveredContent || trace.content || "यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.";
       const deliveredText = typeof rawContent === "object" ? (rawContent.translatedText || JSON.stringify(rawContent)) : rawContent;
@@ -1778,7 +1778,7 @@ Highest quality under $5.</textarea>
         bDetail.innerHTML = `
           <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
             <span style="color: var(--text-muted);">Tx:</span>
-            <code style="color: var(--accent-emerald); font-weight: 700;">${txHash}</code>
+            <a href="https://sepolia.etherscan.io/tx/${txHash}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-emerald); font-weight: 700; text-decoration: underline;" title="View on Sepolia Etherscan">${txHash.slice(0, 16)}...${txHash.slice(-8)} ↗</a>
           </div>
           <div style="font-size: 0.75rem; color: #fff; border-top: 1px solid var(--border-color); padding-top: 0.3rem;">
             MockUSDC ERC-20 transfer settled on Hardhat EVM

@@ -1,4 +1,4 @@
-﻿const AppState = {
+const AppState = {
   currentView: "overview",
   environment: "local",      // "local" | "sepolia"
   isMockMode: false,         // true when user toggles or backend is offline
@@ -243,10 +243,36 @@
   },
 
   updateTransactions(txList) {
+    const rawList = Array.isArray(txList) ? txList : [];
+    const existing = Array.isArray(this.transactions) ? this.transactions : [];
+    const map = new Map();
+
+    // 1. Ingest incoming transactions
+    for (const item of rawList) {
+      if (!item) continue;
+      const key = (item.txHash || item.reqId || "").toLowerCase();
+      if (key) map.set(key, item);
+    }
+
+    // 2. Keep any newly completed transactions from this session
+    for (const item of existing) {
+      if (!item) continue;
+      const key = (item.txHash || item.reqId || "").toLowerCase();
+      if (key && !map.has(key)) {
+        map.set(key, item);
+      }
+    }
+
+    const merged = Array.from(map.values()).sort((a, b) => {
+      const timeA = new Date(a.timestamp || 0).getTime();
+      const timeB = new Date(b.timestamp || 0).getTime();
+      return timeB - timeA;
+    });
+
     if (typeof TransactionAdapter !== "undefined") {
-      this.transactions = TransactionAdapter.normalizeList(txList);
+      this.transactions = TransactionAdapter.normalizeList(merged);
     } else {
-      this.transactions = txList || [];
+      this.transactions = merged;
     }
     this.notify("transactions_updated", this.transactions);
   },

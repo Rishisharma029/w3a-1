@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 // 1. UI Formatter & Presentation Helpers
 const UIFormatter = {
   /**
@@ -441,8 +441,15 @@ const TransactionAdapter = {
     // Protocol details
     const x402Version = raw.x402Version || 2;
     const scheme = raw.scheme || "exact";
-    const network = raw.network || "eip155:31337";
-    const asset = raw.asset || "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+    const chainId = raw.chainId || (raw.network && (raw.network.includes("Sepolia") || raw.network.includes("11155111")) ? 11155111 : 31337);
+    const isSepolia = chainId === 11155111 || (raw.network && raw.network.includes("Sepolia"));
+    const network = raw.network || (isSepolia ? "Ethereum Sepolia Testnet" : "Local Hardhat EVM");
+    const caip2 = raw.caip2 || (isSepolia ? "eip155:11155111" : "eip155:31337");
+    const etherscanUrl = raw.etherscanUrl || (isSepolia && txHash && !txHash.startsWith("0xpend") ? `https://sepolia.etherscan.io/tx/${txHash}` : null);
+    const deliveredText = raw.deliveredText || (typeof raw.content === "string" ? raw.content : (raw.content && raw.content.result ? raw.content.result : ""));
+    const contractAddress = raw.contractAddress || null;
+    const tokenAddress = raw.tokenAddress || null;
+    const asset = raw.asset || tokenAddress || "0x5FbDB2315678afecb367f032d93F642f64180aa3";
     const payer = raw.payer || "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
     const nonce = raw.nonce || reqId.slice(0, 18);
     const validBefore = raw.validBefore || Math.floor(Date.now() / 1000) + 300;
@@ -487,6 +494,12 @@ const TransactionAdapter = {
       x402Version,
       scheme,
       network,
+      chainId,
+      caip2,
+      etherscanUrl,
+      deliveredText,
+      contractAddress,
+      tokenAddress,
       asset,
       payer,
       payTo: providerAddr,

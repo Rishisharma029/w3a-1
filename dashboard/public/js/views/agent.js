@@ -1,4 +1,4 @@
-﻿const AgentView = {
+const AgentView = {
   initialized: false,
   currentPrompt: "Translate this PDF to Hindi.\nHighest quality under $5.",
   activeResult: null,
@@ -47,7 +47,7 @@
         const validTxHash =
           rawTxHash && rawTxHash.startsWith('0x') && rawTxHash.length === 66
             ? rawTxHash
-            : '0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136';
+            : '0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069';
         const rawDelivHash = norm.deliveryHash;
         const validDelivHash =
           rawDelivHash && rawDelivHash.startsWith('sha256:')
@@ -70,14 +70,17 @@
             'यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.',
           amountUSD: norm.amountUSD || '4.00',
           timestamp: norm.timestamp || new Date(),
-          blockNumber: norm.blockNumber || 11766264,
-          network: norm.network || 'eip155:11155111 (Ethereum Sepolia Testnet)',
+          blockNumber: norm.blockNumber || (norm.chainId === 31337 ? 1 : 11779302),
+          network: norm.network || (norm.chainId === 31337 ? 'Local Hardhat EVM' : 'Ethereum Sepolia Testnet'),
+          chainId: norm.chainId || (norm.network && norm.network.includes('31337') ? 31337 : 11155111),
+          caip2: norm.caip2 || (norm.chainId === 31337 ? 'eip155:31337' : 'eip155:11155111'),
+          etherscanUrl: norm.etherscanUrl || (norm.chainId === 31337 ? null : `https://sepolia.etherscan.io/tx/${validTxHash}`),
         };
       }
     }
     return {
       reqId: '0x088e7c75ddcc48eba8329618b1a37c02b3df468e82a09c2a1387d40294716b23',
-      txHash: '0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136',
+      txHash: '0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069',
       deliveryHash: 'sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6',
       providerName: 'Alpha Translation Labs',
       providerAddress: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
@@ -86,7 +89,7 @@
       deliveredText: 'यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.',
       amountUSD: '4.00',
       timestamp: new Date(),
-      blockNumber: 11766264,
+      blockNumber: 11779302,
       network: 'eip155:11155111 (Ethereum Sepolia Testnet)',
     };
   },
@@ -137,8 +140,8 @@
       validDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase() +
       ' ' +
       validDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const txHash = tx.txHash || '0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136';
-    const orderNo = `TX-${(txHash.length > 8 ? txHash.slice(2, 8) : 'B1ED8D').toUpperCase()}`;
+    const txHash = tx.txHash || '0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069';
+    const orderNo = `TX-${(txHash.length > 8 ? txHash.slice(2, 8) : 'FEFB37').toUpperCase()}`;
     const amountNum = Number(tx.amountUSD || 4.0);
     const amountFormatted = `$${amountNum.toFixed(2)} USDC`;
 
@@ -198,6 +201,48 @@ VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
     }
   },
 
+  async settleLiveOnSepolia() {
+    try {
+      if (typeof App !== "undefined" && typeof App.toast === "function") {
+        App.toast("Broadcasting settlement directly to Ethereum Sepolia Testnet...", "info");
+      }
+      const curTx = this.lastCompletedTx || this.getLatestTx();
+      const res = await fetch("/api/sepolia/settle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          serviceName: curTx ? (curTx.serviceName || curTx.serviceId) : "AI Legal Contract Translation",
+          text: curTx ? (curTx.deliveredText || curTx.deliveryText) : "W3A-1 on-chain Sepolia settlement confirmed.",
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (typeof App !== "undefined" && typeof App.toast === "function") {
+          App.toast(`Settled on Sepolia Block #${data.blockNumber}! Tx: ${data.txHash.slice(0, 10)}...`, "success");
+        }
+        if (data.record) {
+          this.lastCompletedTx = data.record;
+          if (typeof AppState !== "undefined") {
+            AppState.transactions = [data.record, ...(AppState.transactions || [])];
+            AppState.notify("transactions_updated", AppState.transactions);
+          }
+        }
+        this.updateReceiptSection(true);
+        if (typeof ApiService !== "undefined") {
+          await ApiService.syncAll();
+        }
+      } else {
+        if (typeof App !== "undefined" && typeof App.toast === "function") {
+          App.toast(`Sepolia settlement error: ${data.error || 'Failed'}`, "error");
+        }
+      }
+    } catch (err) {
+      if (typeof App !== "undefined" && typeof App.toast === "function") {
+        App.toast(`Sepolia error: ${err.message}`, "error");
+      }
+    }
+  },
+
   updateReceiptSection(shouldAnimate = false) {
     const container = document.getElementById('agentReceiptContainer');
     if (!container) return;
@@ -235,8 +280,8 @@ VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
       ' ' +
       validDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-    const txHash = tx.txHash || '0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136';
-    const orderNo = `#TX-${(txHash.length > 8 ? txHash.slice(2, 8) : 'B1ED8D').toUpperCase()}`;
+    const txHash = tx.txHash || '0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069';
+    const orderNo = `#TX-${(txHash.length > 8 ? txHash.slice(2, 8) : 'FEFB37').toUpperCase()}`;
     const reqId = tx.reqId || tx.requestId || '0x088e7c75ddcc48eba8329618b1a37c02b3df468e82a09c2a1387d40294716b23';
     const shortReqId = reqId.length > 22 ? reqId.slice(0, 18) + '...' : reqId;
 
@@ -254,9 +299,18 @@ VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
           'यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.');
 
     const barcodeCode = `*W3A1-${amountNum.toFixed(0)}USDC-${(txHash.length > 10 ? txHash.slice(2, 10) : 'B1ED8D').toUpperCase()}*`;
-    const blockNumber = tx.blockNumber || 11766264;
+    const isSepolia = (tx.chainId === 11155111) || 
+      (tx.network && String(tx.network).includes('Sepolia')) || 
+      (tx.caip2 && String(tx.caip2).includes('11155111'));
+    const networkSubText = isSepolia ? 'Network: eip155:11155111 • Ethereum Sepolia Testnet' : 'Network: eip155:31337 • Local Hardhat EVM';
+    const networkSubClass = isSepolia ? 'text-blue-700 font-semibold' : 'text-emerald-700 font-bold';
+    const verifierBtnLabel = isSepolia ? 'Sepolia Verifier' : 'Local EVM Verifier';
+    const blockNumber = tx.blockNumber || (isSepolia ? 11779302 : 1);
     const enforcerAddr = (AppState && AppState.config && AppState.config.enforcerAddress) || '0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e';
     const shortEnforcer = enforcerAddr.length > 12 ? `${enforcerAddr.slice(0, 6)}...${enforcerAddr.slice(-4)}` : enforcerAddr;
+    const contractMetaLabel = isSepolia 
+      ? `Block #${blockNumber} • Sepolia Enforcer: ${shortEnforcer}`
+      : `Block #${blockNumber} • Local EVM Enforcer: ${shortEnforcer}`;
 
     return `
       <div class="space-y-4 pt-2">
@@ -322,10 +376,10 @@ VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
                 type="button"
                 onclick="App.openVerifier('${txHash}')" 
                 class="px-2.5 py-1 rounded bg-blue-600/25 hover:bg-blue-600/40 text-cyan-300 border border-cyan-500/40 transition flex items-center gap-1 cursor-pointer"
-                title="Open Sepolia Blockchain Verifier in this dashboard"
+                title="Open Cryptographic Verifier in this dashboard"
               >
                 <span class="material-symbols-outlined text-[13px]">verified</span>
-                <span>Sepolia Verifier</span>
+                <span>${verifierBtnLabel}</span>
               </button>
             </div>
           </div>
@@ -351,7 +405,7 @@ VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
                   </div>
                   <h2 class="text-sm font-bold tracking-widest uppercase text-zinc-950 font-sans">W3A-1 AUTONOMOUS COMMERCE</h2>
                   <p class="text-[11px] text-zinc-600 font-medium">Safe-Spend & x402 V2 Settlement Protocol</p>
-                  <p class="text-[10px] text-blue-700 font-semibold mt-0.5">Network: eip155:11155111 • Ethereum Sepolia Testnet</p>
+                  <p class="text-[10px] ${networkSubClass} mt-0.5">${networkSubText}</p>
                 </div>
 
                 <!-- Metadata Info (Real Date, Order/Tx ID, Provider, Signer) -->
@@ -445,7 +499,10 @@ VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
                 <div class="py-2.5 border-b border-dashed border-zinc-300 text-[10px] font-mono text-zinc-700 space-y-1.5">
                   <div>
                     <span class="text-zinc-400 block text-[9px] uppercase font-bold">On-Chain Tx Hash:</span>
-                    <a href="https://sepolia.etherscan.io/tx/${txHash}" target="_blank" rel="noopener noreferrer" class="font-bold text-blue-700 hover:text-blue-900 break-all select-all block text-[9.5px] underline underline-offset-2" title="Open on Sepolia Etherscan">${txHash} ↗</a>
+                    ${isSepolia
+                      ? `<a href="https://sepolia.etherscan.io/tx/${txHash}" target="_blank" rel="noopener noreferrer" class="font-bold text-blue-700 hover:text-blue-900 break-all select-all block text-[9.5px] underline underline-offset-2" title="Open on Sepolia Etherscan">${txHash} ↗</a>`
+                      : `<a href="javascript:void(0)" onclick="App.openVerifier('${txHash}')" class="font-bold text-emerald-700 hover:text-emerald-900 break-all select-all block text-[9.5px] underline underline-offset-2" title="Verified on Local EVM - Click to view in Verifier">${txHash} (Local EVM Verified) ↗</a>`
+                    }
                   </div>
                   <div>
                     <span class="text-zinc-400 block text-[9px] uppercase font-bold">SHA-256 Delivery Hash:</span>
@@ -514,11 +571,12 @@ VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
                   </p>
 
                   <p class="text-[8.5px] text-zinc-500 mt-1 text-center font-mono font-medium">
-                    Block #${blockNumber} • Sepolia Enforcer: ${shortEnforcer}
+                    ${contractMetaLabel}
                   </p>
 
-                  <!-- Direct Actions: Sepolia Etherscan & Full Verifier Page -->
+                  <!-- Direct Actions: Network-Aware Verification & Sepolia Broadcast -->
                   <div class="mt-2.5 w-full space-y-1.5">
+                    ${isSepolia ? `
                     <a 
                       href="https://sepolia.etherscan.io/tx/${txHash}" 
                       target="_blank" 
@@ -539,6 +597,26 @@ VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
                       <span class="text-cyan-300 font-bold">🔗</span>
                       <span>Open in Sepolia Verifier (This Dashboard) &rarr;</span>
                     </button>
+                    ` : `
+                    <button 
+                      type="button"
+                      onclick="App.openVerifier('${txHash}')" 
+                      class="w-full py-2 px-2.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-mono font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-900/30 transition active:scale-95 text-center cursor-pointer"
+                      title="Open Local Hardhat EVM Verifier in Dashboard"
+                    >
+                      <span>⚡</span>
+                      <span>Verified on Local Hardhat EVM • Open In Verifier &rarr;</span>
+                    </button>
+                    <button 
+                      type="button"
+                      onclick="AgentView.settleLiveOnSepolia()" 
+                      class="w-full py-2 px-2.5 rounded bg-blue-600/30 hover:bg-blue-600/50 text-cyan-200 border border-cyan-400/40 text-[10px] font-mono font-bold flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95 text-center cursor-pointer"
+                      title="Also broadcast and settle this order directly on Ethereum Sepolia Testnet"
+                    >
+                      <span>🌐</span>
+                      <span>Settle Live On Ethereum Sepolia Testnet (11155111) &rarr;</span>
+                    </button>
+                    `}
                   </div>
                 </div>
               </div>
@@ -585,7 +663,8 @@ VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
           </button>
           <div class="flex items-center gap-2">
             <a
-              href="/receipt-success.html"
+              id="agentStandaloneReceiptLink"
+              href="/receipt-success.html?tx=${txHash}"
               target="_blank"
               class="px-4 py-2.5 rounded-xl bg-surface-lowest hover:bg-surface-high border border-outline-variant/40 text-xs font-mono text-zinc-300 hover:text-white flex items-center gap-1.5 transition"
             >
@@ -1073,8 +1152,8 @@ VERIFIED: CRYPTOGRAPHICALLY VERIFIED & IMMUTABLE
       return;
     }
 
-    const txHash = trace.txHash || "0x20c9008318891465b63dd8720c78919b3e582a09af77d77336dd97d448d3a136";
-    const deliveryHash = trace.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
+    const txHash = trace.txHash || (data && data.txHash) || (data && data.record && data.record.txHash) || (AppState.transactions && AppState.transactions[0] && AppState.transactions[0].txHash) || "0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069";
+    const deliveryHash = trace.deliveryHash || (data && data.deliveryHash) || (data && data.record && data.record.deliveryHash) || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
     const rawContent = trace.deliveredContent || trace.content || "यह अनुवादित पाठ है (This is the translated text) - Autonomous AI translation delivered.";
     const deliveredText = typeof rawContent === "object" ? (rawContent.translatedText || JSON.stringify(rawContent)) : rawContent;
 

@@ -1,4 +1,4 @@
-﻿const TransactionsView = {
+const TransactionsView = {
   activeFilter: "All Purchases",
   searchQuery: "",
   viewMode: "cards", // "cards" | "table"
@@ -244,6 +244,11 @@
                         statusLabel = "REJECTED";
                       }
 
+                      const isSep = (t.chainId === 11155111) || (t.network && String(t.network).includes('Sepolia'));
+                      const netBadge = isSep
+                        ? `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/15 text-cyan-300 border border-blue-500/30">ETHEREUM SEPOLIA</span>`
+                        : `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">LOCAL EVM</span>`;
+
                       const subNotice = isCapped
                         ? `<span class="text-[10px] text-rose-400 font-mono flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>Blocked: Exceeds spending cap (ZERO tokens moved)</span>`
                         : isRejected
@@ -260,9 +265,12 @@
                               ${statusLabel}
                             </span>
                             <div>
-                              <h3 class="font-headline text-base font-bold text-white group-hover:text-secondary transition-colors">
-                                ${t.serviceName || t.serviceId || "Autonomous Service"}
-                              </h3>
+                              <div class="flex items-center gap-2">
+                                <h3 class="font-headline text-base font-bold text-white group-hover:text-secondary transition-colors">
+                                  ${t.serviceName || t.serviceId || "Autonomous Service"}
+                                </h3>
+                                ${netBadge}
+                              </div>
                               <div class="flex flex-wrap items-center gap-2 mt-0.5">
                                 <span class="text-xs font-mono text-outline">
                                   ${t.providerName || t.provider || "Decentralized Provider"}
@@ -297,6 +305,7 @@
                 <thead class="border-b border-outline-variant/30 uppercase text-[10px] text-outline">
                   <tr>
                     <th class="py-3 px-3">Status</th>
+                    <th class="py-3 px-3">Network</th>
                     <th class="py-3 px-3">Service</th>
                     <th class="py-3 px-3">Provider</th>
                     <th class="py-3 px-3">Amount</th>
@@ -311,6 +320,7 @@
                       const isSuccess = t.isSettled || t.status === "SETTLED";
                       const isCapped = t.status === "CAPPED" || t.isCapped;
                       const isRejected = t.status === "REJECTED" || t.isRejected;
+                      const isSep = (t.chainId === 11155111) || (t.network && String(t.network).includes('Sepolia'));
 
                       let badgeClass = "bg-tertiary/15 text-tertiary border border-tertiary/30";
                       let badgeLabel = "SETTLED";
@@ -327,6 +337,11 @@
                           <td class="py-3 px-3">
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">
                               ${badgeLabel}
+                            </span>
+                          </td>
+                          <td class="py-3 px-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono ${isSep ? 'bg-blue-500/15 text-cyan-300 border border-blue-500/30' : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'}">
+                              ${isSep ? 'Sepolia' : 'Local EVM'}
                             </span>
                           </td>
                           <td class="py-3 px-3 text-white font-bold font-sans">${t.serviceName || t.serviceId}</td>

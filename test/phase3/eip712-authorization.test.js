@@ -16,7 +16,6 @@ describe("Phase 3 — EIP-712 Signed Payment Authorizations", function () {
   beforeEach(async function () {
     [owner, agent, provider, stranger] = await ethers.getSigners();
 
-    // 1. Deploy MockUSDC
     const TokenFactory = await ethers.getContractFactory("MockUSDC");
     token = await TokenFactory.deploy();
     await token.waitForDeployment();
