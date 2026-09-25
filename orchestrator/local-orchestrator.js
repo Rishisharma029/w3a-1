@@ -157,8 +157,11 @@ function createLocalOrchestratorRouter({
         selected.providerId +
         "/service";
 
-      // Always settle on Ethereum Sepolia Testnet so every purchase shows on public Sepolia Etherscan
-      const useSepolia = true;
+      const useSepolia = Boolean(
+        (req.body && req.body.network === "sepolia") ||
+        (process.env.DEFAULT_CHAIN === "sepolia") ||
+        (!enforcerContract && !agentSigner)
+      );
 
       const deliveredText =
         "[" +
@@ -201,9 +204,9 @@ function createLocalOrchestratorRouter({
         confidence: 0.97,
         status: "DELIVERED",
         latencyMs: selected.estimatedLatencyMs || 200,
-        network: "Ethereum Sepolia Testnet",
-        chainId: 11155111,
-        caip2: "eip155:11155111",
+        network: useSepolia ? "Ethereum Sepolia Testnet" : "Local Hardhat EVM",
+        chainId: useSepolia ? 11155111 : 31337,
+        caip2: useSepolia ? "eip155:11155111" : "eip155:31337",
       };
 
       const deliveryHash = computeContentHash(JSON.stringify(deliveredContent));

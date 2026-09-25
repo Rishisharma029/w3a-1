@@ -315,6 +315,28 @@ const AppState = {
     this.notify("services_updated", this.services);
   },
 
+  getMarketplaceMetrics() {
+    const services = (this.services && this.services.length > 0)
+      ? this.services
+      : (typeof DEFAULT_MARKET_SERVICES !== "undefined" && Array.isArray(DEFAULT_MARKET_SERVICES) ? DEFAULT_MARKET_SERVICES : []);
+
+    const providersSet = new Set();
+    const categoriesSet = new Set();
+    services.forEach((s) => {
+      const p = s.providerName || s.providerId || s.provider;
+      if (p) providersSet.add(p);
+      const c = s.category;
+      if (c) categoriesSet.add(c.toLowerCase());
+    });
+
+    const backendStats = this.config && this.config.marketplaceStats;
+    const serviceCount = (backendStats && backendStats.totalServices) || services.length || 61;
+    const providerCount = (backendStats && backendStats.totalProviders) || providersSet.size || 22;
+    const categoryCount = (backendStats && backendStats.totalCategories) || categoriesSet.size || 9;
+
+    return { serviceCount, providerCount, categoryCount, services };
+  },
+
   setLiveEvents(events) {
     this.liveEvents = events || [];
     this.notify("live_events_updated", this.liveEvents);

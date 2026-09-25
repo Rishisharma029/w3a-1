@@ -10,6 +10,8 @@ const VerifyView = {
   currentHash: "0xb9d3d3491888106ee4c0eb63717ede3ced22cbd65dcb0c284cc4a6ab4312aa75",
   enforcerAddress: "0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e",
   tokenAddress: "0xAaa008Df25A46dc501B5B712ac18B47901AF99A7",
+  localEnforcerAddress: "0xe7f1725E07018023380218241b6253069714BD22",
+  localTokenAddress: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
   etherscanBase: "https://sepolia.etherscan.io",
 
   sepoliaTransactions: [
@@ -97,21 +99,24 @@ const VerifyView = {
     const list = [...this.sepoliaTransactions];
     if (typeof AppState !== "undefined" && AppState.transactions) {
       for (const tx of AppState.transactions) {
+        const isSep = (tx.chainId === 11155111) || (tx.network && tx.network.includes("Sepolia"));
+        if (!isSep) continue;
         const h = (tx.txHash || "").toLowerCase();
         if (h && !list.some((s) => (s.txHash || "").toLowerCase() === h)) {
-          list.unshift({
-            txHash: tx.txHash,
-            reqId: tx.reqId || "0x088e7c75ddcc48eba8329618b1a37c02b3df468e82a09c2a1387d40294716b23",
-            amountUSD: tx.amountUSD || "4.00",
-            serviceName: tx.serviceName || "AI Text Translation",
-            providerName: tx.providerName || "Alpha Translation Services",
-            deliveryHash: tx.deliveryHash || "sha256:366cfc3da3d1160ea0519cacc7fd255f48b39114681212789c53d3ce2a12e16c",
-            blockNumber: tx.blockNumber || 11766134,
-            network: "Ethereum Sepolia Testnet",
-            chainId: 11155111,
-            etherscanUrl: tx.etherscanUrl || ("https://sepolia.etherscan.io/tx/" + tx.txHash),
-            timestamp: tx.timestamp || new Date().toISOString(),
-          });
+          list.unshift(tx);
+        }
+      }
+    }
+    return list;
+  },
+
+  getLocalTransactions() {
+    const list = [];
+    if (typeof AppState !== "undefined" && AppState.transactions) {
+      for (const tx of AppState.transactions) {
+        const isSep = (tx.chainId === 11155111) || (tx.network && tx.network.includes("Sepolia"));
+        if (!isSep && tx.txHash) {
+          list.push(tx);
         }
       }
     }
@@ -202,22 +207,25 @@ const VerifyView = {
       (t) => (t.txHash || "").toLowerCase() === targetHash.toLowerCase()
     );
 
-    const localTxs = (typeof AppState !== "undefined" && AppState.transactions) || [];
+    const localTxs = this.getLocalTransactions();
     const isLocalMatch = localTxs.find(
       (t) => (t.txHash || "").toLowerCase() === targetHash.toLowerCase()
     );
 
-    const isSepolia = isSepoliaMatch || (!isLocalMatch && targetHash.startsWith("0x") && targetHash.length === 66);
-    const matched = isSepoliaMatch || isLocalMatch || {};
-    const blk = matched.blockNumber || 11779302;
-    const amountVal = matched.amountUSD || "4.00";
+    const matched = isSepoliaMatch || isLocalMatch || (AppState.transactions && AppState.transactions.find((t) => (t.txHash || "").toLowerCase() === targetHash.toLowerCase())) || {};
+    const isLocal = Boolean(isLocalMatch || matched.chainId === 31337 || (matched.network && matched.network.toLowerCase().includes("local")));
+    const isSepolia = !isLocal;
+    const blk = matched.blockNumber || (isSepolia ? 11779302 : 1);
+    const amountVal = matched.amountUSD || (matched.amount ? (Number(matched.amount) / 1e6).toFixed(2) : "4.00");
     const deliveryHashVal = matched.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
     const rid = matched.reqId || "0x37815bb89cda313f4117cc039be4afef7047cfb1";
     const reqIdVal = rid.length > 20 ? `${rid.slice(0, 10)}...${rid.slice(-8)}` : rid;
     const isCleanSepoliaHash = targetHash && targetHash.startsWith("0x") && targetHash.length === 66 && !targetHash.includes("094e6208") && !targetHash.includes("revert");
-    const etherscanUrl = (matched.etherscanUrl && !matched.etherscanUrl.includes("094e6208"))
-      ? matched.etherscanUrl
-      : (isCleanSepoliaHash ? `${this.etherscanBase}/tx/${targetHash}` : `${this.etherscanBase}/address/${this.enforcerAddress}`);
+    const etherscanUrl = isSepolia
+      ? ((matched.etherscanUrl && !matched.etherscanUrl.includes("094e6208"))
+          ? matched.etherscanUrl
+          : (isCleanSepoliaHash ? `${this.etherscanBase}/tx/${targetHash}` : `${this.etherscanBase}/address/${this.enforcerAddress}`))
+      : null;
 
     resCard.innerHTML = `
       <!-- Top Verification Status Banner -->
@@ -229,26 +237,30 @@ const VerifyView = {
           <div>
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
               <span style="font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: #fff;">CRYPTOGRAPHICALLY VERIFIED</span>
-              <span class="badge badge-success">
+              <span class="badge ${isSepolia ? "badge-info" : "badge-success"}">
                 ${isSepolia ? "ETHEREUM SEPOLIA (eip155:11155111)" : "LOCAL HARDHAT EVM (Chain 31337)"}
               </span>
             </div>
             <p style="font-size: 12px; font-family: var(--font-mono); color: var(--text-muted); margin-top: 3px;">
-              ${isSepolia ? `Confirmed on Ethereum Sepolia Public Ledger • Block #${blk}` : "Mined on Private Local EVM Ledger • Chain ID 31337"}
+              ${isSepolia ? `Confirmed on Ethereum Sepolia Public Ledger • Block #${blk}` : `Mined on Private Local EVM Ledger • Chain ID 31337 • Block #${blk}`}
             </p>
           </div>
         </div>
 
         <div style="display: flex; gap: 8px; align-items: center;">
-          <a
-            href="${etherscanUrl}"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-primary btn-sm"
-            title="Open direct transaction page on Ethereum Sepolia Etherscan"
-          >
-            <span>Open on Sepolia Etherscan Directly ↗</span>
-          </a>
+          ${
+            etherscanUrl
+              ? `<a
+                  href="${etherscanUrl}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-primary btn-sm"
+                  title="Open direct transaction page on Ethereum Sepolia Etherscan"
+                >
+                  <span>Open on Sepolia Etherscan Directly ↗</span>
+                </a>`
+              : `${typeof UIFormatter !== "undefined" && UIFormatter.copyButton ? UIFormatter.copyButton(targetHash, "Tx Hash") : ""}`
+          }
         </div>
       </div>
 
@@ -259,14 +271,20 @@ const VerifyView = {
             On-Chain Tx Hash
           </div>
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
-            <a
-              href="${etherscanUrl}"
-              target="_blank"
-              rel="noopener noreferrer"
-              style="font-family: var(--font-mono); font-size: 11.5px; color: var(--primary); text-decoration: underline; word-break: break-all;"
-            >
-              ${targetHash.length > 20 ? `${targetHash.slice(0, 10)}...${targetHash.slice(-8)}` : targetHash}
-            </a>
+            ${
+              etherscanUrl
+                ? `<a
+                    href="${etherscanUrl}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style="font-family: var(--font-mono); font-size: 11.5px; color: var(--primary); text-decoration: underline; word-break: break-all;"
+                  >
+                    ${targetHash.length > 20 ? `${targetHash.slice(0, 10)}...${targetHash.slice(-8)}` : targetHash}
+                  </a>`
+                : `<span style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text); word-break: break-all;">
+                    ${targetHash.length > 20 ? `${targetHash.slice(0, 10)}...${targetHash.slice(-8)}` : targetHash}
+                  </span>`
+            }
             ${typeof UIFormatter !== "undefined" && UIFormatter.copyButton ? UIFormatter.copyButton(targetHash, "Tx Hash") : ""}
           </div>
         </div>
@@ -312,13 +330,13 @@ const VerifyView = {
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; font-family: var(--font-mono); font-size: 11.5px;">
           <div style="display: flex; align-items: center; gap: 6px; color: var(--tertiary);">
-            <span>✓</span> <span>Smart Contract Settlement on Sepolia</span>
+            <span>✓</span> <span>${isSepolia ? "Smart Contract Settlement on Sepolia" : "Smart Contract Settlement on Local EVM"}</span>
           </div>
           <div style="display: flex; align-items: center; gap: 6px; color: var(--tertiary);">
             <span>✓</span> <span>ERC-20 Token Transfer Emitted</span>
           </div>
           <div style="display: flex; align-items: center; gap: 6px; color: var(--tertiary);">
-            <span>✓</span> <span>SHA-256 Content Hash Matches Payload</span>
+            <span>✓</span> <span>SHA-256 confirms delivered payload matches recorded digest</span>
           </div>
           <div style="display: flex; align-items: center; gap: 6px; color: var(--tertiary);">
             <span>✓</span> <span>EIP-712 Replay Guard: Nonce Marked Spent</span>
@@ -328,28 +346,41 @@ const VerifyView = {
 
       <!-- Verifying Smart Contract Metadata Strip -->
       <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">
-        <div>
-          Verifying Contract:
-          <a
-            href="${this.etherscanBase}/address/${this.enforcerAddress}"
-            target="_blank"
-            rel="noopener noreferrer"
-            style="color: var(--primary); text-decoration: underline;"
-          >
-            TokenBudgetEnforcer.sol (${this.enforcerAddress.slice(0, 8)}...${this.enforcerAddress.slice(-6)}) ↗
-          </a>
-        </div>
-        <div>
-          Token Contract:
-          <a
-            href="${this.etherscanBase}/token/${this.tokenAddress}?a=${this.enforcerAddress}"
-            target="_blank"
-            rel="noopener noreferrer"
-            style="color: var(--tertiary); text-decoration: underline;"
-          >
-            MockUSDC (${this.tokenAddress.slice(0, 8)}...${this.tokenAddress.slice(-6)}) ↗
-          </a>
-        </div>
+        ${
+          isSepolia
+            ? `<div>
+                Verifying Contract:
+                <a
+                  href="${this.etherscanBase}/address/${this.enforcerAddress}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style="color: var(--primary); text-decoration: underline;"
+                >
+                  TokenBudgetEnforcer.sol (${this.enforcerAddress.slice(0, 8)}...${this.enforcerAddress.slice(-6)}) ↗
+                </a>
+              </div>
+              <div>
+                Token Contract:
+                <a
+                  href="${this.etherscanBase}/token/${this.tokenAddress}?a=${this.enforcerAddress}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style="color: var(--tertiary); text-decoration: underline;"
+                >
+                  MockUSDC (${this.tokenAddress.slice(0, 8)}...${this.tokenAddress.slice(-6)}) ↗
+                </a>
+              </div>`
+            : `<div>
+                Verifying Contract:
+                <code style="color: var(--primary);">${this.localEnforcerAddress}</code> (Local EVM)
+                ${typeof UIFormatter !== "undefined" && UIFormatter.copyButton ? UIFormatter.copyButton(this.localEnforcerAddress, "Enforcer") : ""}
+              </div>
+              <div>
+                Token Contract:
+                <code style="color: var(--tertiary);">${this.localTokenAddress}</code> (Local EVM)
+                ${typeof UIFormatter !== "undefined" && UIFormatter.copyButton ? UIFormatter.copyButton(this.localTokenAddress, "Token") : ""}
+              </div>`
+        }
       </div>
     `;
   },
@@ -409,7 +440,7 @@ const VerifyView = {
   render() {
     this.init();
 
-    const localTxs = (typeof AppState !== "undefined" && AppState.transactions) || [];
+    const localTxs = this.getLocalTransactions();
     const sepTxs = this.getCombinedSepoliaTransactions();
     const displayedList = this.activeTab === "sepolia" ? sepTxs : localTxs;
 
@@ -589,8 +620,8 @@ const VerifyView = {
                 ? `<div style="text-align: center; padding: 32px; color: var(--text-muted); font-family: var(--font-mono); font-size: 12px;">No transactions recorded in this ledger yet.</div>`
                 : displayedList.map((tx) => {
                     const hash = tx.txHash || "";
-                    const isSep = this.activeTab === "sepolia";
-                    const etherscanUrl = isSep ? `${this.etherscanBase}/tx/${hash}` : `https://sepolia.etherscan.io/address/${this.enforcerAddress}`;
+                    const isSep = (tx.chainId === 11155111) || (tx.network && tx.network.includes("Sepolia")) || (!tx.chainId && this.activeTab === "sepolia");
+                    const etherscanUrl = isSep && hash ? `${this.etherscanBase}/tx/${hash}` : null;
                     const amtStr = tx.amountUSD ? `$${Number(tx.amountUSD).toFixed(2)} USDC` : (tx.amount ? `$${(Number(tx.amount) / 1e6).toFixed(2)} USDC` : "$4.00 USDC");
                     const isCurrentSelected = (hash || "").toLowerCase() === (activeHash || "").toLowerCase();
 
@@ -615,7 +646,7 @@ const VerifyView = {
                               </span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); flex-wrap: wrap;">
-                              <span>Tx: <a href="${etherscanUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;"><code>${hash ? `${hash.slice(0, 10)}...${hash.slice(-8)}` : "Pending"}</code> ↗</a></span>
+                              <span>Tx: ${etherscanUrl ? `<a href="${etherscanUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;"><code>${hash ? `${hash.slice(0, 10)}...${hash.slice(-8)}` : "Pending"}</code> ↗</a>` : `<code>${hash ? `${hash.slice(0, 10)}...${hash.slice(-8)}` : "Pending"}</code>`}</span>
                               ${tx.blockNumber ? `<span>Block: <strong>#${tx.blockNumber}</strong></span>` : ''}
                               ${tx.providerName ? `<span>Provider: <strong>${tx.providerName}</strong></span>` : ''}
                             </div>
@@ -631,16 +662,20 @@ const VerifyView = {
                           >
                             Inspect Proof
                           </button>
-
-                          <a
-                            href="${etherscanUrl}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="btn btn-primary btn-sm"
-                            title="Directly open on Sepolia Etherscan"
-                          >
-                            <span>Sepolia Etherscan ↗</span>
-                          </a>
+                          ${typeof UIFormatter !== "undefined" && UIFormatter.copyButton ? UIFormatter.copyButton(hash, "Tx Hash") : ""}
+                          ${
+                            etherscanUrl
+                              ? `<a
+                                  href="${etherscanUrl}"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  class="btn btn-primary btn-sm"
+                                  title="Directly open on Sepolia Etherscan"
+                                >
+                                  <span>Sepolia Etherscan ↗</span>
+                                </a>`
+                              : `<span class="badge badge-neutral" style="font-size: 10px;">Local EVM</span>`
+                          }
                         </div>
                       </div>
                     `;

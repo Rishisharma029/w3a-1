@@ -11,9 +11,13 @@ coverage.json
 
 # Environment Configurations & Secrets
 .env
-.env*.local
-.env.production
+.env.*
+!.env.example
 .mcp.json
+*.pem
+*.key
+*.keystore
+
 
 # Database & Engine Binary Storage
 marketplace/data/

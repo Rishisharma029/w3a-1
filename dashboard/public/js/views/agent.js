@@ -149,6 +149,10 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
       this.activeResult = data;
 
       if (data.trace && data.trace.txHash) {
+        const isSepoliaTrace = Boolean(
+          (data.trace.chainId === 11155111) ||
+          (data.trace.network && data.trace.network.includes("Sepolia"))
+        );
         this.lastCompletedTx = {
           reqId: data.runId || data.trace.reqId,
           serviceName: data.selectedProvider ? data.selectedProvider.name : "Machine Service",
@@ -159,10 +163,10 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
           deliveredText: typeof data.trace.deliveredContent === 'object'
             ? (data.trace.deliveredContent.translatedText || data.trace.deliveredContent.output || JSON.stringify(data.trace.deliveredContent))
             : (data.trace.deliveredContent || data.trace.content),
-          network: "Ethereum Sepolia Testnet",
-          chainId: 11155111,
-          caip2: "eip155:11155111",
-          etherscanUrl: data.trace.etherscanUrl || `https://sepolia.etherscan.io/tx/${data.trace.txHash}`,
+          network: data.trace.network || (isSepoliaTrace ? "Ethereum Sepolia Testnet" : "Local Hardhat EVM"),
+          chainId: data.trace.chainId || (isSepoliaTrace ? 11155111 : 31337),
+          caip2: data.trace.caip2 || (isSepoliaTrace ? "eip155:11155111" : "eip155:31337"),
+          etherscanUrl: isSepoliaTrace ? (data.trace.etherscanUrl || `https://sepolia.etherscan.io/tx/${data.trace.txHash}`) : null,
           timestamp: new Date().toISOString()
         };
         if (typeof AppState !== "undefined") {
@@ -172,6 +176,10 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
       }
 
       this.renderTrace(data);
+
+      if (typeof ApiService !== "undefined") {
+        ApiService.syncAll().catch(() => {});
+      }
     } catch (err) {
       if (traceContainer) {
         traceContainer.innerHTML = `
@@ -226,11 +234,16 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
       ? (trace.deliveredContent.translatedText || trace.deliveredContent.output || JSON.stringify(trace.deliveredContent, null, 2))
       : (trace.deliveredContent || trace.content || "Service output delivered.");
     const priceDisplay = selected.price ? `$${Number(selected.price).toFixed(2)} USDC` : "$4.00 USDC";
-    const candidatesCount = (data.candidateEvaluations && data.candidateEvaluations.length) || 4;
-    const network = trace.network || "Local Hardhat EVM (31337)";
+    const isSepoliaTrace = Boolean(
+      (trace.chainId === 11155111) ||
+      (trace.network && trace.network.includes("Sepolia"))
+    );
+    const network = trace.network || (isSepoliaTrace ? "Ethereum Sepolia Testnet" : "Local Hardhat EVM (31337)");
     const isSimulated = Boolean(trace.simulated || trace.isFallback || !trace.txHash);
     const networkLabel = isSimulated ? `${network} (Historical Reference)` : network;
-    const etherscanUrl = trace.etherscanUrl || `https://sepolia.etherscan.io/tx/${txHash}`;
+    const etherscanUrl = isSepoliaTrace
+      ? (trace.etherscanUrl || (txHash && txHash.startsWith("0x") && txHash.length === 66 ? `https://sepolia.etherscan.io/tx/${txHash}` : null))
+      : null;
     const reqId = data.runId || trace.reqId || null;
 
     return `
@@ -380,7 +393,7 @@ ${this.escapeHtml(deliveredText)}
               Digest: <code style="color: var(--tertiary);">${deliveryHash}</code>
             </div>
             <div style="color: var(--text-subtle); font-size: 11px; margin-top: 2px;">
-              Note: SHA-256 proves payload integrity against recorded digest; not semantic correctness.
+              Note: SHA-256 confirms that the delivered payload matches the recorded digest. It does not establish semantic correctness.
             </div>
           </div>
 
@@ -395,17 +408,26 @@ ${this.escapeHtml(deliveredText)}
             <div style="color: var(--text-muted); font-size: 11.5px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span>Tx Hash:</span>
-                <a href="${etherscanUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;" title="View on Sepolia Etherscan">
-                  <code>${txHash}</code> &UpperRightArrow;
-                </a>
+                ${etherscanUrl ? `
+                  <a href="${etherscanUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;" title="View on Sepolia Etherscan">
+                    <code>${txHash}</code> &UpperRightArrow;
+                  </a>
+                ` : `
+                  <code style="color: var(--primary);">${txHash || '-'}</code>
+                `}
+                ${txHash ? `<button class="btn btn-secondary btn-sm" onclick="App.copyText('${txHash}', 'Tx Hash')">Copy</button>` : ''}
               </div>
-              <button
-                class="btn btn-primary btn-sm"
-                onclick="App.openBlockchainVerification('${txHash}', '${etherscanUrl}')"
-                title="Directly open on Sepolia Etherscan"
-              >
-                <span>Verify on Sepolia ↗</span>
-              </button>
+              ${etherscanUrl ? `
+                <button
+                  class="btn btn-primary btn-sm"
+                  onclick="App.openBlockchainVerification('${txHash}', '${etherscanUrl}', 11155111)"
+                  title="Directly open on Sepolia Etherscan"
+                >
+                  <span>Verify on Sepolia ↗</span>
+                </button>
+              ` : `
+                <span class="badge" style="background: var(--surface-low); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 11px;">Local EVM Settlement</span>
+              `}
             </div>
           </div>
 
