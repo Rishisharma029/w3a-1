@@ -24,6 +24,11 @@ const AgentView = {
 
   reRenderIfMounted() {
     if (typeof document !== "undefined" && typeof AppState !== "undefined" && AppState.currentView === "agent") {
+      // Don't disturb active execution or user textarea focus
+      const activeEl = document.activeElement;
+      if (this.isExecuting || (activeEl && activeEl.id === "agentPromptInput")) {
+        return;
+      }
       const root = document.getElementById("mainContent");
       if (root) {
         root.innerHTML = this.render();
@@ -152,7 +157,7 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
           txHash: data.trace.txHash,
           deliveryHash: data.trace.deliveryHash,
           deliveredText: typeof data.trace.deliveredContent === 'object'
-            ? (data.trace.deliveredContent.translatedText || JSON.stringify(data.trace.deliveredContent))
+            ? (data.trace.deliveredContent.translatedText || data.trace.deliveredContent.output || JSON.stringify(data.trace.deliveredContent))
             : (data.trace.deliveredContent || data.trace.content),
           network: data.trace.network || "Local Hardhat EVM (31337)",
           timestamp: new Date().toISOString()
@@ -174,17 +179,16 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
       }
     } finally {
       this.isExecuting = false;
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = "Run Purchase \u2192";
+      const refreshedBtn = document.getElementById("btnExecuteAgentPurchase");
+      if (refreshedBtn) {
+        refreshedBtn.disabled = false;
+        refreshedBtn.textContent = "Run Purchase \u2192";
       }
     }
   },
 
-  renderTrace(data) {
-    const traceContainer = document.getElementById("agentTraceContainer");
-    if (!traceContainer) return;
-
+  getTraceHtml(data) {
+    if (!data) return "";
     const trace = data.trace || {};
     const selected = data.selectedProvider || {};
     const intent = data.parsedIntent || {};
@@ -192,7 +196,7 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
     // Invariant Enforcement Rejection
     if (!data.success || trace.status === "REJECTED" || data.error) {
       const reason = trace.reason || data.reason || data.error || "Exceeded authorized budget ceiling.";
-      traceContainer.innerHTML = `
+      return `
         <div class="card" style="margin-top: 16px; border-color: var(--error);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -211,13 +215,12 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
           </div>
         </div>
       `;
-      return;
     }
 
     const txHash = trace.txHash || "0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069";
     const deliveryHash = trace.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
     const deliveredText = typeof trace.deliveredContent === 'object'
-      ? (trace.deliveredContent.translatedText || JSON.stringify(trace.deliveredContent, null, 2))
+      ? (trace.deliveredContent.translatedText || trace.deliveredContent.output || JSON.stringify(trace.deliveredContent, null, 2))
       : (trace.deliveredContent || trace.content || "Service output delivered.");
     const priceDisplay = selected.price ? `$${Number(selected.price).toFixed(2)} USDC` : "$4.00 USDC";
     const candidatesCount = (data.candidateEvaluations && data.candidateEvaluations.length) || 4;
@@ -227,7 +230,7 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
     const etherscanUrl = trace.etherscanUrl || `https://sepolia.etherscan.io/tx/${txHash}`;
     const reqId = data.runId || trace.reqId || "0x088e7c75ddcc48eba8329618b1a37c02b3df468e82a09c2a1387d40294716b23";
 
-    traceContainer.innerHTML = `
+    return `
       <div class="card" style="margin-top: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
           <div>
@@ -249,7 +252,7 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
               <span class="badge badge-success">RECEIVED</span>
             </div>
             <div style="color: var(--text-muted); font-size: 11.5px;">"${data.prompt || this.currentPrompt}"</div>
-            <div style="color: var(--text-muted); font-size: 11px; margin-top: 2px;">Specified Ceiling: <strong>$${intent.maxBudgetUSD || '5.00'}</strong></div>
+            <div style="color: var(--text-muted); font-size: 11px; margin-top: 2px;">Specified Ceiling: <strong>$${intent.maxPrice || intent.maxBudgetUSD || '5.00'}</strong></div>
           </div>
 
           <div style="text-align: center; color: var(--text-muted); font-size: 10px; line-height: 1;">&darr;</div>
@@ -258,50 +261,55 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
           <div style="padding: 10px 12px; background: var(--surface-low); border: 1px solid var(--border); border-left: 3px solid var(--tertiary); border-radius: var(--radius-sm);">
             <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 3px;">
               <span style="color: var(--text);">2. INTENT PARSED</span>
-              <span class="badge badge-success">STRUCTURED</span>
+              <span class="badge badge-info">STRUCTURED</span>
             </div>
-            <div style="color: var(--text-muted); font-size: 11.5px;">
-              Category: <strong>${intent.serviceType || 'translation'}</strong> &bull; Target Language: <strong>${intent.targetLanguage || 'English'}</strong> &bull; Max Budget: <strong>$${intent.maxBudgetUSD || '5.00'}</strong>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-muted); font-size: 11.5px;">
+              <span>Category: <strong style="color: var(--text);">${intent.serviceType || 'translation'}</strong></span>
+              <span>Priority: <strong style="color: var(--text);">${intent.priority || 'quality'}</strong></span>
+              <span>Provider: <strong style="color: var(--text);">${intent.preferredProvider || selected.providerId || 'autonomous'}</strong></span>
             </div>
           </div>
 
           <div style="text-align: center; color: var(--text-muted); font-size: 10px; line-height: 1;">&darr;</div>
 
-          <!-- 3. DISCOVERY -->
+          <!-- 3. PROVIDERS DISCOVERED -->
           <div style="padding: 10px 12px; background: var(--surface-low); border: 1px solid var(--border); border-left: 3px solid var(--tertiary); border-radius: var(--radius-sm);">
             <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 3px;">
               <span style="color: var(--text);">3. PROVIDERS DISCOVERED</span>
-              <span class="badge">${candidatesCount} PROVIDERS FOUND</span>
+              <span class="badge badge-info">${candidatesCount} CANDIDATES</span>
             </div>
             <div style="color: var(--text-muted); font-size: 11.5px;">
-              Queried active catalog. Found ${candidatesCount} available compute nodes advertising category: <code>${intent.serviceType || 'translation'}</code>.
+              Query matched ${candidatesCount} providers from relational MySQL registry.
             </div>
           </div>
 
           <div style="text-align: center; color: var(--text-muted); font-size: 10px; line-height: 1;">&darr;</div>
 
-          <!-- 4. FILTERING -->
+          <!-- 4. ELIGIBLE PROVIDERS FILTERED -->
           <div style="padding: 10px 12px; background: var(--surface-low); border: 1px solid var(--border); border-left: 3px solid var(--tertiary); border-radius: var(--radius-sm);">
             <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 3px;">
               <span style="color: var(--text);">4. ELIGIBLE PROVIDERS FILTERED</span>
-              <span class="badge badge-success">CONSTRAINTS MET</span>
+              <span class="badge badge-success">CONSTRAINTS SATISFIED</span>
             </div>
             <div style="color: var(--text-muted); font-size: 11.5px;">
-              Filtered against budget cap (&le; $${intent.maxBudgetUSD || '5.00'}) and quality SLA (&ge; 0.90). Invariant pre-screen passed.
+              Applied price ceiling ($${intent.maxPrice || '5.00'}) and minimum SLA score.
             </div>
           </div>
 
           <div style="text-align: center; color: var(--text-muted); font-size: 10px; line-height: 1;">&darr;</div>
 
-          <!-- 5. SELECTION -->
+          <!-- 5. PROVIDER SELECTED -->
           <div style="padding: 10px 12px; background: var(--surface-low); border: 1px solid var(--border); border-left: 3px solid var(--tertiary); border-radius: var(--radius-sm);">
             <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 3px;">
               <span style="color: var(--text);">5. PROVIDER SELECTED</span>
-              <span class="badge badge-success">${selected.name || 'Alpha Translation Labs'}</span>
+              <span class="badge badge-success">OPTIMAL</span>
             </div>
-            <div style="color: var(--text-muted); font-size: 11.5px;">
-              Provider: <strong>${selected.name || 'Alpha Translation Labs'}</strong> &bull; Price: <strong>${priceDisplay}</strong> &bull; Quality: <strong>${selected.quality || '0.92'}</strong>
-              <div style="margin-top: 2px;">Decision Rationale: <em>${selected.reason || 'Deterministic constraint ranking match within authorized ceiling'}</em></div>
+            <div style="font-size: 12px; color: var(--text);"><strong>${selected.name || 'Selected Provider'}</strong></div>
+            <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 2px;">
+              Cost: <strong>${priceDisplay}</strong> &bull; SLA Quality: <strong>${((selected.quality || 0.95) * 100).toFixed(0)}%</strong> &bull; Latency: <strong>${selected.latency || '195ms'}</strong>
+            </div>
+            <div style="color: var(--text-subtle); font-size: 11px; margin-top: 4px;">
+              Selection Reason: ${selected.reason || 'Optimal constraint-based Pareto scoring'}
             </div>
           </div>
 
@@ -311,12 +319,10 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
           <div style="padding: 10px 12px; background: var(--surface-low); border: 1px solid var(--border); border-left: 3px solid var(--tertiary); border-radius: var(--radius-sm);">
             <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 3px;">
               <span style="color: var(--text);">6. POLICY CHECK</span>
-              <span class="badge badge-success">ALL PASS</span>
+              <span class="badge badge-success">PASSED</span>
             </div>
-            <div style="color: var(--text-muted); font-size: 11.5px; line-height: 1.6;">
-              <div>&bull; Per-call cap: <strong style="color: var(--tertiary);">PASS</strong> (&le; $10.00 USDC limit)</div>
-              <div>&bull; Remaining balance: <strong style="color: var(--tertiary);">PASS</strong> (Escrow solvent)</div>
-              <div>&bull; Agent authorized: <strong style="color: var(--tertiary);">PASS</strong> (Signer registered in contract)</div>
+            <div style="color: var(--text-muted); font-size: 11.5px;">
+              Remaining Escrow Budget verifies requested cost is within authorized ceiling.
             </div>
           </div>
 
@@ -326,10 +332,10 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
           <div style="padding: 10px 12px; background: var(--surface-low); border: 1px solid var(--border); border-left: 3px solid var(--tertiary); border-radius: var(--radius-sm);">
             <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 3px;">
               <span style="color: var(--text);">7. AUTHORIZATION</span>
-              <span class="badge badge-primary">EIP-712 SIGNED</span>
+              <span class="badge badge-info">EIP-712 TYPED PERMIT</span>
             </div>
             <div style="color: var(--text-muted); font-size: 11.5px;">
-              Generated EIP-712 PaymentAuthorization permit. Signed with secp256k1 agent private key. Bound to Request ID: <code>${reqId.slice(0, 16)}...</code>.
+              Signed cryptographically via secp256k1 binding reqId, provider, amount, and expiry.
             </div>
           </div>
 
@@ -339,37 +345,39 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
           <div style="padding: 10px 12px; background: var(--surface-low); border: 1px solid var(--border); border-left: 3px solid var(--tertiary); border-radius: var(--radius-sm);">
             <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 3px;">
               <span style="color: var(--text);">8. SETTLEMENT (x402 V2)</span>
-              <span class="badge badge-success">${priceDisplay}</span>
+              <span class="badge badge-success">SUBMITTED</span>
             </div>
             <div style="color: var(--text-muted); font-size: 11.5px;">
-              HTTP 402 negotiation confirmed. SafeERC20 tokens authorized for release to provider wallet via TokenBudgetEnforcer.sol.
+              Dispatched with PAYMENT-SIGNATURE wire header to provider endpoint.
             </div>
           </div>
 
           <div style="text-align: center; color: var(--text-muted); font-size: 10px; line-height: 1;">&darr;</div>
 
-          <!-- 9. DELIVERY -->
+          <!-- 9. SERVICE DELIVERY -->
           <div style="padding: 10px 12px; background: var(--surface-low); border: 1px solid var(--border); border-left: 3px solid var(--tertiary); border-radius: var(--radius-sm);">
             <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 3px;">
               <span style="color: var(--text);">9. SERVICE DELIVERY</span>
-              <span class="badge badge-success">PAYLOAD DELIVERED</span>
+              <span class="badge badge-success">200 OK</span>
             </div>
-            <div style="background: var(--surface-low); padding: 8px 10px; border: 1px solid var(--border); border-radius: 4px; margin-top: 4px; color: var(--text); font-size: 11.5px; white-space: pre-wrap; word-break: break-all;">${this.escapeHtml(deliveredText)}</div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; margin-top: 6px; font-size: 11px; white-space: pre-wrap; color: var(--text);">
+${this.escapeHtml(deliveredText)}
+            </div>
           </div>
 
           <div style="text-align: center; color: var(--text-muted); font-size: 10px; line-height: 1;">&darr;</div>
 
-          <!-- 10. VERIFICATION -->
+          <!-- 10. SHA-256 VERIFICATION -->
           <div style="padding: 10px 12px; background: var(--surface-low); border: 1px solid var(--border); border-left: 3px solid var(--tertiary); border-radius: var(--radius-sm);">
             <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 3px;">
               <span style="color: var(--text);">10. SHA-256 VERIFICATION</span>
-              <span class="badge badge-success">DIGEST MATCH</span>
+              <span class="badge badge-success">MATCH VALIDATED</span>
             </div>
-            <div style="color: var(--text-muted); font-size: 11.5px;">
-              Delivery Hash: <code style="color: var(--tertiary);">${deliveryHash}</code>
-              <div style="margin-top: 4px; font-size: 10.5px; color: var(--text-subtle);">
-                SHA-256 verifies content integrity. It does not establish semantic correctness.
-              </div>
+            <div style="color: var(--text-muted); font-size: 11.5px; word-break: break-all;">
+              Digest: <code style="color: var(--tertiary);">${deliveryHash}</code>
+            </div>
+            <div style="color: var(--text-subtle); font-size: 11px; margin-top: 2px;">
+              Note: SHA-256 proves payload integrity against recorded digest; not semantic correctness.
             </div>
           </div>
 
@@ -382,13 +390,20 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
               <span class="badge badge-primary">${networkLabel}</span>
             </div>
             <div style="color: var(--text-muted); font-size: 11.5px;">
-              Tx Hash: <a href="${etherscanUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--tertiary); text-decoration: underline;">${txHash} &UpperRightArrow;</a>
+              Tx Hash: ${etherscanUrl && etherscanUrl.includes("sepolia.etherscan") ? `<a href="${etherscanUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--tertiary); text-decoration: underline;">${txHash} &UpperRightArrow;</a>` : `<code style="color: var(--tertiary);">${txHash}</code>`}
             </div>
           </div>
 
         </div>
       </div>
     `;
+  },
+
+  renderTrace(data) {
+    const traceContainer = document.getElementById("agentTraceContainer");
+    if (!traceContainer) return;
+    traceContainer.style.display = "block";
+    traceContainer.innerHTML = this.getTraceHtml(data);
   },
 
   escapeHtml(str) {
@@ -404,6 +419,8 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
   render() {
     this.init();
     const remaining = AppState.budget ? (AppState.budget.remaining || "26.00") : "26.00";
+    const isRunning = Boolean(this.isExecuting);
+    const hasTrace = Boolean(this.activeResult);
 
     return `
       <div id="agent-view-root" style="display: flex; flex-direction: column; gap: 20px;">
@@ -427,7 +444,8 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
               rows="3"
               style="width: 100%; min-height: 80px; resize: vertical;"
               placeholder="Describe the computational task and budget limit..."
-            >${this.currentPrompt}</textarea>
+              oninput="AgentView.currentPrompt = this.value"
+            >${this.escapeHtml(this.currentPrompt)}</textarea>
 
             <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
               <span style="font-size: 11.5px; font-family: var(--font-mono); color: var(--text-muted);">Presets:</span>
@@ -448,8 +466,8 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
                   <strong style="color: var(--tertiary);">$${parseFloat(remaining).toFixed(2)} USDC</strong>
                 </div>
 
-                <button id="btnExecuteAgentPurchase" class="btn btn-primary" onclick="AgentView.runPurchase()">
-                  Run Purchase &rarr;
+                <button id="btnExecuteAgentPurchase" class="btn btn-primary" ${isRunning ? 'disabled' : ''} onclick="AgentView.runPurchase()">
+                  ${isRunning ? 'Processing...' : 'Run Purchase &rarr;'}
                 </button>
               </div>
             </div>
@@ -457,7 +475,19 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
         </div>
 
         <!-- Live Execution Trace Container -->
-        <div id="agentTraceContainer" style="display: none;"></div>
+        <div id="agentTraceContainer" style="${isRunning || hasTrace ? 'display: block;' : 'display: none;'}">
+          ${isRunning ? `
+            <div class="card" style="font-family: var(--font-mono); font-size: 12px; margin-top: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <strong>Autonomous Execution Timeline</strong>
+                <span class="badge badge-warning">PROCESSING</span>
+              </div>
+              <div style="color: var(--text-muted);">
+                Executing 11-stage pipeline: parsing intent &rarr; discovering providers &rarr; verifying spending constraints &rarr; signing EIP-712 permit &rarr; settling on-chain...
+              </div>
+            </div>
+          ` : (hasTrace ? this.getTraceHtml(this.activeResult) : '')}
+        </div>
 
       </div>
     `;

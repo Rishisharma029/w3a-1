@@ -79,10 +79,14 @@ const App = {
     const mainContainer = document.getElementById("mainContent");
     const activeView = this.views[AppState.currentView] || OverviewView;
     if (mainContainer && activeView && typeof activeView.render === "function") {
-      try {
-        mainContainer.innerHTML = activeView.render();
-      } catch (err) {
-        console.error(`[App] Error rendering view "${AppState.currentView}":`, err);
+      const activeEl = typeof document !== "undefined" ? document.activeElement : null;
+      const isTypingInAgent = AppState.currentView === "agent" && activeEl && (activeEl.id === "agentPromptInput");
+      if (!isTypingInAgent) {
+        try {
+          mainContainer.innerHTML = activeView.render();
+        } catch (err) {
+          console.error(`[App] Error rendering view "${AppState.currentView}":`, err);
+        }
       }
     }
     this.updateSidebarState();
