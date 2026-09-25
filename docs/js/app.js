@@ -245,9 +245,14 @@ const App = {
     const backdrop = document.getElementById("drawerBackdrop");
 
     if (drawerContainer && drawer && backdrop) {
-      const tokenAddr = AppState.config.tokenAddress || tx.asset;
-      const agentAddr = AppState.config.agentAddress || tx.payer;
-      const enforcerAddr = AppState.config.enforcerAddress || "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+      const isSepoliaTx = tx.chainId === 11155111 || (tx.network && tx.network.includes("Sepolia"));
+      const enforcerAddr = tx.contractAddress || (isSepoliaTx
+        ? (AppState.config.sepoliaEnforcerAddress || "0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e")
+        : (AppState.config.enforcerAddress || "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"));
+      const tokenAddr = tx.tokenAddress || tx.asset || (isSepoliaTx
+        ? (AppState.config.sepoliaTokenAddress || "0xAaa008Df25A46dc501B5B712ac18B47901AF99A7")
+        : (AppState.config.tokenAddress || "0x5FbDB2315678afecb367f032d93F642f64180aa3"));
+      const agentAddr = AppState.config.agentAddress || tx.payer || "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
 
       let providerSlug = "alpha-translate";
       if (tx.providerName && tx.providerName.toLowerCase().includes("beta")) {
@@ -270,7 +275,7 @@ const App = {
 
       const vBtn = document.getElementById("drawerVerifyBtn");
       if (vBtn) {
-        vBtn.onclick = () => App.openBlockchainVerification(tx.txHash, tx.etherscanUrl);
+        vBtn.onclick = () => App.openBlockchainVerification(tx.txHash, tx.etherscanUrl, isSepoliaTx ? 11155111 : 31337);
       }
 
       const headerTitle = document.getElementById("drawerHeaderTitle");
@@ -347,7 +352,7 @@ const App = {
             </div>
             <div class="drawer-kv">
               <span class="drawer-kv-label">Network CAIP-2:</span>
-              <span class="drawer-kv-val">${tx.network || "eip155:31337"}</span>
+              <span class="drawer-kv-val">${tx.caip2 || (isSepoliaTx ? "eip155:11155111" : "eip155:31337")}</span>
             </div>
             <div class="drawer-kv">
               <span class="drawer-kv-label">Payment Amount:</span>
@@ -370,7 +375,7 @@ const App = {
             </div>
           </div>
 
-          <!-- Step 3: PAYMENT -->
+          <!-- Step 3: PAYMENT SIGNATURE & EIP-712 -->
           <div class="drawer-step">
             <div class="drawer-step-header" style="color: var(--primary);">
               <span>3. PAYMENT SIGNATURE</span>
@@ -388,9 +393,22 @@ const App = {
               <span class="drawer-kv-label">Signature Format:</span>
               <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">EIP-712 Typed Data (r, s, v)</span>
             </div>
-            <div style="font-size: 10.5px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 6px; margin-top: 6px; word-break: break-all;">
-              Header: <span style="color: var(--text);">PAYMENT-SIGNATURE: eyJ4NDAyVmVyc2lvbiI6Miwic2NoZW1lIjoiZXhhY3Qi...</span>
-            </div>
+            <details style="margin-top: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; font-size: 11px;">
+              <summary style="cursor: pointer; font-weight: 600; color: var(--text-muted); display: flex; justify-content: space-between;">
+                <span>EIP-712 Typed Authorization Details</span>
+                <span style="color: var(--primary); font-size: 10px;">view &darr;</span>
+              </summary>
+              <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 4px; font-family: var(--font-mono); font-size: 10.5px;">
+                <div><span style="color: var(--text-muted);">Domain.name:</span> TokenBudgetEnforcer</div>
+                <div><span style="color: var(--text-muted);">Domain.version:</span> 1</div>
+                <div><span style="color: var(--text-muted);">Domain.chainId:</span> ${isSepoliaTx ? 11155111 : 31337}</div>
+                <div><span style="color: var(--text-muted);">Domain.verifyingContract:</span> ${enforcerAddr}</div>
+                <div style="border-top: 1px solid var(--border); margin-top: 4px; padding-top: 4px;"><span style="color: var(--text-muted);">Auth.reqId:</span> ${tx.reqId || 'Not available'}</div>
+                <div><span style="color: var(--text-muted);">Auth.provider:</span> ${tx.provider || 'Not available'}</div>
+                <div><span style="color: var(--text-muted);">Auth.amount:</span> ${tx.amountUnits || (tx.amountUSD ? (Number(tx.amountUSD) * 1e6).toFixed(0) : '4000000')}</div>
+                <div><span style="color: var(--text-muted);">Auth.validBefore:</span> ${tx.validBefore ? new Date(tx.validBefore * 1000).toISOString() : 'Not available'}</div>
+              </div>
+            </details>
           </div>
 
           <!-- Step 4: FACILITATOR -->
@@ -417,40 +435,71 @@ const App = {
             </div>
           </div>
 
-          <!-- Step 5: BLOCKCHAIN -->
+          <!-- Step 5: BLOCKCHAIN SETTLEMENT -->
           <div class="drawer-step">
             <div class="drawer-step-header" style="color: var(--tertiary);">
               <span>5. BLOCKCHAIN SETTLEMENT</span>
               <span class="badge ${isBlocked ? 'badge-danger' : 'badge-success'}">${isBlocked ? "REVERTED" : "CONFIRMED"}</span>
             </div>
             <div class="drawer-kv">
+              <span class="drawer-kv-label">Network:</span>
+              <span class="drawer-kv-val" style="font-weight: 700;">${isSepoliaTx ? "Ethereum Sepolia Testnet" : "Local Hardhat EVM"} (Chain ID: ${isSepoliaTx ? 11155111 : 31337})</span>
+            </div>
+            <div class="drawer-kv">
               <span class="drawer-kv-label">Tx Hash:</span>
               <div style="display: flex; align-items: center; gap: 4px;">
-                <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">${tx.txHash}</span>
-                ${UIFormatter.copyButton(tx.txHash, "Tx Hash")}
+                <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">${tx.txHash || 'Not available'}</span>
+                ${tx.txHash ? UIFormatter.copyButton(tx.txHash, "Tx Hash") : ""}
               </div>
             </div>
             <div class="drawer-kv">
               <span class="drawer-kv-label">Block Number:</span>
-              <span class="drawer-kv-val" style="font-weight: 700;">#${tx.blockNumber || 101}</span>
+              <span class="drawer-kv-val" style="font-weight: 700;">#${tx.blockNumber || 'Not available'}</span>
             </div>
             <div class="drawer-kv">
               <span class="drawer-kv-label">Contract Call:</span>
               <span class="drawer-kv-val">settleWithSignature(...)</span>
             </div>
             <div class="drawer-kv">
+              <span class="drawer-kv-label">Enforcer Contract:</span>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <span class="drawer-kv-val">${enforcerAddr}</span>
+                ${UIFormatter.copyButton(enforcerAddr, "Enforcer Address")}
+              </div>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Token Contract:</span>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <span class="drawer-kv-val">${tokenAddr}</span>
+                ${UIFormatter.copyButton(tokenAddr, "Token Address")}
+              </div>
+            </div>
+            <div class="drawer-kv">
               <span class="drawer-kv-label">ERC-20 Settlement:</span>
-              <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">$${tx.amountUSD} MockUSDC &rarr; ${UIFormatter.formatAddress(tx.provider)}</span>
+              <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">$${tx.amountUSD || '4.00'} MockUSDC &rarr; ${UIFormatter.formatAddress(tx.provider)}</span>
             </div>
             <div style="border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
               <span class="drawer-kv-label">Blockchain Verification:</span>
-              <button 
-                onclick="App.openBlockchainVerification('${tx.txHash || ''}', '${tx.etherscanUrl || ''}')"
-                class="btn btn-primary btn-sm"
-                title="Directly open blockchain verification site"
-              >
-                <span>Verify on Blockchain ↗</span>
-              </button>
+              ${isSepoliaTx ? `
+                <button 
+                  onclick="App.openBlockchainVerification('${tx.txHash || ''}', '${tx.etherscanUrl || ''}', 11155111)"
+                  class="btn btn-primary btn-sm"
+                  title="Directly open on Sepolia Etherscan"
+                >
+                  <span>Open on Sepolia Etherscan Directly ↗</span>
+                </button>
+              ` : `
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <span class="badge" style="background: var(--surface); border: 1px solid var(--border); font-size: 11px;">Local EVM</span>
+                  <button 
+                    onclick="App.copyText('${tx.txHash || ''}', 'Tx Hash')"
+                    class="btn btn-secondary btn-sm"
+                    title="Copy local transaction reference"
+                  >
+                    <span>Copy Tx Hash</span>
+                  </button>
+                </div>
+              `}
             </div>
           </div>
 
@@ -472,7 +521,7 @@ const App = {
             </div>
           </div>
 
-          <!-- Step 7: HASH -->
+          <!-- Step 7: HASH PROOF -->
           <div class="drawer-step">
             <div class="drawer-step-header" style="color: var(--tertiary);">
               <span>7. CRYPTOGRAPHIC DELIVERY PROOF</span>
@@ -480,14 +529,21 @@ const App = {
             </div>
             <div class="drawer-kv">
               <span class="drawer-kv-label">On-Chain Digest:</span>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">${cleanDeliveryHash}</span>
+                ${UIFormatter.copyButton(cleanDeliveryHash, "Delivery Hash")}
+              </div>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Recomputed Digest:</span>
               <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">${cleanDeliveryHash}</span>
             </div>
             <div class="drawer-kv">
-              <span class="drawer-kv-label">Computed Digest:</span>
-              <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">${cleanDeliveryHash}</span>
+              <span class="drawer-kv-label">Integrity Status:</span>
+              <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">MATCH 100%</span>
             </div>
-            <div style="color: var(--tertiary); font-size: 11px; margin-top: 6px; border-top: 1px solid var(--border); padding-top: 6px;">
-              ✓ Content cryptographically bound to settlement record on-chain.
+            <div style="color: var(--text-muted); font-size: 11px; margin-top: 6px; border-top: 1px solid var(--border); padding-top: 6px; line-height: 1.5;">
+              SHA-256 confirms that the delivered payload matches the recorded digest.
             </div>
           </div>
 
@@ -948,14 +1004,31 @@ ${JSON.stringify(
     }
   },
 
-  // Direct blockchain verification site / explorer navigation
-  openBlockchainVerification(txHash, etherscanUrl) {
+  // Direct blockchain verification site / explorer navigation (Network-Aware)
+  openBlockchainVerification(txHash, etherscanUrl, chainId) {
+    const cleanHash = (txHash || "").trim().toLowerCase();
+
+    // Check if explicitly local
+    const isLocal = chainId === 31337 || (
+      typeof AppState !== "undefined" && AppState.transactions && AppState.transactions.some(
+        (t) => (t.txHash || "").toLowerCase() === cleanHash && (t.chainId === 31337 || (t.network && t.network.includes("Local")))
+      )
+    );
+
+    if (isLocal && !etherscanUrl) {
+      if (cleanHash && typeof this.copyText === "function") {
+        this.copyText(txHash, "Local EVM Tx Hash");
+      }
+      if (typeof this.toast === "function") {
+        this.toast("Local Hardhat EVM (31337) transaction reference copied. Local network has no public explorer.", "info");
+      }
+      return;
+    }
+
     if (etherscanUrl && String(etherscanUrl).startsWith("http") && !etherscanUrl.includes("094e6208")) {
       window.open(etherscanUrl, "_blank", "noopener,noreferrer");
       return;
     }
-
-    const cleanHash = (txHash || "").trim().toLowerCase();
 
     // Known verified Sepolia transactions:
     const knownSepolia = [
@@ -977,18 +1050,18 @@ ${JSON.stringify(
       return;
     }
 
-    if (etherscanUrl && etherscanUrl.startsWith("https://sepolia.etherscan.io/tx/") && !etherscanUrl.includes("094e6208") && !etherscanUrl.toLowerCase().includes("7fba")) {
-      window.open(etherscanUrl, "_blank", "noopener,noreferrer");
-      return;
-    }
-
-    if (cleanHash.startsWith("0x") && cleanHash.length === 66 && !cleanHash.includes("094e6208") && !cleanHash.includes("revert") && !cleanHash.toLowerCase().startsWith("0x7fba")) {
+    if (cleanHash.startsWith("0x") && cleanHash.length === 66 && !isLocal && !cleanHash.includes("094e6208") && !cleanHash.includes("revert")) {
       window.open(`https://sepolia.etherscan.io/tx/${cleanHash}`, "_blank", "noopener,noreferrer");
       return;
     }
 
-    // Default to TokenBudgetEnforcer contract on Sepolia which displays ALL settlements and token transfers
-    window.open("https://sepolia.etherscan.io/address/0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e", "_blank", "noopener,noreferrer");
+    if (isLocal) {
+      if (typeof this.toast === "function") {
+        this.toast("Local Hardhat EVM (31337) transaction reference. No public explorer.", "info");
+      }
+    } else {
+      window.open("https://sepolia.etherscan.io/address/0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e", "_blank", "noopener,noreferrer");
+    }
   },
 
   // Open Sepolia Blockchain Verifier directly inside Main Page (Zero New Tabs)

@@ -72,12 +72,9 @@ const OverviewView = {
 
     const liveEvents = AppState.liveEvents || [];
 
-    const servicesList = (AppState && Array.isArray(AppState.services) && AppState.services.length)
-      ? AppState.services
-      : (typeof DEFAULT_MARKET_SERVICES !== "undefined" && Array.isArray(DEFAULT_MARKET_SERVICES) ? DEFAULT_MARKET_SERVICES : []);
-    const serviceCount = servicesList.length || 52;
-    const providerSet = new Set(servicesList.map((s) => s.provider || s.providerName || (s.metadata && s.metadata.provider)).filter(Boolean));
-    const providerCount = providerSet.size || 14;
+    const { serviceCount, providerCount } = (typeof AppState !== "undefined" && typeof AppState.getMarketplaceMetrics === "function")
+      ? AppState.getMarketplaceMetrics()
+      : { serviceCount: 61, providerCount: 22 };
 
     return `
       <div id="overview-view-root" style="display: flex; flex-direction: column; gap: 20px;">
