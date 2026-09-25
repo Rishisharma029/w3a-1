@@ -1,32 +1,4 @@
-/**
- * marketplace/server.js
- *
- * Multi-provider marketplace server.
- *
- * Routes:
- *   GET  /registry/discover            - List all providers (with filters)
- *   GET  /registry/discover?serviceType=X&minQuality=0.9&maxPrice=5
- *   GET  /providers/:providerId/service?serviceId=Y  → 402
- *   POST /providers/:providerId/deliver               → deliver
- *   GET  /providers/:providerId/receipts              → audit
- *   GET  /health
- *
- * Each provider is completely isolated:
- *   - Its own ReceiptStore (no cross-provider leakage of reqIds)
- *   - Its own QuoteStore  (stale-quote protection per provider)
- *   - Its own tamperNext flag (for demo delivery-tampering scenario)
- *
- * @param {object} opts
- * @param {number} opts.port
- * @param {string} opts.contractAddress
- * @param {string} opts.rpcUrl
- * @param {string} opts.baseUrl
- * @param {object[]} opts.auditLog           - Shared audit log array
- * @param {object}  opts._verifierOverride   - (TEST ONLY) in-process verifier
- * @returns {{ app, server, stop, tamperNextFor }}
- */
-
-"use strict";
+﻿"use strict";
 
 require("dotenv").config();
 
@@ -51,8 +23,6 @@ function createMarketplace({
   _verifierOverride = null,
 } = {}) {
   if (!contractAddress) throw new Error("Marketplace requires contractAddress");
-
-  // ── Build verifier ────────────────────────────────────────────────────────
   let verifier;
   if (_verifierOverride) {
     verifier = _verifierOverride;
@@ -62,8 +32,6 @@ function createMarketplace({
       new ethers.JsonRpcProvider(rpcUrl)
     );
   }
-
-  // ── Base providers for Phase 2 marketplace ──────────────────────────────
   const BASE_PROVIDER_IDS = new Set([
     "alpha-translate",
     "beta-translate",
@@ -72,8 +40,6 @@ function createMarketplace({
     "epsilon-vision",
   ]);
   const marketProviders = PROVIDERS.filter((p) => BASE_PROVIDER_IDS.has(p.providerId));
-
-  // ── Per-provider state ────────────────────────────────────────────────────
   // Each provider gets isolated stores and a tamper flag.
   const providerState = {};
   for (const p of marketProviders) {
@@ -90,8 +56,6 @@ function createMarketplace({
   const resolvedBaseUrl = baseUrl || `http://localhost:${port}`;
   app.locals.baseUrl  = resolvedBaseUrl;
   app.locals.auditLog = auditLog;
-
-  // ── Registry — service discovery ─────────────────────────────────────────
   app.get("/registry/discover", (req, res) => {
     const { serviceType, minQuality, maxPrice } = req.query;
 
@@ -106,8 +70,6 @@ function createMarketplace({
       providers: candidates.map(providerToDiscovery),
     });
   });
-
-  // ── Per-provider routes ───────────────────────────────────────────────────
   for (const providerConfig of marketProviders) {
     const { providerId } = providerConfig;
     const state = providerState[providerId];
@@ -123,8 +85,6 @@ function createMarketplace({
 
     app.use(`/providers/${providerId}`, router);
   }
-
-  // ── Health ────────────────────────────────────────────────────────────────
   app.get("/health", (req, res) => {
     res.json({
       status:          "ok",
@@ -133,8 +93,6 @@ function createMarketplace({
       providers:       marketProviders.map((p) => p.providerId),
     });
   });
-
-  // ── 404 ──────────────────────────────────────────────────────────────────
   app.use((req, res) => {
     res.status(404).json({ error: "Not found" });
   });
@@ -164,8 +122,6 @@ function createMarketplace({
       return res.status(502).json({ error: "Dashboard orchestrator gateway error", detail: err.message });
     }
   });
-
-  // ── Error handler ─────────────────────────────────────────────────────────
   app.use((err, req, res, _next) => {
     console.error("[Marketplace] Unhandled error:", err);
     res.status(500).json({ error: "Internal server error" });
@@ -177,22 +133,11 @@ function createMarketplace({
     console.log(`[Marketplace] Providers: ${PROVIDERS.map((p) => p.providerId).join(", ")}`);
   });
 
-  /**
-   * Make the next delivery from a specific provider return tampered content.
-   * Used exclusively for the delivery-tampering demo/test scenario.
-   * @param {string} providerId
-   */
   function tamperNextFor(providerId) {
-    if (!providerState[providerId]) {
-      throw new Error(`Unknown provider: ${providerId}`);
-    }
+    if (!providerState[providerId]) throw new Error(`Unknown provider: ${providerId}`);
     providerState[providerId].tamperNext.value = true;
   }
 
-  /**
-   * Clear all stores for a provider (used in tests).
-   * @param {string} providerId
-   */
   function clearProvider(providerId) {
     if (providerState[providerId]) {
       providerState[providerId].receiptStore.clear();
@@ -201,17 +146,10 @@ function createMarketplace({
     }
   }
 
-  /**
-   * Clear all provider stores (used in tests).
-   */
   function clearAll() {
     for (const id of Object.keys(providerState)) clearProvider(id);
   }
 
-  /**
-   * Set a provider's availability (0 = unavailable, 1 = available).
-   * Used in tests for provider-failure / fallback scenarios.
-   */
   function setProviderAvailability(providerId, value) {
     const p = PROVIDERS.find((x) => x.providerId === providerId);
     if (p) p.availability = value;
@@ -224,9 +162,7 @@ function createMarketplace({
   return { app, server, stop, tamperNextFor, clearAll, clearProvider, setProviderAvailability };
 }
 
-// ---------------------------------------------------------------------------
 // Standalone entry point
-// ---------------------------------------------------------------------------
 if (require.main === module) {
   const contractAddress = process.env.CONTRACT_ADDRESS;
   if (!contractAddress) {

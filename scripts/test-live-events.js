@@ -1,9 +1,4 @@
-/**
- * scripts/test-live-events.js
- * End-to-end verification of the W3A-1 Live Event Stream (Backend -> EventBus -> SSE -> Client)
- */
-
-const http = require('http');
+﻿const http = require('http');
 
 const DASHBOARD_URL = 'http://localhost:14300';
 

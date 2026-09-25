@@ -1,21 +1,4 @@
-/**
- * test/phase5/x402-real.test.js
- *
- * Official x402 V2 Protocol Integration & Security Test Suite
- * ============================================================
- * Proves genuine x402 V2 wire protocol compliance on top of W3A-1:
- *
- *   - Real HTTP 402 with base64 PAYMENT-REQUIRED header
- *   - Official @x402/core schema validation (PaymentRequiredV2, PaymentPayloadV2)
- *   - PAYMENT-SIGNATURE header decoding & execution
- *   - Real MockUSDC ERC-20 settlement on local EVM
- *   - PAYMENT-RESPONSE header encoding & verification
- *   - Wire-level pure HTTP test using global fetch()
- *   - Full adversarial matrix: overspend, replay, freeze, tampering, mismatch
- *   - Core invariant: TokenBudgetEnforcer remains the authoritative spending ceiling
- */
-
-"use strict";
+﻿"use strict";
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
@@ -108,10 +91,7 @@ describe("Phase 5 — Official x402 V2 Protocol Integration", function () {
   after(async function () {
     if (marketplace) await marketplace.stop();
   });
-
-  // ---------------------------------------------------------------------------
   // SECTION 1: x402 V2 HTTP Handshake & Challenge
-  // ---------------------------------------------------------------------------
 
   it("XR-01: GET /x402/providers/:id/service returns HTTP 402 Payment Required", async function () {
     const res = await axios.get(X402_ALPHA_URL, { validateStatus: () => true });
@@ -165,10 +145,7 @@ describe("Phase 5 — Official x402 V2 Protocol Integration", function () {
     const { requirement } = await client.requestChallenge(X402_ALPHA_URL);
     expect(requirement.asset.toLowerCase()).to.equal(tokenAddress.toLowerCase());
   });
-
-  // ---------------------------------------------------------------------------
   // SECTION 2: PaymentPayload & Header Verification
-  // ---------------------------------------------------------------------------
 
   it("XR-08: Client constructs valid PaymentPayloadV2 validated by @x402/core schema", async function () {
     const { paymentRequired } = await client.requestChallenge(X402_ALPHA_URL);
@@ -235,10 +212,7 @@ describe("Phase 5 — Official x402 V2 Protocol Integration", function () {
     expect(result.contentHash.startsWith("sha256:")).to.be.true;
     expect(result.hashVerified).to.equal(true);
   });
-
-  // ---------------------------------------------------------------------------
   // SECTION 3: Wire-Level Pure HTTP Test (Section V)
-  // ---------------------------------------------------------------------------
 
   it("XR-14: Wire-level test using native fetch() without client helpers (pure HTTP wire test)", async function () {
     // 1. Initial request -> expects 402
@@ -311,10 +285,7 @@ describe("Phase 5 — Official x402 V2 Protocol Integration", function () {
     const tx = await ethers.provider.getTransaction(settleResp.transaction);
     expect(tx).to.not.be.null;
   });
-
-  // ---------------------------------------------------------------------------
   // SECTION 4: Tampering & Malicious Inputs (Sections O, P, Q, R, S)
-  // ---------------------------------------------------------------------------
 
   it("XR-15: Malformed PAYMENT-SIGNATURE header returns HTTP 400", async function () {
     const res = await axios.get(X402_ALPHA_URL, {
@@ -473,10 +444,7 @@ describe("Phase 5 — Official x402 V2 Protocol Integration", function () {
     const balanceAfterSecond = await token.balanceOf(providerSigner.address);
     expect(balanceAfterSecond).to.equal(balanceAfterFirst);
   });
-
-  // ---------------------------------------------------------------------------
   // SECTION 5: Core Security Invariants (Rule #1 — Smart Contract Authority)
-  // ---------------------------------------------------------------------------
 
   it("XR-26: Overspend attack — valid x402 payload for amount > budget is REJECTED by TokenBudgetEnforcer", async function () {
     const remainingBudget = await enforcer.remainingBudget();

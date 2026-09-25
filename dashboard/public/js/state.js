@@ -1,13 +1,4 @@
-/**
- * dashboard/public/js/state.js
- *
- * Central Reactive State Store for W3A-1 Control Center
- * =======================================================
- * Manages active view, environment, live contract balances, transaction records,
- * threat alerts, provider catalogue, and high-fidelity mock fallback data.
- */
-
-const AppState = {
+﻿const AppState = {
   currentView: "overview",
   environment: "local",      // "local" | "sepolia"
   isMockMode: false,         // true when user toggles or backend is offline
@@ -201,10 +192,7 @@ const AppState = {
 
   // Event Listeners
   listeners: [],
-
-  // ---------------------------------------------------------------------------
   // Reactive Listener Methods
-  // ---------------------------------------------------------------------------
   subscribe(fn) {
     this.listeners.push(fn);
     return () => {
@@ -581,10 +569,7 @@ const AppState = {
     this.notify("alerts_updated", this.alerts);
     this.notify("security_event", alert);
   },
-
-  // ---------------------------------------------------------------------------
   // High-Fidelity Mock Seed Data (Reflects Canonical 10-Step Flagship Scenario)
-  // ---------------------------------------------------------------------------
   loadMockSeed() {
     this.budget = typeof BudgetAdapter !== "undefined"
       ? BudgetAdapter.normalize({

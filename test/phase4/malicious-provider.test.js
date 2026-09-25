@@ -1,22 +1,4 @@
-/**
- * test/phase4/malicious-provider.test.js
- *
- * Phase 4 — Malicious Provider Attack Scenarios
- * =============================================
- * Proves that a compromised or malicious provider CANNOT:
- *   MP-01: Change price after issuing a quote (stale quote rejection)
- *   MP-02: Change payment destination to steal tokens
- *   MP-03: Deliver modified content undetected (hash mismatch)
- *   MP-04: Replay the same delivery to claim double payment
- *   MP-05: Submit duplicate settlement for same reqId
- *   MP-06: Claim payment without on-chain settlement proof
- *   MP-07: Return malformed 402 response that bypasses payment
- *   MP-08: Submit invalid/zero delivery hash
- *   MP-09: Become unavailable after payment (idempotency recovery)
- *   MP-10: Submit a delivery receipt for a different request
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers } = require("hardhat");
 const { expect } = require("chai");

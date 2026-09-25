@@ -1,13 +1,4 @@
-/**
- * marketplace/token-provider-router.js
- *
- * x402 Real Token Settlement Provider Router
- * ==========================================
- * Implements x402 payment requirements, EIP-712 payment payload verification,
- * on-chain token settlement via PaymentFacilitator, and delivery proof generation.
- */
-
-"use strict";
+﻿"use strict";
 
 const express = require("express");
 const { v4: uuid } = require("uuid");
@@ -34,10 +25,7 @@ function createTokenProviderRouter({
   const router = express.Router();
   const { providerId, services } = providerConfig;
   const recipient = providerWalletAddress || "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"; // Mock provider wallet
-
-  // ---------------------------------------------------------------------------
   // GET /service — x402 Payment Required Challenge
-  // ---------------------------------------------------------------------------
   router.get("/service", (req, res) => {
     const { serviceId, payload: payloadStr } = req.query;
 
@@ -99,10 +87,7 @@ function createTokenProviderRouter({
       challenge,
     });
   });
-
-  // ---------------------------------------------------------------------------
   // POST /deliver — Verify x402 Payment, Settle On-Chain, Deliver Resource
-  // ---------------------------------------------------------------------------
   router.post("/deliver", async (req, res) => {
     const { serviceId, payload, paymentPayload } = req.body;
 

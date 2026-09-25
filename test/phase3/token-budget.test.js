@@ -1,11 +1,4 @@
-/**
- * test/phase3/token-budget.test.js
- *
- * Tests for MockUSDC token and TokenBudgetEnforcer escrow funding,
- * budget invariants, withdrawals, and owner freeze controls.
- */
-
-"use strict";
+﻿"use strict";
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");

@@ -1,33 +1,4 @@
-/**
- * marketplace/quote-store.js
- *
- * Stale-Quote Protection Store
- * =============================
- * When a provider issues a 402 Payment Required, it records the pending quote
- * in this store:
- *
- *   pendingQuotes[reqId] = { serviceId, price, expiresAt, providerId }
- *
- * When the agent submits POST /deliver, the provider validates:
- *   1. Does a pending quote exist for this reqId?           (not forged)
- *   2. Has the quote expired?                               (not stale)
- *   3. Does the submitted amount match the quoted price?    (no price manipulation)
- *
- * This is the PROVIDER-SIDE stale-quote defence.
- * The contract's verifyAuthorization is an independent second check.
- *
- * Security note
- * =============
- * A malicious agent could:
- *   (a) Submit a reqId it never received → no pending quote → rejected.
- *   (b) Receive a quote at price $3, wait until it expires, pay $3,
- *       then POST /deliver → quote expired → rejected.
- *   (c) Receive a quote at price $3, authorize $3 on contract, but submit
- *       amount=1 in POST /deliver → price mismatch → rejected.
- *   (d) Receive a quote at price $3, authorize $3, post correctly → succeeds.
- */
-
-"use strict";
+﻿"use strict";
 
 class QuoteStore {
   constructor() {

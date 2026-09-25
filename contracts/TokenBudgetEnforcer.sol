@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+﻿// SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -22,17 +22,11 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
  */
 contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
     using SafeERC20 for IERC20;
-
-    // -------------------------------------------------------------------------
     // EIP-712 Typehash
-    // -------------------------------------------------------------------------
     bytes32 public constant PAYMENT_AUTH_TYPEHASH = keccak256(
         "PaymentAuthorization(bytes32 reqId,address provider,uint256 amount,uint256 validBefore)"
     );
-
-    // -------------------------------------------------------------------------
     // Structs
-    // -------------------------------------------------------------------------
     struct Authorization {
         address provider;
         uint256 amount;
@@ -41,10 +35,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
         bool settled;
         bool cancelled;
     }
-
-    // -------------------------------------------------------------------------
     // Immutables & State Variables
-    // -------------------------------------------------------------------------
     IERC20 public immutable token;
     address public owner;
     address public agent;
@@ -58,10 +49,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
 
     mapping(bytes32 => bool) private _usedRequests;
     mapping(bytes32 => Authorization) private _authorizations;
-
-    // -------------------------------------------------------------------------
     // Events
-    // -------------------------------------------------------------------------
     event BudgetFunded(address indexed funder, uint256 amount, uint256 totalBudget);
     event BudgetCapUpdated(uint256 newBudget);
     event Withdrawal(address indexed recipient, uint256 amount, uint256 remainingBudget);
@@ -72,10 +60,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
     event PaymentRejected(bytes32 indexed reqId, address indexed provider, uint256 amount, string reason);
     event AuthorizationCancelled(bytes32 indexed reqId, uint256 amount);
     event AuthorizationExpired(bytes32 indexed reqId, uint256 amount);
-
-    // -------------------------------------------------------------------------
     // Modifiers
-    // -------------------------------------------------------------------------
     modifier onlyOwner() {
         require(msg.sender == owner, "TokenBudgetEnforcer: caller is not owner");
         _;
@@ -90,10 +75,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
         require(!isFrozen, "TokenBudgetEnforcer: agent is frozen by owner");
         _;
     }
-
-    // -------------------------------------------------------------------------
     // Constructor
-    // -------------------------------------------------------------------------
     constructor(
         address _token,
         address _owner,
@@ -110,10 +92,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
 
         emit AgentSet(_agent);
     }
-
-    // -------------------------------------------------------------------------
     // Owner Controls
-    // -------------------------------------------------------------------------
 
     /**
      * @notice Deposit tokens into escrow and increase the authorized budget.
@@ -174,10 +153,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
         agent = newAgent;
         emit AgentSet(newAgent);
     }
-
-    // -------------------------------------------------------------------------
     // Agent Direct Authorization
-    // -------------------------------------------------------------------------
 
     /**
      * @notice Agent explicitly authorizes a pending payment on-chain before delivery.
@@ -273,10 +249,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
 
         emit AuthorizationExpired(reqId, auth.amount);
     }
-
-    // -------------------------------------------------------------------------
     // EIP-712 Signed Authorization Settlement (Portable Flow)
-    // -------------------------------------------------------------------------
 
     /**
      * @notice Atomically verifies the agent's EIP-712 signed authorization, enforces the spending
@@ -330,10 +303,7 @@ contract TokenBudgetEnforcer is ReentrancyGuard, EIP712 {
 
         emit PaymentSettled(reqId, provider, amount, deliveryHash);
     }
-
-    // -------------------------------------------------------------------------
     // View Functions & Invariants
-    // -------------------------------------------------------------------------
 
     /**
      * @notice Available budget that can be allocated to new authorizations or settlements.

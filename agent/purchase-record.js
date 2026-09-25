@@ -1,27 +1,4 @@
-/**
- * agent/purchase-record.js
- *
- * PurchaseRecord — structured audit linkage for a single purchase.
- *
- * Links:
- *   userIntent → discovery → selection → payment → delivery → verification
- *
- * This answers every judge question:
- *   Who requested it?        → userRequest
- *   What did they ask for?   → intent
- *   Which provider?          → selectedProvider
- *   Why?                     → selectionReason
- *   What was quoted?         → quotedPrice
- *   What did contract auth?  → authorizedAmount
- *   What transaction?        → txHash
- *   What was delivered?      → receipt.content
- *   Content hash?            → receipt.contentHash
- *   Verified?                → verified
- *   Retried?                 → retried
- *   Rejected?                → rejectionReason
- */
-
-"use strict";
+﻿"use strict";
 
 const { v4: uuid } = require("uuid");
 
@@ -33,29 +10,24 @@ class PurchaseRecord {
     this.state           = "IDLE";
     this.intent          = null;
 
-    // Discovery
     this.discoveredProviders = [];
     this.filteredOut         = [];
 
-    // Selection
     this.selectedProviderId  = null;
     this.selectedServiceId   = null;
     this.selectionReason     = null;
     this.providerRanking     = [];
 
-    // Payment
     this.reqId           = null;
     this.quotedPrice     = null;
     this.authorizedAmount= null;
     this.txHash          = null;
     this.paymentAttempts = 0;
 
-    // Delivery
     this.receipt         = null;
     this.contentHash     = null;
     this.verified        = false;
 
-    // Outcome
     this.finalState      = null;
     this.completedAt     = null;
     this.retried         = false;
@@ -67,11 +39,7 @@ class PurchaseRecord {
 
   transition(newState, meta = {}) {
     this.state = newState;
-    this.stateHistory.push({
-      state:     newState,
-      timestamp: new Date().toISOString(),
-      ...meta,
-    });
+    this.stateHistory.push({ state: newState, timestamp: new Date().toISOString(), ...meta });
   }
 
   setIntent(intent) {
@@ -82,10 +50,7 @@ class PurchaseRecord {
   setDiscovery({ providers, filteredOut }) {
     this.discoveredProviders = providers.map((p) => p.providerId);
     this.filteredOut         = filteredOut;
-    this.transition("DISCOVERED", {
-      count: providers.length,
-      filteredOut: filteredOut.map((f) => f.providerId),
-    });
+    this.transition("DISCOVERED", { count: providers.length, filteredOut: filteredOut.map((f) => f.providerId) });
   }
 
   setSelection({ providerId, serviceId, reason, ranking }) {
@@ -112,10 +77,7 @@ class PurchaseRecord {
   setDelivered(receipt) {
     this.receipt     = receipt;
     this.contentHash = receipt.contentHash;
-    this.transition("DELIVERED", {
-      receiptId:   receipt.receiptId,
-      contentHash: receipt.contentHash,
-    });
+    this.transition("DELIVERED", { receiptId: receipt.receiptId, contentHash: receipt.contentHash });
   }
 
   setVerified(verified, detail = null) {
@@ -153,7 +115,6 @@ class PurchaseRecord {
     this.transition("FAILED", { error });
   }
 
-  /** Serialize to a plain object (for JSON output / audit log). */
   toJSON() {
     return {
       purchaseId:          this.purchaseId,
@@ -161,31 +122,25 @@ class PurchaseRecord {
       startedAt:           this.startedAt,
       completedAt:         this.completedAt,
       finalState:          this.finalState,
-
       intent:              this.intent,
       discoveredProviders: this.discoveredProviders,
       filteredOut:         this.filteredOut,
-
       selectedProviderId:  this.selectedProviderId,
       selectedServiceId:   this.selectedServiceId,
       selectionReason:     this.selectionReason,
       providerRanking:     this.providerRanking,
-
       reqId:               this.reqId,
       quotedPrice:         this.quotedPrice,
       authorizedAmount:    this.authorizedAmount,
       txHash:              this.txHash,
       paymentAttempts:     this.paymentAttempts,
-
       receipt:             this.receipt,
       contentHash:         this.contentHash,
       verified:            this.verified,
-
       retried:             this.retried,
       fallbackUsed:        this.fallbackUsed,
       rejectionReason:     this.rejectionReason,
       errorDetail:         this.errorDetail,
-
       stateHistory:        this.stateHistory,
     };
   }

@@ -1,17 +1,4 @@
-/**
- * test/phase3/x402-flow.test.js
- *
- * End-to-end integration tests for x402-compatible token settlement flow:
- * - Full purchase cycle with MockUSDC transfer
- * - Cryptographic delivery hash verification
- * - Retry idempotency with zero double charge
- * - Provider 503 outage and fallback
- * - Delivery tampering detection
- * - Emergency freeze blocking settlement
- * - Event indexer capturing on-chain settlement for dashboard
- */
-
-"use strict";
+﻿"use strict";
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");

@@ -1,19 +1,4 @@
-/**
- * provider/server.js
- *
- * Mock provider HTTP server.
- *
- * In Phase 1 this runs on localhost and connects to the local Hardhat node.
- * In Phase 2 it would connect to Sepolia via an RPC URL.
- *
- * Configuration (via environment / passed-in options):
- *   PROVIDER_PORT         - HTTP port (default 3001)
- *   CONTRACT_ADDRESS      - Deployed BudgetEnforcer address
- *   HARDHAT_RPC_URL       - JSON-RPC endpoint (default http://127.0.0.1:8545)
- *   PROVIDER_ADDRESS      - Provider's mock identity string
- */
-
-"use strict";
+﻿"use strict";
 
 require("dotenv").config();
 
@@ -102,10 +87,7 @@ function createServer({
 
   return { app, server, stop };
 }
-
-// ---------------------------------------------------------------------------
 // Standalone entry point (node provider/server.js)
-// ---------------------------------------------------------------------------
 if (require.main === module) {
   const contractAddress = process.env.CONTRACT_ADDRESS;
   if (!contractAddress) {

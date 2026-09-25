@@ -1,20 +1,4 @@
-/**
- * demo/demo3.js
- *
- * Phase 3 Flagship Judge Demonstration
- * =====================================
- * Real ERC-20 Token Settlement + Human Owner Control Center
- *
- * Scenarios:
- *   SCENARIO 1 — Autonomous Purchase (Natural Language → EIP-712 → On-chain Settlement)
- *   SCENARIO 2 — Real On-Chain Token Balance Verification (Escrow decreases, Provider increases)
- *   SCENARIO 3 — Overspend Attack (Agent attempts > remaining budget → Contract reverts → $0 tokens moved)
- *   SCENARIO 4 — Replay Attack (Same EIP-712 authorization submitted twice → Replay rejected)
- *   SCENARIO 5 — Delivery Tampering (Provider alters resource payload → Cryptographic hash mismatch)
- *   SCENARIO 6 — Human Owner Freeze (Owner freezes agent → Subsequent purchase blocked on-chain)
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers } = require("hardhat");
 const chalk = require("chalk");
@@ -129,10 +113,7 @@ async function main() {
     enforcerAddress,
     chainId: 31337,
   });
-
-  // ══════════════════════════════════════════════════════════════════════════
   banner("SCENARIO 1 — Autonomous Purchase with Real Token Settlement");
-  // ══════════════════════════════════════════════════════════════════════════
   step('Human Request: "Get the highest-quality translation available under $5.00."');
   info('Agent evaluates candidates: Alpha ($4.00, quality 0.92) vs Beta ($3.00, quality 0.84)');
   info('Agent selects: Alpha Translation ($4.00)');
@@ -150,10 +131,7 @@ async function main() {
   ok(`Real ERC-20 Transfer: $4.00 MockUSDC transferred to provider`);
   ok(`Service delivered & Content Hash verified: ${s1Result.contentHash}`);
   await printTokenState(token, enforcer, providerSigner.address);
-
-  // ══════════════════════════════════════════════════════════════════════════
   banner("SCENARIO 2 — Real On-Chain Token Balance Verification");
-  // ══════════════════════════════════════════════════════════════════════════
   step("Verifying actual ERC-20 token balances on EVM state...");
   const escrowBal = await token.balanceOf(enforcerAddress);
   const provBal = await token.balanceOf(providerSigner.address);
@@ -162,10 +140,7 @@ async function main() {
   info(`Provider Wallet Balance : $${(Number(provBal)/1e6).toFixed(2)} MockUSDC (increased by $4.00)`);
   info(`Settlement Tx Hash      : ${s1Result.settlement.txHash}`);
   ok("TOKEN BALANCES VERIFIED: Real on-chain balance transition occurred!");
-
-  // ══════════════════════════════════════════════════════════════════════════
   banner("SCENARIO 3 — OVERSPEND ATTACK (EVM-Enforced Budget Ceiling)");
-  // ══════════════════════════════════════════════════════════════════════════
   step('Human / Malicious Prompt: "Purchase a massive data compute job costing $25.00!"');
   const remBudget = await enforcer.remainingBudget();
   info(`Current remaining budget: $${(Number(remBudget)/1e6).toFixed(2)} USDC`);
@@ -194,10 +169,7 @@ async function main() {
     fail("Overspend attack succeeded unexpectedly!");
   }
   await printTokenState(token, enforcer, providerSigner.address);
-
-  // ══════════════════════════════════════════════════════════════════════════
   banner("SCENARIO 4 — REPLAY ATTACK (EIP-712 Replay Defense)");
-  // ══════════════════════════════════════════════════════════════════════════
   step(`Replaying original EIP-712 authorization from Scenario 1...`);
   info(`Attacker re-submits identical settlement transaction to steal another $4.00 USDC...`);
 
@@ -219,10 +191,7 @@ async function main() {
   } else {
     fail("Replay attack succeeded unexpectedly!");
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
   banner("SCENARIO 5 — DELIVERY TAMPERING (Cryptographic Proof of Delivery)");
-  // ══════════════════════════════════════════════════════════════════════════
   step("Arming delta-compute provider to tamper with delivery resource payload...");
   marketplace.tamperNextFor("delta-compute");
   warn("delta-compute will return altered data that does not match receipt hash.");
@@ -248,10 +217,7 @@ async function main() {
   } else {
     fail("Tampering went undetected!");
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
   banner("SCENARIO 6 — HUMAN OWNER EMERGENCY FREEZE CONTROL");
-  // ══════════════════════════════════════════════════════════════════════════
   step("Human Owner triggers EMERGENCY FREEZE from Control Center...");
   const freezeTx = await enforcer.connect(ownerSigner).freezeAgent(true);
   await freezeTx.wait();
@@ -276,10 +242,7 @@ async function main() {
   } else {
     fail("Frozen agent managed to execute a purchase!");
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
   banner("DEMONSTRATION SUMMARY");
-  // ══════════════════════════════════════════════════════════════════════════
   ok("All 6 Phase 3 scenarios successfully executed!");
   ok("Real ERC-20 token settlement verified on local EVM");
   ok("EIP-712 signed authorizations and anti-replay guards proven");

@@ -1,32 +1,4 @@
-/**
- * marketplace/x402-provider-router.js
- *
- * Official x402 V2 Provider Router for W3A-1
- * ============================================
- * Implements genuine x402 V2 HTTP protocol flow on top of W3A-1 security architecture:
- *
- *   1. Client GET /x402/providers/:providerId/service
- *      -> 402 Payment Required
- *      -> PAYMENT-REQUIRED: <base64 encoded PaymentRequiredV2>
- *
- *   2. Client signs EIP-712 payment authorization & retries
- *      -> GET /x402/providers/:providerId/service
- *      -> PAYMENT-SIGNATURE: <base64 encoded PaymentPayloadV2>
- *
- *   3. Server decodes & validates PaymentPayloadV2 with @x402/core
- *      -> Checks resource & requirement binding
- *      -> Facilitator.verifyX402() (off-chain EIP-712 + on-chain budget/freeze checks)
- *      -> Generates resource content
- *      -> Facilitator.settleX402() -> executes TokenBudgetEnforcer.settleWithSignature()
- *      -> PAYMENT-RESPONSE: <base64 encoded SettlementResponse>
- *      -> HTTP 200 with resource body & delivery proof
- *
- * Security Rule #1:
- *   TokenBudgetEnforcer smart contract remains the final on-chain authority.
- *   x402 standardizes payment negotiation; the EVM contract enforces the spending cap.
- */
-
-"use strict";
+﻿"use strict";
 
 const express = require("express");
 const { v4: uuid } = require("uuid");
@@ -62,11 +34,8 @@ function createX402ProviderRouter({
   const { providerId, services } = providerConfig;
   const recipient = providerWalletAddress || "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";
   const network = `eip155:${chainId}`;
-
-  // ---------------------------------------------------------------------------
   // GET /service — Canonical x402 V2 Wire Endpoint
   // Handles both initial 402 challenge AND payment submission via PAYMENT-SIGNATURE
-  // ---------------------------------------------------------------------------
   const handleServiceRequest = async (req, res) => {
     let serviceId = req.query.serviceId;
     if (!serviceId || !services[serviceId]) {
@@ -90,10 +59,7 @@ function createX402ProviderRouter({
     }
 
     const paymentSignatureHeader = req.headers["payment-signature"];
-
-    // -------------------------------------------------------------------------
     // BRANCH A: NO PAYMENT PROVIDED -> Return HTTP 402 with PAYMENT-REQUIRED header
-    // -------------------------------------------------------------------------
     if (!paymentSignatureHeader) {
       const reqId = generateReqId();
       const expiresAt = Math.floor(Date.now() / 1000) + QUOTE_TTL_SECONDS;
@@ -176,10 +142,7 @@ function createX402ProviderRouter({
         paymentRequired,
       });
     }
-
-    // -------------------------------------------------------------------------
     // BRANCH B: PAYMENT PROVIDED via PAYMENT-SIGNATURE header
-    // -------------------------------------------------------------------------
     let paymentPayload;
     try {
       // Decode using official @x402/core decoder

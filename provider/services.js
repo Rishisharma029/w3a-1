@@ -1,20 +1,4 @@
-/**
- * provider/services.js
- *
- * Catalogue of mock services offered by the provider.
- *
- * Each service has:
- *   id          - machine identifier
- *   name        - human label
- *   price       - cost in budget units (integer)
- *   description - what the service returns
- *   generate    - function that produces deterministic content for a reqId
- *
- * Design: content generation is deterministic given (serviceId, reqId) so
- * that the content hash can be independently recomputed from those inputs.
- */
-
-"use strict";
+﻿"use strict";
 
 const { computeContentHash } = require("../shared/types");
 

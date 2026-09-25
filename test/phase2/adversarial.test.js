@@ -1,19 +1,4 @@
-/**
- * test/phase2/adversarial.test.js
- *
- * Adversarial, edge-case, and failure tests for Phase 2:
- * 1. AI intentionally selects unaffordable provider → contract rejects.
- * 2. Agent replays same reqId to another provider → contract rejects.
- * 3. Provider returns 503 during GET /service → agent gracefully falls back.
- * 4. Stale quote / price change detection rejects delivery attempt.
- * 5. Invalid 402 challenge (missing required fields) aborts flow safely.
- * 6. Provider delivers tampered content → hash mismatch flagged.
- * 7. Budget exhausted after multiple purchases → subsequent purchase rejected.
- * 8. Replay of same payment request on contract reverts without state change.
- * 9. Unauthorized agent address cannot authorize spending.
- */
-
-"use strict";
+﻿"use strict";
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");

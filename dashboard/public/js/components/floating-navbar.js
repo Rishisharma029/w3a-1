@@ -1,13 +1,4 @@
-﻿/**
- * dashboard/public/js/components/floating-navbar.js
- *
- * Aceternity UI FloatingNav Component — Ported for W3A-1 Safe-Spend Protocol.
- * Supports scroll-reveal animation (showing when scrolling up or within top buffer,
- * hiding smoothly when scrolling down), responsive nav items, active view indicator,
- * and quick-action trigger buttons with dark translucent backdrop-blur styling.
- */
-
-(function() {
+﻿(function() {
   class FloatingNavbarController {
     constructor() {
       this.navElement = null;

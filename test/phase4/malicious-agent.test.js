@@ -1,23 +1,4 @@
-/**
- * test/phase4/malicious-agent.test.js
- *
- * Phase 4 — Malicious Agent Attack Scenarios
- * ==========================================
- * Proves that a compromised or malicious AI agent CANNOT:
- *   MA-01: Spend above its authorized budget
- *   MA-02: Modify its own budget (caller must be owner)
- *   MA-03: Call owner-only functions (setAgent, freezeAgent, withdrawUnspent, setAuthorizedBudget)
- *   MA-04: Reuse an old authorization (replay protection)
- *   MA-05: Alter the provider address in a signed authorization
- *   MA-06: Alter the amount in a signed authorization
- *   MA-07: Use an expired authorization
- *   MA-08: Continue spending after being frozen
- *
- * Every failure must come from the ENFORCEMENT LAYER (smart contract revert),
- * not from application-level checks.
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers } = require("hardhat");
 const { expect } = require("chai");

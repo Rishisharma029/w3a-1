@@ -1,8 +1,4 @@
-/**
- * Aceternity UI Shooting Stars & Stars Background
- * Provides high-performance 2D Canvas twinkling stars and SVG dynamic shooting stars.
- */
-(function (global) {
+﻿(function (global) {
   'use strict';
 
   const ShootingStarsBackground = {

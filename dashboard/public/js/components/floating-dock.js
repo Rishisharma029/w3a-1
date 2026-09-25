@@ -1,12 +1,4 @@
-/**
- * dashboard/public/js/components/floating-dock.js
- *
- * Aceternity UI FloatingDock — Recreated for W3A-1 Safe-Spend Protocol.
- * Features macOS-style distance-based magnification physics, smooth spring lerp,
- * floating cybernetic tooltips, active view synchronization, and responsive mobile expansion.
- */
-
-(function() {
+﻿(function() {
   const GLOBAL_DOCK_ITEMS = [
     {
       id: "dock_overview",

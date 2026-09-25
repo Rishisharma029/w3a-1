@@ -1,11 +1,4 @@
-/**
- * test/phase3/eip712-authorization.test.js
- *
- * Tests for EIP-712 typed payment authorizations, signature verification,
- * replay attacks, parameter binding, and expiry protection.
- */
-
-"use strict";
+﻿"use strict";
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");

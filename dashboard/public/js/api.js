@@ -1,25 +1,4 @@
-/**
- * dashboard/public/js/api.js
- *
- * Centralized API & Synchronization Service
- * ===========================================
- * Connects the UI to live backend REST endpoints:
- *   - GET  /api/budget
- *   - GET  /api/transactions
- *   - GET  /api/x402/transactions
- *   - GET  /api/security
- *   - GET  /api/providers
- *   - GET  /api/config
- *   - POST /api/freeze
- *   - POST /api/fund
- *
- * Provides transparent fallback to high-fidelity mock data if the backend
- * is offline or when the user explicitly enables "DEMO DATA" mode.
- */
-
-// ---------------------------------------------------------------------------
-// Client-Side In-Memory Query Cache with In-Flight Deduplication & TTL
-// ---------------------------------------------------------------------------
+﻿// Client-Side In-Memory Query Cache with In-Flight Deduplication & TTL
 const ClientQueryCache = {
   cache: new Map(),
   inFlight: new Map(),

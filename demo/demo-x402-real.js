@@ -1,27 +1,4 @@
-/**
- * demo/demo-x402-real.js
- *
- * Official x402 V2 Wire Protocol Flagship Demonstration
- * =======================================================
- * W3A-1: "Let AI Agents Buy Services Safely"
- *
- * Demonstrates genuine x402 V2 protocol interaction coupled to W3A-1 on-chain security:
- *
- *   STEP 1:  Human intent & autonomous provider selection
- *   STEP 2:  Protected resource request -> HTTP 402 + PAYMENT-REQUIRED header
- *   STEP 3:  Agent constructs & signs official PaymentPayloadV2
- *   STEP 4:  Agent retries with PAYMENT-SIGNATURE header
- *   STEP 5:  Facilitator read-only pre-verification
- *   STEP 6:  W3A-1 TokenBudgetEnforcer on-chain spending cap authorization
- *   STEP 7:  Real MockUSDC ERC-20 token transfer confirmed on EVM
- *   STEP 8:  Server responds with official PAYMENT-RESPONSE header
- *   STEP 9:  Resource delivered & independent SHA-256 content hash verified
- *   STEP 10: Adversarial overspend attack: valid x402 payload REJECTED on-chain ($0 moved)
- *
- * Run: npm run demo:x402
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers } = require("hardhat");
 const chalk = require("chalk");
@@ -121,20 +98,14 @@ async function main() {
 
   ok(`Live Marketplace:     http://localhost:${PORT}`);
   ok(`Owner Control Center: http://localhost:${DASHBOARD_PORT}`);
-
-  // ---------------------------------------------------------------------------
   // STEP 1: Human request -> Autonomous Provider Selection
-  // ---------------------------------------------------------------------------
   stepBanner(1, 'Human Intent & Autonomous Provider Selection');
   info('Human: "Get the highest-quality translation under $5."');
   info("Agent reasoning: Comparing candidate providers in registry...");
   info("  • alpha-translate: Quality 0.92, Price $4.00, Latency 180ms");
   info("  • beta-translate:  Quality 0.84, Price $3.00, Latency 120ms");
   ok("Agent selects: alpha-translate ($4.00) — optimal quality within human budget constraint");
-
-  // ---------------------------------------------------------------------------
   // STEP 2: Protected Resource Request -> HTTP 402 + PAYMENT-REQUIRED Header
-  // ---------------------------------------------------------------------------
   stepBanner(2, 'Request Protected Resource -> HTTP 402 Payment Required');
   info(`Agent sends: GET ${SERVICE_URL}`);
 
@@ -160,10 +131,7 @@ async function main() {
     `maxTimeoutSeconds: ${req.maxTimeoutSeconds}s`,
     `reqId:             ${req.extra.reqId.slice(0, 20)}...`,
   ]);
-
-  // ---------------------------------------------------------------------------
   // STEP 3: Agent Constructs & Signs Official PaymentPayloadV2
-  // ---------------------------------------------------------------------------
   stepBanner(3, 'Agent Constructs & Cryptographically Signs PaymentPayload');
   info("Agent derives EIP-712 typed data binding payment to reqId, provider, and amount:");
 
@@ -208,17 +176,11 @@ async function main() {
   ok("Official PaymentPayloadV2 created and validated against @x402/core Zod schema");
   info(`Signature: ${signature.slice(0, 26)}...`);
   info(`Nonce:     ${req.extra.reqId.slice(0, 26)}...`);
-
-  // ---------------------------------------------------------------------------
   // STEP 4: Agent Retries Request with PAYMENT-SIGNATURE Header
-  // ---------------------------------------------------------------------------
   stepBanner(4, 'Agent Retries Request with PAYMENT-SIGNATURE Header');
   const encodedSigHeader = encodePaymentSignatureHeader(paymentPayload);
   info(`Header: PAYMENT-SIGNATURE: ${encodedSigHeader.slice(0, 48)}...`);
-
-  // ---------------------------------------------------------------------------
   // STEP 5: Facilitator Read-Only Pre-Verification
-  // ---------------------------------------------------------------------------
   stepBanner(5, 'Facilitator Off-Chain Pre-Verification');
   const verifyResult = await facilitator.verifyX402(paymentPayload, req);
   if (!verifyResult.valid) {
@@ -231,10 +193,7 @@ async function main() {
   info("  • Non-expired validBefore timestamp");
   info("  • Unused reqId (replay check)");
   info("  • Agent is not frozen by owner");
-
-  // ---------------------------------------------------------------------------
   // STEP 6: W3A-1 On-Chain Spending Cap Enforcement
-  // ---------------------------------------------------------------------------
   stepBanner(6, 'W3A-1 On-Chain Budget Enforcement');
   const budgetRemainingBefore = await enforcer.remainingBudget();
   const spendNum = Number(req.amount) / 1e6;
@@ -242,10 +201,7 @@ async function main() {
   info(`Authorized Budget Remaining: $${remNum.toFixed(2)} USDC`);
   info(`Requested Settlement Amount:  $${spendNum.toFixed(2)} USDC`);
   ok("RESULT: AUTHORIZED BY TokenBudgetEnforcer (within spending ceiling)");
-
-  // ---------------------------------------------------------------------------
   // STEP 7: Real Blockchain ERC-20 Settlement
-  // ---------------------------------------------------------------------------
   stepBanner(7, 'Blockchain ERC-20 Token Settlement');
   const providerBalanceBefore = await token.balanceOf(providerSigner.address);
 
@@ -268,10 +224,7 @@ async function main() {
   ok("ERC-20 token settlement: CONFIRMED on EVM");
   info(`Transaction Hash: ${responseJson.receipt.txReference}`);
   info(`Provider Wallet Received: $${(Number(transferred)/1e6).toFixed(2)} USDC`);
-
-  // ---------------------------------------------------------------------------
   // STEP 8: Server Returns PAYMENT-RESPONSE Header
-  // ---------------------------------------------------------------------------
   stepBanner(8, 'Server Returns PAYMENT-RESPONSE Header');
   const rawPaymentResponse = resp2.headers.get("PAYMENT-RESPONSE") || resp2.headers.get("payment-response");
   const settlementResponse = decodePaymentResponseHeader(rawPaymentResponse);
@@ -284,10 +237,7 @@ async function main() {
     `delivery:    ${settlementResponse.extra.deliveryHash.slice(0, 24)}...`,
   ]);
   ok("Official x402 V2 SettlementResponse received and validated");
-
-  // ---------------------------------------------------------------------------
   // STEP 9: Resource Delivered & Cryptographic Proof Verified
-  // ---------------------------------------------------------------------------
   stepBanner(9, 'Resource Delivered & SHA-256 Proof Verified');
   const content = responseJson.receipt.content;
   const recomputedHash = computeContentHash(content);
@@ -322,10 +272,7 @@ async function main() {
     budgetBefore: remNum.toFixed(2),
     budgetAfter: (Number(budgetRemainingAfter)/1e6).toFixed(2),
   });
-
-  // ---------------------------------------------------------------------------
   // STEP 10: Adversarial Overspend Attack (Contract Spending Cap Blocks It)
-  // ---------------------------------------------------------------------------
   stepBanner(10, 'Attack: Agent Attempts $25.00 Payment (Exceeding Budget)');
   info(`Current Budget Remaining: $${(Number(budgetRemainingAfter)/1e6).toFixed(2)} USDC`);
   info("Attacker crafts an x402 PaymentPayload for $25.00...");

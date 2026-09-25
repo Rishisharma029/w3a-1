@@ -1,11 +1,4 @@
-/**
- * dashboard/public/js/components/text-hover-effect.js
- *
- * Aceternity UI TextHoverEffect (Vanilla JS / SVG implementation)
- * Replicates the Framer Motion & SVG radial mask spotlight text hover effect.
- */
-
-window.TextHoverEffect = {
+﻿window.TextHoverEffect = {
   render(text = "GENOVA", containerId = "genovaTextHoverContainer") {
     const idPrefix = "the_" + Math.random().toString(36).substr(2, 6);
     return `

@@ -1,11 +1,4 @@
-/**
- * test/phase3/reserved-spend.test.js
- *
- * Comprehensive tests for reservedSpend, availableBudget(),
- * and authorization lifecycle (create, settle, cancel, expire).
- */
-
-"use strict";
+﻿"use strict";
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");

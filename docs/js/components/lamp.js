@@ -1,9 +1,4 @@
-/**
- * Aceternity UI Lamp Effect
- * Provides animated dual-conic gradient lamp beams, focused light line,
- * and viewport scroll-triggered expansion for the Three Pillars architecture section.
- */
-(function (global) {
+﻿(function (global) {
   'use strict';
 
   const LampEffect = {

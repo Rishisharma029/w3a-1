@@ -1,16 +1,4 @@
-/**
- * scripts/deploy-sepolia.js
- *
- * Automated Deployment of W3A-1 to Ethereum Sepolia Testnet
- * ==========================================================
- * Deploys:
- *  1. MockUSDC (ERC-20, 6 decimals) on Sepolia
- *  2. TokenBudgetEnforcer.sol (Safe-Spend Protocol Cap & Circuit Breaker)
- *  3. Approves and deposits initial test escrow
- *  4. Outputs verified https://sepolia.etherscan.io links
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers, network } = require("hardhat");
 const fs = require("fs");

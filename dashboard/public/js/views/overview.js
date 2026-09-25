@@ -1,20 +1,4 @@
-/**
- * dashboard/public/js/views/overview.js
- *
- * Page 1: Overview & Autonomous Safe-Spend Protocol Deck
- * =======================================================
- * Answers the core hackathon question in under 30 seconds:
- *   "Can I safely give this AI agent money?"
- *
- * Designed with Stitch MCP & Cybernetic Telemetry System:
- *   - Autonomous Safe-Spend Protocol Deck Hero with live Risk Waveform
- *   - 4 Financial Spending Ceiling Hero Cards (Authorized Escrow, Settled Spend 24H, Remaining Allowance, Budget Utilization)
- *   - 9-Step Autonomous Purchase Pipeline (AI Decision -> Wire Protocol -> EVM Settlement)
- *   - Cryptographic Defense Matrix (Blocked Overspends, Replay Attack Guard, Payload Injection Defense, Live Security Console)
- *   - Settled Autonomous Purchase Ledger with SHA-256 Verification Actions
- */
-
-const OverviewView = {
+﻿const OverviewView = {
   initialized: false,
   activeLedgerTab: "all",
 
@@ -485,7 +469,7 @@ const OverviewView = {
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
               <span class="text-xs font-mono uppercase tracking-wider font-bold text-outline">
-                ACETERNITY UI &bull; PROTOCOL TELEMETRY BENTO DECK
+                GENOVA &bull; PROTOCOL TELEMETRY DECK
               </span>
             </div>
             <span class="text-[11px] font-mono text-on-surface-variant flex items-center gap-1">

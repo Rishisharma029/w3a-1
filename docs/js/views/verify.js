@@ -1,14 +1,4 @@
-/**
- * dashboard/public/js/views/verify.js
- *
- * Sepolia Blockchain Verification & Explorer View (Embedded Inside Main Dashboard)
- * ==============================================================================
- * Provides direct, in-app cryptographic verification of W3A-1 autonomous machine
- * payments on the Ethereum Sepolia Testnet (eip155:11155111) and Local EVM.
- * Zero external tabs required — fully interactive within the single-page dashboard.
- */
-
-const VerifyView = {
+﻿const VerifyView = {
   initialized: false,
   activeTab: "sepolia", // "sepolia" | "local"
   currentHash: "0x303ae7447a4b78850a86e5ecf126d1437b8094c045b1fe9917aacb98698ec289",

@@ -1,31 +1,4 @@
-/**
- * agent/x402-payment-client.js
- *
- * Official x402 V2 Payment Client for Autonomous Agent
- * =====================================================
- * Implements genuine x402 V2 wire protocol flow on the client side:
- *
- *   1. requestChallenge():
- *      GET protected resource -> receives HTTP 402 + PAYMENT-REQUIRED header
- *      Decodes and validates PaymentRequiredV2 with @x402/core
- *
- *   2. createPaymentPayload():
- *      Signs EIP-712 PaymentAuthorization bound to requirement
- *      Constructs official PaymentPayloadV2 structure
- *      Validates PaymentPayloadV2 with @x402/core
- *
- *   3. submitPayment():
- *      Encodes PAYMENT-SIGNATURE header via @x402/core
- *      Retries request with payment header
- *      Receives HTTP 200 + PAYMENT-RESPONSE header
- *      Verifies delivery content hash independently
- *
- * Security boundary:
- *   The agent can craft or sign any payload, but the on-chain TokenBudgetEnforcer
- *   physically prevents overspend, replay, or unpermitted token transfers.
- */
-
-"use strict";
+﻿"use strict";
 
 const axios = require("axios");
 const { ethers } = require("ethers");

@@ -1,13 +1,4 @@
-/**
- * dashboard/public/js/app.js
- *
- * Master Application Controller & Navigation Router
- * ===================================================
- * Manages view switching, transaction detail drawer, freeze confirmation modal,
- * toast notifications, environment toggle, and automatic background polling.
- */
-
-const App = {
+﻿const App = {
   views: {
     overview: OverviewView,
     current: CurrentTransactionView,
@@ -239,11 +230,7 @@ const App = {
     AppState.setEnvironment(env);
     this.toast(`Switched environment to ${env.toUpperCase()}`, "info");
   },
-
-  // ---------------------------------------------------------------------------
-  // ---------------------------------------------------------------------------
   // Transaction Detail Drawer
-  // ---------------------------------------------------------------------------
   openTransactionDetail(reqId) {
     let rawTx = AppState.transactions.find((t) => t.reqId === reqId || t.txHash === reqId);
     if (!rawTx && AppState.x402Transactions) {
@@ -648,10 +635,7 @@ ${JSON.stringify(
       }, 300);
     }
   },
-
-  // ---------------------------------------------------------------------------
   // Freeze Confirmation Modal
-  // ---------------------------------------------------------------------------
   openFreezeModal() {
     const isFrozen = AppState.budget.isFrozen;
     const modalBackdrop = document.getElementById("modalBackdrop");
@@ -690,10 +674,7 @@ ${JSON.stringify(
       }, 200);
     }
   },
-
-  // ---------------------------------------------------------------------------
   // Flowchart Modal Controls
-  // ---------------------------------------------------------------------------
   openFlowchartModal() {
     const modal = document.getElementById("flowchartModal");
     if (!modal) return;
@@ -721,10 +702,7 @@ ${JSON.stringify(
       if (main) main.style.overflow = "";
     }, 200);
   },
-
-  // ---------------------------------------------------------------------------
   // Add Funds / Escrow Top-Up Modal
-  // ---------------------------------------------------------------------------
   openFundModal(defaultAmount = 10) {
     const backdrop = document.getElementById("fundModalBackdrop");
     const balEl = document.getElementById("fundModalCurrentBalance");
@@ -828,10 +806,7 @@ ${JSON.stringify(
       this.toast(`Failed to update freeze state: ${err.message}`, "error");
     }
   },
-
-  // ---------------------------------------------------------------------------
   // Interactive AI Payment Confirmation Popup Modal
-  // ---------------------------------------------------------------------------
   confirmAiPayment(details = {}) {
     return new Promise((resolve) => {
       const modal = document.getElementById("aiPaymentConfirmationModal");
@@ -887,10 +862,7 @@ ${JSON.stringify(
       }
     });
   },
-
-  // ---------------------------------------------------------------------------
   // Full Hero Experience: Run Autonomous Purchase Sequence (00:00 - 00:05)
-  // ---------------------------------------------------------------------------
   async runAutonomousPurchaseSequence() {
     const btn = document.getElementById("btnRunAutonomousPurchase");
     const currentBtn = document.getElementById("btnCurrentRunPurchase");
@@ -930,10 +902,7 @@ ${JSON.stringify(
       });
     }
   },
-
-  // ---------------------------------------------------------------------------
   // Settle Directly on Ethereum Sepolia Testnet (Mined on Etherscan)
-  // ---------------------------------------------------------------------------
   async runSepoliaPurchaseSequence() {
     const btn = document.getElementById("btnRunSepoliaPurchase");
     if (btn) {
@@ -995,10 +964,7 @@ ${JSON.stringify(
       }
     }
   },
-
-  // ---------------------------------------------------------------------------
   // Open Sepolia Blockchain Verifier directly inside Main Page (Zero New Tabs)
-  // ---------------------------------------------------------------------------
   openVerifier(txHash) {
     this.navigate("verify");
     if (typeof VerifyView !== "undefined") {
@@ -1012,10 +978,7 @@ ${JSON.stringify(
       }, 50);
     }
   },
-
-  // ---------------------------------------------------------------------------
   // n8n Autonomous x402 Orchestration Trigger with Live Flowchart Animation
-  // ---------------------------------------------------------------------------
   async runN8nOrchestrator(scenario = "normal") {
     const scenarioMap = {
       normal: { label: "Autonomous Purchase ($4.00 USDC)", opts: {} },
@@ -1232,10 +1195,7 @@ ${JSON.stringify(
       }
     }
   },
-
-  // ---------------------------------------------------------------------------
   // Utility & Clipboard
-  // ---------------------------------------------------------------------------
   copyToClipboard(text, label = "Value") {
     UIFormatter.copy(text, label);
   },
@@ -1252,10 +1212,7 @@ ${JSON.stringify(
   showToast(message, type = "info") {
     this.toast(message, type);
   },
-
-  // ---------------------------------------------------------------------------
   // Toast Notifications
-  // ---------------------------------------------------------------------------
   toast(message, type = "info") {
     const container = document.getElementById("toastContainer");
     if (!container) return;

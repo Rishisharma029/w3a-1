@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+﻿// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
 /// @title IBudgetEnforcer
@@ -6,9 +6,7 @@ pragma solidity ^0.8.24;
 ///         The contract is the single authoritative source of truth for
 ///         whether an AI agent is allowed to spend a given amount.
 interface IBudgetEnforcer {
-    // -------------------------------------------------------------------------
     // Events
-    // -------------------------------------------------------------------------
 
     /// @notice Emitted when the owner sets or updates the maximum budget.
     event BudgetSet(uint256 maxBudget);
@@ -40,10 +38,7 @@ interface IBudgetEnforcer {
     /// @notice Emitted when the same request ID is submitted a second time.
     ///         No state is changed.
     event ReplayRejected(bytes32 indexed reqId);
-
-    // -------------------------------------------------------------------------
     // Admin functions (owner only)
-    // -------------------------------------------------------------------------
 
     /// @notice Set the hard spending ceiling.
     ///         Can only be increased, never decreased, to prevent
@@ -52,10 +47,7 @@ interface IBudgetEnforcer {
 
     /// @notice Designate which address is allowed to call `authorize`.
     function setAgent(address agent) external;
-
-    // -------------------------------------------------------------------------
     // Agent function
-    // -------------------------------------------------------------------------
 
     /// @notice Atomically authorize spending for a unique service request.
     ///         Called by the AI agent BEFORE paying the provider.
@@ -69,10 +61,7 @@ interface IBudgetEnforcer {
     /// @param reqId   Provider-generated unique request identifier.
     /// @param amount  Service cost in budget units.
     function authorize(bytes32 reqId, uint256 amount) external;
-
-    // -------------------------------------------------------------------------
     // View functions
-    // -------------------------------------------------------------------------
 
     /// @notice Returns true if `reqId` has been successfully authorized.
     ///         Providers call this to verify payment before delivering content.
@@ -89,10 +78,7 @@ interface IBudgetEnforcer {
     /// @notice Returns the amount authorized for a specific request ID.
     ///         Returns 0 if the request has not been authorized.
     function authorizedAmount(bytes32 reqId) external view returns (uint256);
-
-    // -------------------------------------------------------------------------
     // State getters (auto-generated, listed here for documentation)
-    // -------------------------------------------------------------------------
 
     function owner() external view returns (address);
     function agent() external view returns (address);

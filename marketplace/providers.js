@@ -1,25 +1,7 @@
-/**
- * marketplace/providers.js
- *
- * Canonical catalogue of all service providers in the W3A-1 marketplace.
- * Scale: 52 services · 14 provider nodes · 9 categories · x402 enabled
- *
- * Each provider definition includes:
- *   providerId         — unique machine identifier
- *   name               — human-readable label
- *   serviceType        — primary category slug
- *   qualityScore       — 0–1, independent of price
- *   estimatedLatencyMs — approximate latency in ms
- *   availability       — 0–1 (1.0 = available)
- *   services           — map of serviceId → { id, name, price, description, category, quality, latencyMs, generate(reqId, payload) }
- */
-
-"use strict";
+﻿"use strict";
 
 const PROVIDERS = [
-  // ─────────────────────────────────────────────────────────────────────────
   // 1. Alpha Translation Labs (Translation Node - High Precision)
-  // ─────────────────────────────────────────────────────────────────────────
   {
     providerId:         "alpha-translate",
     name:               "Alpha Translation Labs",
@@ -112,10 +94,7 @@ const PROVIDERS = [
       },
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────
   // 2. Beta FastTranslate Engine (Translation Node - High Throughput & Budget)
-  // ─────────────────────────────────────────────────────────────────────────
   {
     providerId:         "beta-translate",
     name:               "Beta FastTranslate Engine",
@@ -203,10 +182,7 @@ const PROVIDERS = [
       },
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────
   // 3. Gamma Enterprise Localization (Translation Node - High Quality)
-  // ─────────────────────────────────────────────────────────────────────────
   {
     providerId:         "gamma-translate",
     name:               "Gamma Enterprise Localization",
@@ -295,10 +271,7 @@ const PROVIDERS = [
       },
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────
   // 4. Delta Distributed Compute (Data & Compute Node)
-  // ─────────────────────────────────────────────────────────────────────────
   {
     providerId:         "delta-compute",
     name:               "Delta Distributed Compute",
@@ -399,10 +372,7 @@ const PROVIDERS = [
       },
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────
   // 5. Epsilon Vision & OCR Systems (Vision & OCR Node)
-  // ─────────────────────────────────────────────────────────────────────────
   {
     providerId:         "epsilon-vision",
     name:               "Epsilon Vision & OCR Systems",
@@ -496,10 +466,7 @@ const PROVIDERS = [
       },
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────
   // 6. Zeta Foundation Models (Text Generation Node)
-  // ─────────────────────────────────────────────────────────────────────────
   {
     providerId:         "zeta-llm",
     name:               "Zeta Foundation Models",
@@ -590,10 +557,7 @@ const PROVIDERS = [
       },
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────
   // 7. Eta Synthesis & Summarization (Summarization Node)
-  // ─────────────────────────────────────────────────────────────────────────
   {
     providerId:         "eta-summarize",
     name:               "Eta Synthesis & Summarization",
@@ -668,10 +632,7 @@ const PROVIDERS = [
       },
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────
   // 8. Theta Voice & Speech AI (Speech & Audio Node)
-  // ─────────────────────────────────────────────────────────────────────────
   {
     providerId:         "theta-audio",
     name:               "Theta Voice & Speech AI",
@@ -765,10 +726,7 @@ const PROVIDERS = [
       },
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────
   // 9. Iota Media & Diffusion Labs (Image & Video Node)
-  // ─────────────────────────────────────────────────────────────────────────
   {
     providerId:         "iota-diffusion",
     name:               "Iota Media & Diffusion Labs",
@@ -857,10 +815,7 @@ const PROVIDERS = [
       },
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────
   // 10. Kappa Web Intelligence & ETL (Data & Compute Node)
-  // ─────────────────────────────────────────────────────────────────────────
   {
     providerId:         "kappa-data",
     name:               "Kappa Web Intelligence & ETL",
@@ -949,10 +904,7 @@ const PROVIDERS = [
       },
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────
   // 11. Lambda Code & Execution Sandbox (Code & Sandbox Node)
-  // ─────────────────────────────────────────────────────────────────────────
   {
     providerId:         "lambda-code",
     name:               "Lambda Code & Execution Sandbox",
@@ -1042,10 +994,7 @@ const PROVIDERS = [
       },
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────
   // 12. Mu Vector & Embeddings Mesh (RAG & Embeddings Node)
-  // ─────────────────────────────────────────────────────────────────────────
   {
     providerId:         "mu-embeddings",
     name:               "Mu Vector & Embeddings Mesh",
@@ -1114,10 +1063,7 @@ const PROVIDERS = [
       },
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────
   // 13. Nu RAG & Knowledge Graph Engine (RAG & Embeddings Node)
-  // ─────────────────────────────────────────────────────────────────────────
   {
     providerId:         "nu-rag",
     name:               "Nu RAG & Knowledge Graph Engine",
@@ -1207,10 +1153,7 @@ const PROVIDERS = [
       },
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────
   // 14. Xi Moderation & Research Guardrails (Document & Research Node)
-  // ─────────────────────────────────────────────────────────────────────────
   {
     providerId:         "xi-compliance",
     name:               "Xi Moderation & Research Guardrails",
@@ -1301,10 +1244,7 @@ const PROVIDERS = [
     },
   },
 ];
-
-// ---------------------------------------------------------------------------
 // Lookup helpers
-// ---------------------------------------------------------------------------
 
 /** Map of providerId → provider config. */
 const PROVIDER_MAP = Object.fromEntries(

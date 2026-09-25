@@ -1,15 +1,4 @@
-/**
- * test/phase3/settlement.test.js
- *
- * Tests for on-chain ERC-20 token settlement:
- * - Real token balance transfers from escrow to provider
- * - Contract escrow decrements and provider increments
- * - Double settlement prevention
- * - Delivery hash immutably linked to settlement
- * - Invariant: contract token balance strictly equals unspentEscrow
- */
-
-"use strict";
+﻿"use strict";
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");

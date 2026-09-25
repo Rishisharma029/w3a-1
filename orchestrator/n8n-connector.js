@@ -1,23 +1,4 @@
-/**
- * orchestrator/n8n-connector.js
- *
- * Full Integration Bridge for n8n Autonomous x402 Purchase Orchestrator
- * ====================================================================
- * Connects n8n workflow `cveIFBZn9aM1CNLF` with:
- *   - On-chain TokenBudgetEnforcer (Hard budget cap, EIP-712 signer, replay & freeze guards)
- *   - x402 Token Marketplace (Providers Alpha, Beta, Gamma, Delta, Epsilon)
- *   - Human Owner Control Center Dashboard (Real-time telemetry, audit events & security alerts)
- *
- * Exposes:
- *   1. POST /internal/x402/create-payment: Cryptographically signs x402 V2 payment if within budget cap & not frozen
- *   2. POST /internal/x402/confirm: Validates on-chain settlement & returns txHash
- *   3. POST /api/audit-events: Ingests audit events emitted from n8n into indexer
- *   4. GET  /api/audit-events: Lists indexed n8n audit events
- *   5. POST /api/orchestrate/n8n: Triggers an autonomous purchase via n8n orchestrator
- *   6. GET  /api/orchestrate/n8n/status: Integration health & configuration
- */
-
-"use strict";
+﻿"use strict";
 
 require("dotenv").config();
 
@@ -96,11 +77,8 @@ function createN8nRouter({
       signer = new ethers.Wallet("0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d", provider);
     } catch (_) {}
   }
-
-  // ---------------------------------------------------------------------------
   // 1. POST /internal/x402/create-payment
   // Invoked by n8n node: "Create Signed Payment (Backend)"
-  // ---------------------------------------------------------------------------
   router.post("/internal/x402/create-payment", async (req, res) => {
     try {
       const { requestId, agentId, providerId, paymentRequirement, amountAtomic } = req.body;
@@ -231,11 +209,8 @@ function createN8nRouter({
       });
     }
   });
-
-  // ---------------------------------------------------------------------------
   // 2. POST /internal/x402/confirm
   // Invoked by n8n node: "Confirm Settlement (Backend)"
-  // ---------------------------------------------------------------------------
   router.post("/internal/x402/confirm", async (req, res) => {
     try {
       const { requestId } = req.body;
@@ -272,11 +247,8 @@ function createN8nRouter({
       });
     }
   });
-
-  // ---------------------------------------------------------------------------
   // 2B. POST /internal/x402/status
   // Invoked by n8n node: "VERIFY PAYMENT — FACILITATOR"
-  // ---------------------------------------------------------------------------
   router.post("/internal/x402/status", async (req, res) => {
     try {
       const { requestId } = req.body;
@@ -317,12 +289,9 @@ function createN8nRouter({
       });
     }
   });
-
-  // ---------------------------------------------------------------------------
   // 2C. POST /api/events
   // Invoked by n8n nodes: "INTENT RECEIVED — EVENT", "PAYMENT REQUIRED — EVENT",
   // "PAYMENT SIGNED — EVENT", "SETTLEMENT CONFIRMED — EVENT", etc.
-  // ---------------------------------------------------------------------------
   router.post("/api/events", (req, res) => {
     try {
       const { event, requestId, timestamp, status, data } = req.body;
@@ -362,11 +331,8 @@ function createN8nRouter({
       return res.status(500).json({ error: err.message });
     }
   });
-
-  // ---------------------------------------------------------------------------
   // 3. POST /api/audit-events
   // Invoked by n8n node: "WRITE AUDIT — DASHBOARD" & "WRITE AUDIT — SECURITY"
-  // ---------------------------------------------------------------------------
   router.post("/api/audit-events", (req, res) => {
     try {
       const eventData = req.body;
@@ -430,11 +396,8 @@ function createN8nRouter({
       workflowId: N8N_WORKFLOW_ID,
     });
   });
-
-  // ---------------------------------------------------------------------------
   // 4. POST /api/orchestrate/n8n
   // Triggers the complete autonomous purchase flow using n8n
-  // ---------------------------------------------------------------------------
   router.post("/api/orchestrate/n8n", async (req, res) => {
     const runId = "RUN-" + Date.now();
     const {
@@ -835,11 +798,8 @@ function createN8nRouter({
       });
     }
   });
-
-  // ---------------------------------------------------------------------------
   // 5. POST /api/orchestrate/ai-purchase
   // Natural-Language AI Intent -> Marketplace Discovery & Scoring -> x402 V2 Settlement
-  // ---------------------------------------------------------------------------
   router.post("/api/orchestrate/ai-purchase", async (req, res) => {
     const prompt = (req.body && req.body.prompt) || "Translate this legal contract to English.\nHighest quality under $5.";
     const runId = "AI-PURCHASE-" + Date.now();
@@ -1089,10 +1049,7 @@ function createN8nRouter({
       });
     }
   });
-
-  // ---------------------------------------------------------------------------
   // 6. GET /api/orchestrate/n8n/status
-  // ---------------------------------------------------------------------------
   router.get("/api/orchestrate/n8n/status", (req, res) => {
     res.json({
       connected: true,

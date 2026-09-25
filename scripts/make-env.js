@@ -1,13 +1,4 @@
-/**
- * scripts/make-env.js
- *
- * Automated Environment Configuration Generator
- * ==============================================
- * Generates or validates the root .env configuration file with all necessary
- * cryptographic keys, smart contract addresses, ports, and n8n cloud credentials.
- */
-
-const fs = require('fs');
+﻿const fs = require('fs');
 const path = require('path');
 
 const envPath = path.join(__dirname, '..', '.env');

@@ -1,11 +1,4 @@
-/**
- * dashboard/public/js/components/evervault-card.js
- *
- * Aceternity UI EvervaultCard (Vanilla JS implementation)
- * Dynamic encrypted characters matrix reveal with radial cursor spotlight.
- */
-
-window.EvervaultCard = {
+﻿window.EvervaultCard = {
   characters: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+{}[]:;<>?~|",
 
   generateRandomString(length = 1500) {

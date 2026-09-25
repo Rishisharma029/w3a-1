@@ -1,35 +1,4 @@
-/**
- * shared/event-bus.js
- *
- * Central Real-Time Event Bus for W3A-1
- * =====================================
- * Implements a unified pub/sub event pipeline connecting:
- *   Backend / AI Agent / x402 Marketplace / Facilitator / Indexer
- *         ↓
- *   W3A1EventBus (EventEmitter + In-Memory Replay Buffer)
- *         ↓
- *   Server-Sent Events (SSE) Stream / WebSocket
- *         ↓
- *   Owner Control Center Dashboard
- *
- * Emits canonical machine payment lifecycle events:
- *   - INTENT_RECEIVED
- *   - PROVIDER_SEARCH
- *   - PROVIDER_SELECTED
- *   - PAYMENT_REQUIRED
- *   - PAYMENT_SIGNED
- *   - PAYMENT_VERIFIED
- *   - SETTLEMENT_SUBMITTED
- *   - SETTLEMENT_CONFIRMED
- *   - DELIVERY_RECEIVED
- *   - HASH_VERIFIED
- *   - OVERSPEND_BLOCKED
- *   - RETRY_DETECTED
- *   - AGENT_FROZEN / AGENT_UNFROZEN
- *   - BUDGET_FUNDED
- */
-
-"use strict";
+﻿"use strict";
 
 const { EventEmitter } = require("events");
 const { AuditEvent } = require("./events");

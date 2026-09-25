@@ -1,18 +1,4 @@
-/**
- * dashboard/public/js/components/bento-grid.js
- *
- * Aceternity UI BentoGrid Component (BentoGridThirdDemo)
- * ========================================================
- * Ported for W3A-1 Autonomous Safe-Spend Protocol Deck.
- * Replaces generic filler items with live cybernetic protocol telemetry:
- *   - Item 1: Total Authorized Escrow Vault (SkeletonOne: layered typed envelopes)
- *   - Item 2: Settled Spend & Wire Velocity (SkeletonTwo: multi-tier wire streaming)
- *   - Item 3: Spending Ceiling Invariant (SkeletonThree: pulsing gradient invariant radar)
- *   - Item 4 (col-span-2): Autonomous Pareto Engine (SkeletonFour: candidate comparison)
- *   - Item 5: Budget Utilization & Epoch Window (SkeletonFive: circular telemetry dial)
- */
-
-(function() {
+﻿(function() {
   function cn(...classes) {
     return classes.filter(Boolean).join(" ");
   }

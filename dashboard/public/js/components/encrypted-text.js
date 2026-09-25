@@ -1,11 +1,4 @@
-/**
- * dashboard/public/js/components/encrypted-text.js
- *
- * Aceternity UI EncryptedText Component — Ported for W3A-1 Safe-Spend Protocol.
- * Performs progressive cybernetic matrix decryption scramble and reveal animations.
- */
-
-(function() {
+﻿(function() {
   const DEFAULT_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-={}[];:,.<>/?";
 
   function getRandomChar(charset) {

@@ -1,23 +1,4 @@
-/**
- * dashboard/public/js/views/security.js
- *
- * Page 5: Simplified Security Posture & Recent Incidents
- * =======================================================
- * Top:
- *   SECURITY POSTURE
- *   PROTECTED (Green Status)
- *   ✓ Hard cap active
- *   ✓ Replay protection active
- *   ✓ EIP-712 binding active
- *   ✓ Emergency freeze ready
- *
- * Bottom:
- *   RECENT INCIDENTS
- *   [ALERT] Overspend blocked (Agent requested $25, Remaining budget $16, Contract rejected)
- *   [ALERT] Delivery tampering (Content hash mismatch)
- */
-
-const SecurityView = {
+﻿const SecurityView = {
   initialized: false,
 
   init() {

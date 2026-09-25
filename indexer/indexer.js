@@ -1,12 +1,4 @@
-/**
- * indexer/indexer.js
- *
- * Lightweight on-chain event indexer for TokenBudgetEnforcer.
- * Indexes transactions, authorizations, settlements, and security events.
- * Provides live data for the Human Owner Control Center & Dashboard.
- */
-
-"use strict";
+﻿"use strict";
 
 const fs = require("fs");
 const path = require("path");

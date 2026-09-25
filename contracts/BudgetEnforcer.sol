@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+﻿// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -34,9 +34,7 @@ import "./interfaces/IBudgetEnforcer.sol";
 /// - Owner trying to decrease budget below totalSpent → reverts.
 ///
 contract BudgetEnforcer is IBudgetEnforcer, ReentrancyGuard {
-    // -------------------------------------------------------------------------
     // State
-    // -------------------------------------------------------------------------
 
     address public override owner;
     address public override agent;
@@ -50,10 +48,7 @@ contract BudgetEnforcer is IBudgetEnforcer, ReentrancyGuard {
     /// @dev reqId → the amount that was authorized for this request.
     ///      Allows providers to verify the exact price they quoted.
     mapping(bytes32 => uint256) private _authorizedAmounts;
-
-    // -------------------------------------------------------------------------
     // Modifiers
-    // -------------------------------------------------------------------------
 
     modifier onlyOwner() {
         require(msg.sender == owner, "BudgetEnforcer: caller is not owner");
@@ -64,10 +59,7 @@ contract BudgetEnforcer is IBudgetEnforcer, ReentrancyGuard {
         require(msg.sender == agent, "BudgetEnforcer: caller is not agent");
         _;
     }
-
-    // -------------------------------------------------------------------------
     // Constructor
-    // -------------------------------------------------------------------------
 
     /// @param _owner          Address that controls budget and agent assignment.
     /// @param _agent          Address of the AI agent wallet.
@@ -84,10 +76,7 @@ contract BudgetEnforcer is IBudgetEnforcer, ReentrancyGuard {
         emit BudgetSet(_maxBudget);
         emit AgentSet(_agent);
     }
-
-    // -------------------------------------------------------------------------
     // Admin functions
-    // -------------------------------------------------------------------------
 
     /// @inheritdoc IBudgetEnforcer
     /// @dev Budget can only be increased to avoid retroactively invalidating
@@ -107,10 +96,7 @@ contract BudgetEnforcer is IBudgetEnforcer, ReentrancyGuard {
         agent = newAgent;
         emit AgentSet(newAgent);
     }
-
-    // -------------------------------------------------------------------------
     // Agent authorization
-    // -------------------------------------------------------------------------
 
     /// @notice Atomically authorize spending for a unique service request.
     ///         Called by the AI agent BEFORE paying the provider.
@@ -146,10 +132,7 @@ contract BudgetEnforcer is IBudgetEnforcer, ReentrancyGuard {
 
         emit PaymentAuthorized(reqId, amount, totalSpent);
     }
-
-    // -------------------------------------------------------------------------
     // View functions
-    // -------------------------------------------------------------------------
 
     /// @inheritdoc IBudgetEnforcer
     function verifyAuthorization(bytes32 reqId, uint256 amount)

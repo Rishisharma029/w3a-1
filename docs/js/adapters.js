@@ -1,29 +1,5 @@
-/**
- * dashboard/public/js/adapters.js
- *
- * Centralized Data Normalization & UI Formatting Layer
- * ======================================================
- * Architectural Standard:
- *   API Raw Response / Mock Store
- *               ↓
- *         Normalizers
- *               ↓
- *    UI-Safe Normalized Model
- *               ↓
- *          Components
- *
- * Guarantees:
- *   - ZERO visible `undefined`, `null`, or `NaN`
- *   - Strict preservation of real backend values
- *   - Predictable schemas across all 7 views
- *   - Safe, transparent fallback states
- */
-
-"use strict";
-
-// ---------------------------------------------------------------------------
+﻿"use strict";
 // 1. UI Formatter & Presentation Helpers
-// ---------------------------------------------------------------------------
 const UIFormatter = {
   /**
    * Format long Ethereum address: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 -> 0xf39F...2266
@@ -210,10 +186,7 @@ const UIFormatter = {
     `;
   },
 };
-
-// ---------------------------------------------------------------------------
 // 2. Provider Data Normalization Adapter
-// ---------------------------------------------------------------------------
 const ProviderAdapter = {
   normalize(raw) {
     if (!raw || typeof raw !== "object") {
@@ -378,10 +351,7 @@ const ProviderAdapter = {
     };
   },
 };
-
-// ---------------------------------------------------------------------------
 // 3. Transaction Normalization Adapter
-// ---------------------------------------------------------------------------
 const TransactionAdapter = {
   /** Map known provider addresses to human-readable labels */
   KNOWN_PROVIDERS: {
@@ -803,10 +773,7 @@ function providerIdForAddress(addr) {
   if (l.includes("976e")) return "epsilon-vision";
   return "provider";
 }
-
-// ---------------------------------------------------------------------------
 // 4. Security Alerts Normalization Adapter
-// ---------------------------------------------------------------------------
 const SecurityAdapter = {
   normalize(raw) {
     if (!raw || typeof raw !== "object") return null;
@@ -911,10 +878,7 @@ const SecurityAdapter = {
     };
   },
 };
-
-// ---------------------------------------------------------------------------
 // 5. Budget Normalization Adapter
-// ---------------------------------------------------------------------------
 const BudgetAdapter = {
   normalize(raw) {
     if (!raw || typeof raw !== "object") {

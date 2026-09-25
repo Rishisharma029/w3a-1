@@ -1,16 +1,4 @@
-/**
- * dashboard/public/js/views/agent.js
- *
- * Page 2: Agent Detail & Authority Boundary
- * ==========================================
- * Visually articulates the fundamental thesis:
- *   "AI DECIDES vs PROTOCOL ENFORCES"
- *
- * Displays agent identity, cryptographic signing capabilities, current task,
- * and the strict mathematical boundary separating agent reasoning from financial authority.
- */
-
-const AgentView = {
+﻿const AgentView = {
   initialized: false,
   currentPrompt: "Translate this PDF to Hindi.\nHighest quality under $5.",
   activeResult: null,

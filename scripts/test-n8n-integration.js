@@ -1,18 +1,4 @@
-/**
- * scripts/test-n8n-integration.js
- *
- * End-to-End Test Suite for n8n Autonomous x402 Purchase Orchestrator Integration
- * ==============================================================================
- * Tests:
- *   1. Full normal purchase via n8n orchestrator flow (402 -> EIP-712 -> Settlement -> Delivery Hash)
- *   2. Overspend protocol defense (Cap enforced, payment creation rejected with OVERSPEND)
- *   3. Replay attack defense (Reused nonce rejected with REPLAY)
- *   4. Emergency freeze defense (Frozen agent rejected with AGENT_FROZEN)
- *   5. Delivery tamper defense (Hash mismatch detected and flagged)
- *   6. Audit event ingestion into indexer & security alerts
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers } = require("hardhat");
 const assert = require("assert");

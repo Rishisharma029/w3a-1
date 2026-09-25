@@ -1,11 +1,4 @@
-/**
- * test/phase2/discovery.test.js
- *
- * Tests for the Phase 2 marketplace registry and service discovery.
- * These tests use the marketplace server with an in-process contract verifier.
- */
-
-"use strict";
+﻿"use strict";
 
 const { expect }  = require("chai");
 const { ethers }  = require("hardhat");
@@ -16,10 +9,7 @@ const { PROVIDERS }         = require("../../marketplace/providers");
 
 const MARKET_PORT = 13200;
 const MARKET_URL  = `http://localhost:${MARKET_PORT}`;
-
-// ---------------------------------------------------------------------------
 // Suite setup — deploy contract once, start marketplace
-// ---------------------------------------------------------------------------
 describe("Phase 2 — Service Discovery", function () {
   this.timeout(30000);
 

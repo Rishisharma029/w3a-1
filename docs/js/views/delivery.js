@@ -1,18 +1,4 @@
-/**
- * dashboard/public/js/views/delivery.js
- *
- * Page 6: Cryptographic Delivery Proof & Hash Verification
- * ==========================================================
- * Features:
- *   - Visual proof of the "Prove delivery, not only payment" core requirement
- *   - SHA-256 independent verification console (On-Chain Hash vs Recomputed Digest)
- *   - Prefix-normalized comparison (sha256:...)
- *   - Multi-transaction selection support for judges
- *   - Live delivered payload inspector (Canonical JSON)
- *   - Technical explanation of on-chain delivery hash binding
- */
-
-const DeliveryView = {
+﻿const DeliveryView = {
   initialized: false,
 
   init() {

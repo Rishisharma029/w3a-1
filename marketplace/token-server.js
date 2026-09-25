@@ -1,13 +1,4 @@
-/**
- * marketplace/token-server.js
- *
- * Multi-Provider Token Settlement Marketplace Server
- * ==================================================
- * Hosts x402 token-settlement endpoints for all 5 providers, integrated with
- * PaymentFacilitator, MockUSDC, and TokenBudgetEnforcer.
- */
-
-"use strict";
+﻿"use strict";
 
 const express = require("express");
 const path = require("path");
@@ -80,10 +71,7 @@ function createTokenMarketplace({
       tamperNext: { value: false },
     };
   }
-
-  // ---------------------------------------------------------------------------
   // Service Discovery Registry
-  // ---------------------------------------------------------------------------
   app.get("/registry/discover", (req, res) => {
     const { serviceType, minQuality, maxPrice } = req.query;
 
@@ -108,10 +96,7 @@ function createTokenMarketplace({
       }),
     });
   });
-
-  // ---------------------------------------------------------------------------
   // Mount Provider Routers
-  // ---------------------------------------------------------------------------
   for (const providerConfig of PROVIDERS) {
     const { providerId } = providerConfig;
     const state = providerState[providerId];
@@ -143,10 +128,7 @@ function createTokenMarketplace({
 
     app.use(`/x402/providers/${providerId}`, x402Router);
   }
-
-  // ---------------------------------------------------------------------------
   // Service Marketplace Endpoints (MySQL 8.0 & In-Memory Fallback)
-  // ---------------------------------------------------------------------------
   const PHP_API_BASE = process.env.PHP_API_URL || "http://127.0.0.1:8088/api.php";
 
   app.get(["/api/services", "/registry/services"], async (req, res) => {

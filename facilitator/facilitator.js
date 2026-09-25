@@ -1,14 +1,4 @@
-/**
- * facilitator/facilitator.js
- *
- * x402 Payment Facilitator Abstraction
- * =====================================
- * Encapsulates on-chain settlement, EIP-712 signature verification, and
- * payment status checking. Providers and agents interact with this facilitator
- * so service logic remains completely independent of EVM transaction details.
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers } = require("ethers");
 const { validatePaymentPayload, validatePaymentRequirements } = require("@x402/core/schemas");

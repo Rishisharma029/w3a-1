@@ -1,12 +1,4 @@
-/**
- * services/sepolia-settler.js
- *
- * Real On-Chain Settlement Engine for Ethereum Sepolia Testnet (eip155:11155111)
- * Protocol Enforcer: TokenBudgetEnforcer.sol (0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e)
- * ERC-20 Token: MockUSDC (0xAaa008Df25A46dc501B5B712ac18B47901AF99A7)
- */
-
-require("dotenv").config();
+﻿require("dotenv").config();
 const { ethers } = require("ethers");
 const { globalEventBus } = require("../shared/event-bus");
 const { AuditEvent } = require("../shared/events");

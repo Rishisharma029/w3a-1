@@ -1,17 +1,4 @@
-/**
- * scripts/deploy.js
- *
- * Deploys BudgetEnforcer to the configured network and prints the address.
- *
- * Usage:
- *   npx hardhat run scripts/deploy.js --network localhost
- *   npx hardhat run scripts/deploy.js --network sepolia   (Phase 2)
- *
- * For local use in tests/demo the contract is deployed programmatically
- * via ethers.js ContractFactory — this script is for standalone deployment.
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers } = require("hardhat");
 

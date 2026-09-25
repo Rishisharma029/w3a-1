@@ -1,30 +1,4 @@
-/**
- * marketplace/provider-router.js
- *
- * Factory that creates an Express router implementing the x402-style flow
- * for ONE specific provider.
- *
- * Each provider gets:
- *   - Its own GET /:providerId/service    → 402 challenge
- *   - Its own POST /:providerId/deliver   → verify + deliver
- *   - Its own GET /:providerId/receipts   → admin audit list
- *   - Its own ReceiptStore (no cross-provider leakage)
- *   - Its own QuoteStore  (stale-quote protection per provider)
- *
- * Security additions vs Phase 1:
- *   - Quote validation before contract check (stale/tampered quote rejected)
- *   - Price-mismatch protection (quoted price vs submitted amount)
- *   - Payload passthrough to content generator (contextual content)
- *
- * @param {object} providerConfig   - From marketplace/providers.js
- * @param {object} verifier         - ContractVerifier instance (or override)
- * @param {object} receiptStore     - ReceiptStore instance for this provider
- * @param {object} quoteStore       - QuoteStore instance for this provider
- * @param {object} [sharedAuditLog] - Optional shared audit array
- * @returns {express.Router}
- */
-
-"use strict";
+﻿"use strict";
 
 const express      = require("express");
 const { v4: uuid } = require("uuid");
@@ -33,18 +7,12 @@ const { makeDeliveryReceipt } = require("../shared/types");
 const { AuditEvent }          = require("../shared/events");
 
 const QUOTE_TTL_SECONDS = 300; // 5 minutes
-
-// ---------------------------------------------------------------------------
 // Helper — bytes32 reqId generator (same as Phase 1 provider)
-// ---------------------------------------------------------------------------
 function generateReqId() {
   const raw = uuid().replace(/-/g, "");
   return "0x" + raw.padEnd(64, "0");
 }
-
-// ---------------------------------------------------------------------------
 // Factory
-// ---------------------------------------------------------------------------
 function createProviderRouter({
   providerConfig,
   verifier,
@@ -55,8 +23,6 @@ function createProviderRouter({
 }) {
   const router = express.Router();
   const { providerId, services } = providerConfig;
-
-  // ── GET /service — Step 1: 402 Payment Required ─────────────────────────
   router.get("/service", (req, res) => {
     const { serviceId, payload: payloadStr } = req.query;
 
@@ -118,12 +84,8 @@ function createProviderRouter({
       challenge,
     });
   });
-
-  // ── POST /deliver — Steps 3-5 ────────────────────────────────────────────
   router.post("/deliver", async (req, res) => {
     const { reqId, serviceId, amount, payload } = req.body;
-
-    // ── Input validation ────────────────────────────────────────────────────
     if (!reqId || !serviceId || amount === undefined) {
       return res.status(400).json({
         error: "reqId, serviceId, and amount are required",
@@ -140,8 +102,6 @@ function createProviderRouter({
     if (!service) {
       return res.status(404).json({ error: `Unknown service: ${serviceId}` });
     }
-
-    // ── Idempotency check (provider layer) ────────────────────────────────
     if (receiptStore.has(reqId)) {
       const cached = receiptStore.get(reqId);
       sharedAuditLog.push({
@@ -158,8 +118,6 @@ function createProviderRouter({
         receipt:    cached,
       });
     }
-
-    // ── Stale-quote protection ────────────────────────────────────────────
     const quoteCheck = quoteStore.validate(reqId, serviceId, amountNum);
     if (!quoteCheck.valid) {
       sharedAuditLog.push({
@@ -175,8 +133,6 @@ function createProviderRouter({
         detail: quoteCheck.reason,
       });
     }
-
-    // ── On-chain authorization verification ──────────────────────────────
     let authorized = false;
     try {
       authorized = await verifier.verifyAuthorization(reqId, amountBigInt);
@@ -201,8 +157,6 @@ function createProviderRouter({
         detail: "Contract did not confirm authorization for this reqId + amount.",
       });
     }
-
-    // ── Content generation (with optional tampering for demo/tests) ───────
     const content = service.generate(reqId, payload || {});
     const shouldTamper = tamperNext.value;
     if (shouldTamper) {
@@ -252,8 +206,6 @@ function createProviderRouter({
       receipt,
     });
   });
-
-  // ── GET /receipts — admin/audit ──────────────────────────────────────────
   router.get("/receipts", (req, res) => {
     res.json({
       providerId,

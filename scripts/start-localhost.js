@@ -1,24 +1,4 @@
-/**
- * scripts/start-localhost.js
- *
- * Full-Stack Localhost Runner for W3A-1:
- * "Let AI Agents Buy Services Safely"
- *
- * Boots:
- *  1. Local Hardhat EVM Signers & Contracts (MockUSDC, TokenBudgetEnforcer)
- *  2. Escrow Funding & Authorized Budget
- *  3. Payment Facilitator & Event Indexer
- *  4. x402 Token Marketplace on http://localhost:14205
- *  5. Owner Control Center UI Dashboard on http://localhost:14300
- *  6. Executes an initial live verified x402 V2 agent transaction
- *  7. Keeps the environment alive for interactive browser use
- *
- * Usage:
- *   npx hardhat run scripts/start-localhost.js
- *   or: npm run start:local
- */
-
-"use strict";
+﻿"use strict";
 
 require("dotenv").config();
 

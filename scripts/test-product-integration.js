@@ -1,11 +1,4 @@
-/**
- * scripts/test-product-integration.js
- *
- * Automated verification of the 17-point Product Integration Phase:
- * Complete End-to-End User Journey across Marketplace, AI Purchase, and Owner Center.
- */
-
-const axios = require('axios');
+﻿const axios = require('axios');
 const chalk = require('chalk');
 
 const DASHBOARD_URL = 'http://localhost:14300';

@@ -1,17 +1,4 @@
-/**
- * dashboard/public/js/views/settings.js
- *
- * Page 7: Settings & System Infrastructure Configuration
- * ========================================================
- * Structured into:
- *   1. IDENTITY & AUTHORITY (Owner and Agent Public Wallets)
- *   2. ON-CHAIN CONTRACT INFRASTRUCTURE (Enforcer & ERC-20 Addresses)
- *   3. PROTOCOL & NETWORK PARAMETERS (x402 V2, CAIP-2, EIP-712 Domain)
- *   4. DEPLOYMENT & RPC DIAGNOSTICS (Ports, Endpoints, Health)
- *   5. OWNER ESCROW & DEFENSE ACTIONS (Fund Escrow & Freeze Circuit Breaker)
- */
-
-const SettingsView = {
+﻿const SettingsView = {
   render() {
     const { config, isBackendReachable, isMockMode } = AppState;
     const normBudget = BudgetAdapter.normalize(AppState.budget);

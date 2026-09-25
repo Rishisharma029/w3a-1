@@ -1,18 +1,4 @@
-/**
- * agent/token-payment-client.js
- *
- * x402 Token Payment Client for Autonomous Agent
- * ==============================================
- * Handles signing portable EIP-712 payment authorizations for real ERC-20
- * settlement on TokenBudgetEnforcer.
- *
- * Security boundary:
- *   The agent can sign authorizations up to whatever it wants, BUT the
- *   TokenBudgetEnforcer smart contract physically rejects any settlement
- *   that exceeds the authorized spending cap or violates replay rules.
- */
-
-"use strict";
+﻿"use strict";
 
 const axios = require("axios");
 const { ethers } = require("ethers");

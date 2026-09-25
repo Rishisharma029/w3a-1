@@ -1,25 +1,4 @@
-/**
- * test/integration/flow.test.js
- *
- * Integration tests for the full W3A-1 payment flow.
- *
- * These tests spin up:
- *   1. An in-process Hardhat node (via hardhat network provider)
- *   2. The mock provider server (Express)
- *   3. The agent PaymentClient
- *
- * and exercise the complete Agent → 402 → Contract → Provider → Delivery path.
- *
- * Judge-required scenarios covered:
- *   IT-01  Happy path: full flow end-to-end
- *   IT-02  Content hash independently recomputed → matches receipt
- *   IT-03  Retry with same reqId → no second charge, cached receipt returned
- *   IT-04  Overspend attempt → contract reverts, provider never delivers
- *   IT-05  Unauthorized agent → contract reverts
- *   IT-06  Delivery proof exists and is complete
- */
-
-"use strict";
+﻿"use strict";
 
 const { expect }     = require("chai");
 const { ethers }     = require("hardhat");
@@ -29,10 +8,7 @@ const { AuditLog }   = require("../../agent/audit-log");
 const { AuditEvent } = require("../../shared/events");
 const { computeContentHash } = require("../../shared/types");
 const receiptStore   = require("../../provider/receipt-store");
-
-// ---------------------------------------------------------------------------
 // Test fixtures
-// ---------------------------------------------------------------------------
 
 const PROVIDER_PORT = 13001; // Use a port unlikely to conflict
 const PROVIDER_URL  = `http://localhost:${PROVIDER_PORT}`;

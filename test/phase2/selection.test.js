@@ -1,10 +1,4 @@
-/**
- * test/phase2/selection.test.js
- *
- * Tests for provider selection, scoring models, and filtering.
- */
-
-"use strict";
+﻿"use strict";
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");

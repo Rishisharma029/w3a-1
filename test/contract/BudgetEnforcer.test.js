@@ -1,18 +1,12 @@
-const { expect }        = require("chai");
+﻿const { expect }        = require("chai");
 const { ethers }        = require("hardhat");
 const { keccak256, toUtf8Bytes } = ethers;
-
-// ---------------------------------------------------------------------------
 // Helper — deterministic bytes32 request IDs
-// ---------------------------------------------------------------------------
 function makeReqId(label) {
   return keccak256(toUtf8Bytes(label));
 }
-
-// ---------------------------------------------------------------------------
 // BudgetEnforcer — Unit Tests
 // All 12 judge-required scenarios are covered below.
-// ---------------------------------------------------------------------------
 describe("BudgetEnforcer", function () {
   let enforcer;
   let owner, agent, stranger, provider;

@@ -1,10 +1,4 @@
-/**
- * shared/types.js
- * Runtime schema constructors for core domain objects.
- * Using plain JS objects (no ORM / heavy validation lib) for simplicity.
- */
-
-"use strict";
+﻿"use strict";
 
 const crypto = require("crypto");
 

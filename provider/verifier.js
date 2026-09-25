@@ -1,23 +1,4 @@
-/**
- * provider/verifier.js
- *
- * Wrapper around the BudgetEnforcer contract's verifyAuthorization view.
- *
- * The provider calls this BEFORE delivering content.  It is a read-only
- * call (no gas cost in production; free on local Hardhat node).
- *
- * Security note
- * -------------
- * The provider trusts the CONTRACT, not the agent.  The agent could send a
- * fake txHash or claim it authorized a different amount.  This call goes
- * directly to the chain/node and verifies that:
- *   1. The reqId has been marked as used in the contract.
- *   2. The amount recorded in the contract matches what the provider quoted.
- *
- * A mismatch on either point means the provider does NOT deliver.
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers } = require("ethers");
 const path       = require("path");

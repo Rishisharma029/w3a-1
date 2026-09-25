@@ -1,15 +1,3 @@
-/**
- * dashboard/server.js
- *
- * Human Owner Control Center Dashboard Server
- * ============================================
- * Provides an interactive UI and REST API for the human owner to inspect:
- *   - Real-time on-chain token budget, spent funds, and remaining balance
- *   - Live autonomous transactions with verification status and tx hashes
- *   - Security alerts (blocked overspends, replay attacks, delivery tampering)
- *   - Emergency freeze/unfreeze controls for the AI agent
- */
-
 "use strict";
 
 const express = require("express");
@@ -37,9 +25,7 @@ function createDashboardServer({
   const { globalEventBus } = require("../shared/event-bus");
   const { AuditEvent } = require("../shared/events");
 
-  // ---------------------------------------------------------------------------
   // High-Performance In-Memory Query Cache with Invalidation & TTL for Expensive Queries
-  // ---------------------------------------------------------------------------
   const serverQueryCache = new Map();
   function getCachedQuery(key) {
     const item = serverQueryCache.get(key);
@@ -78,10 +64,8 @@ function createDashboardServer({
   });
   app.use(n8nRouter);
 
-  // ---------------------------------------------------------------------------
   // Gateway: Forward /x402 and /registry requests to Marketplace
   // Allows the public tunnel to serve both Dashboard and Marketplace on one URL
-  // ---------------------------------------------------------------------------
   const axios = require("axios");
   app.use(["/x402", "/registry"], async (req, res) => {
     try {
@@ -107,9 +91,7 @@ function createDashboardServer({
     }
   });
 
-  // ---------------------------------------------------------------------------
   // API: Live Real-Time Event Stream (SSE)
-  // ---------------------------------------------------------------------------
   app.get("/api/events/stream", globalEventBus.createSSEHandler());
 
   app.get("/api/events/history", (req, res) => {
@@ -122,9 +104,7 @@ function createDashboardServer({
     });
   });
 
-  // ---------------------------------------------------------------------------
   // API: Live Budget Statistics
-  // ---------------------------------------------------------------------------
   app.get("/api/budget", async (req, res) => {
     try {
       const cached = getCachedQuery("budget");
@@ -189,9 +169,7 @@ function createDashboardServer({
     }
   });
 
-  // ---------------------------------------------------------------------------
   // API: Transactions & Settlements
-  // ---------------------------------------------------------------------------
   app.get("/api/transactions", (req, res) => {
     const txs = indexer ? indexer.getTransactions() : [];
     res.json({ transactions: txs });
@@ -202,17 +180,13 @@ function createDashboardServer({
     res.json({ transactions: txs });
   });
 
-  // ---------------------------------------------------------------------------
   // API: Security Events
-  // ---------------------------------------------------------------------------
   app.get("/api/security", (req, res) => {
     const alerts = indexer ? indexer.getSecurityAlerts() : [];
     res.json({ alerts });
   });
 
-  // ---------------------------------------------------------------------------
   // API: Owner Control — Freeze / Unfreeze Agent
-  // ---------------------------------------------------------------------------
   app.post("/api/freeze", async (req, res) => {
     try {
       const freezeVal = req.body.freeze !== undefined ? req.body.freeze : req.body.frozen;
@@ -236,9 +210,7 @@ function createDashboardServer({
     }
   });
 
-  // ---------------------------------------------------------------------------
   // API: Owner Control — Fund Budget
-  // ---------------------------------------------------------------------------
   app.post("/api/fund", async (req, res) => {
     try {
       const { amount } = req.body; // In USDC units e.g. 10.0
@@ -269,9 +241,7 @@ function createDashboardServer({
     }
   });
 
-  // ---------------------------------------------------------------------------
   // API: Provider Directory (Cached with 15s TTL)
-  // ---------------------------------------------------------------------------
   app.get(["/api/providers", "/registry/discover"], (req, res) => {
     const cached = getCachedQuery("providers");
     if (cached) {
@@ -290,12 +260,8 @@ function createDashboardServer({
     }
   });
 
-  // ---------------------------------------------------------------------------
   // API: Services Marketplace & Publishing (Cached with 15s TTL)
-  // ---------------------------------------------------------------------------
-  // ---------------------------------------------------------------------------
   // API: Services Marketplace & Publishing (MySQL 8.0 & In-Memory with 15s TTL)
-  // ---------------------------------------------------------------------------
   const PHP_API_BASE = process.env.PHP_API_URL || "http://127.0.0.1:8088/api.php";
 
   app.get("/api/services", async (req, res) => {
@@ -434,9 +400,7 @@ function createDashboardServer({
     }
   });
 
-  // ---------------------------------------------------------------------------
   // API: System Configuration
-  // ---------------------------------------------------------------------------
   app.get("/api/config", async (req, res) => {
     try {
       const enforcerAddress = enforcerContract ? await enforcerContract.getAddress() : "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
@@ -462,9 +426,7 @@ function createDashboardServer({
     }
   });
 
-  // ---------------------------------------------------------------------------
   // API: Sepolia Blockchain Verification & Live Explorer Telemetry
-  // ---------------------------------------------------------------------------
   app.get("/api/sepolia/status", async (req, res) => {
     try {
       const cached = getCachedQuery("sepolia:status");
@@ -562,9 +524,7 @@ function createDashboardServer({
     }
   });
 
-  // ---------------------------------------------------------------------------
   // Sepolia Transactions Store & Shared On-Chain Settlement Engine (Cached with 5s TTL)
-  // ---------------------------------------------------------------------------
   const { executeSepoliaSettlement, sepoliaTransactions } = require("../services/sepolia-settler");
 
   app.get("/api/sepolia/transactions", (req, res) => {

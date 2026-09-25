@@ -1,15 +1,4 @@
-/**
- * dashboard/public/js/views/transactions.js
- *
- * Purchases & Purchase History
- * =============================
- * Clean, user-friendly card stream:
- *   SUCCESS / BLOCKED status badge
- *   Service Name, Provider Name, Price ($4.00), Relative Time
- *   Click any card -> Opens detailed transaction drawer with cryptographic proofs
- */
-
-const TransactionsView = {
+﻿const TransactionsView = {
   activeFilter: "All Purchases",
   searchQuery: "",
   viewMode: "cards", // "cards" | "table"

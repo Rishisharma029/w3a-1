@@ -1,19 +1,4 @@
-/**
- * demo/demo.js
- *
- * CLI end-to-end demo — demonstrates all mandatory judge scenarios:
- *
- *   SCENARIO 1: Purchase service for 4 units        → APPROVED
- *   SCENARIO 2: Purchase service for 6 units        → APPROVED (budget exhausted)
- *   SCENARIO 3: Purchase service for any amount     → REJECTED (cap exceeded)
- *   SCENARIO 4: Retry the first purchase's reqId   → NO SECOND CHARGE
- *   SCENARIO 5: Live delivery proof verification   → HASH VERIFIED
- *
- * Runs entirely on a local Hardhat in-process node.
- * No external services or real ETH required.
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers }        = require("hardhat");
 const chalk             = require("chalk");
@@ -27,10 +12,7 @@ const receiptStore      = require("../provider/receipt-store");
 const PROVIDER_PORT = 14001;
 const PROVIDER_URL  = `http://localhost:${PROVIDER_PORT}`;
 const MAX_BUDGET    = 10n;
-
-// ---------------------------------------------------------------------------
 // Display helpers
-// ---------------------------------------------------------------------------
 function banner(title) {
   console.log("\n" + chalk.cyan("═".repeat(62)));
   console.log(chalk.cyan.bold(`  ${title}`));
@@ -46,15 +28,10 @@ async function printBudget(agent) {
   const { maxBudget, totalSpent, remaining } = await agent.getBudgetState();
   info(`Budget: max=${maxBudget} | spent=${totalSpent} | remaining=${remaining}`);
 }
-
-// ---------------------------------------------------------------------------
 // Main demo
-// ---------------------------------------------------------------------------
 async function main() {
   console.log(chalk.bold.magenta("\n  W3A-1 — Let AI Agents Buy Services Safely"));
   console.log(chalk.magenta("  Phase 1 — End-to-End Demo\n"));
-
-  // ── Deploy contract ────────────────────────────────────────────────────────
   const [ownerSigner, agentSigner] = await ethers.getSigners();
 
   info(`Owner : ${ownerSigner.address}`);
@@ -71,8 +48,6 @@ async function main() {
 
   ok(`BudgetEnforcer deployed: ${contractAddress}`);
   ok(`Initial budget: ${MAX_BUDGET} units`);
-
-  // ── Start provider ─────────────────────────────────────────────────────────
   // Use an in-process verifier so the demo doesn't require a standalone
   // `hardhat node` running on 8545 — it reads contract state directly
   // from the in-process Hardhat EVM.
@@ -99,8 +74,6 @@ async function main() {
 
   await new Promise((r) => setTimeout(r, 300));
   ok(`Mock provider started on port ${PROVIDER_PORT}`);
-
-  // ── Create agent ───────────────────────────────────────────────────────────
   const auditLog = new AuditLog();
   const agent = new Agent({
     contractAddress,
@@ -108,10 +81,7 @@ async function main() {
     providerUrl: PROVIDER_URL,
     auditLog,
   });
-
-  // ══════════════════════════════════════════════════════════════════════════
   banner("SCENARIO 1 — Purchase weather-report (costs 4 units)");
-  // ══════════════════════════════════════════════════════════════════════════
   let result1;
   try {
     result1 = await agent.purchase("weather-report");
@@ -124,10 +94,7 @@ async function main() {
     fail(`Unexpected failure: ${err.message}`);
     process.exit(1);
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
   banner("SCENARIO 2 — Purchase market-data (costs 6 units)");
-  // ══════════════════════════════════════════════════════════════════════════
   try {
     const result2 = await agent.purchase("market-data");
     ok(`PAYMENT APPROVED`);
@@ -138,10 +105,7 @@ async function main() {
     fail(`Unexpected failure: ${err.message}`);
     process.exit(1);
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
   banner("SCENARIO 3 — Agent attempts news-summary (costs 3 units) — BUDGET EXHAUSTED");
-  // ══════════════════════════════════════════════════════════════════════════
   try {
     await agent.purchase("news-summary");
     fail("ERROR: Purchase should have been rejected but was not!");
@@ -160,10 +124,7 @@ async function main() {
       process.exit(1);
     }
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
   banner("SCENARIO 4 — Retry Scenario 1's reqId (network timeout simulation)");
-  // ══════════════════════════════════════════════════════════════════════════
   //
   // Simulate: after Scenario 1's authorize() succeeded, a network failure
   // occurred.  Agent retries POST /deliver with the SAME reqId.
@@ -193,10 +154,7 @@ async function main() {
     fail(`totalSpent changed after retry! Got ${spentAfterRetry}`);
     process.exit(1);
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
   banner("SCENARIO 5 — Independent Delivery Proof Verification");
-  // ══════════════════════════════════════════════════════════════════════════
   const { receipt } = result1;
   const recomputed = computeContentHash(receipt.content);
 
@@ -210,15 +168,9 @@ async function main() {
     fail(`Hash mismatch! Content may have been tampered with.`);
     process.exit(1);
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
   banner("AUDIT LOG SUMMARY");
-  // ══════════════════════════════════════════════════════════════════════════
   auditLog.dump();
-
-  // ══════════════════════════════════════════════════════════════════════════
   banner("ALL SCENARIOS PASSED");
-  // ══════════════════════════════════════════════════════════════════════════
   ok("Budget enforcement: PASSED (contract-level, not agent-logic)");
   ok("HTTP 402 flow:      PASSED (5 distinct steps)");
   ok("Idempotency:        PASSED (no double-charge on retry)");

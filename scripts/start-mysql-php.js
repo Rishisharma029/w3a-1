@@ -1,12 +1,4 @@
-/**
- * scripts/start-mysql-php.js
- *
- * Checks and starts:
- * 1. MySQL 8.0 Daemon on port 3306 (with data in marketplace/data/mysql)
- * 2. PHP 8.3 built-in API server on port 8088 (marketplace/php)
- */
-
-"use strict";
+﻿"use strict";
 
 const net = require("net");
 const { spawn, execSync } = require("child_process");

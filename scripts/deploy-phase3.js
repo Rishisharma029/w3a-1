@@ -1,15 +1,4 @@
-/**
- * scripts/deploy-phase3.js
- *
- * Deployment script for Phase 3: MockUSDC + TokenBudgetEnforcer
- * Supports local Hardhat node and Ethereum Sepolia testnet.
- *
- * Usage:
- *   Local:   npx hardhat run scripts/deploy-phase3.js --network localhost
- *   Sepolia: npx hardhat run scripts/deploy-phase3.js --network sepolia
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers, network } = require("hardhat");
 require("dotenv").config();

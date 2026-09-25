@@ -1,23 +1,4 @@
-/**
- * test/phase4/invariants.test.js
- *
- * Phase 4 — Property / Invariant Tests
- * =====================================
- * These tests verify that critical system invariants hold across all operations:
- *
- *   INV-01: remainingBudget() == authorizedBudget - settledSpend (always)
- *   INV-02: unspentEscrow() == token.balanceOf(contract) (always)
- *   INV-03: settledSpend never decreases
- *   INV-04: settledSpend always <= authorizedBudget
- *   INV-05: totalFunded >= totalWithdrawn + authorizedBudget (no double-counting)
- *   INV-06: Once a reqId is used, it stays used forever
- *   INV-07: Freeze is binary — either all or nothing
- *   INV-08: Delivery hash stored on-chain exactly matches computed hash
- *   INV-09: Token transfer to provider == settled amount in PaymentSettled event
- *   INV-10: No phantom authorizations (non-existent reqId returns zero-value auth)
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers } = require("hardhat");
 const { expect } = require("chai");

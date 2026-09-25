@@ -1,12 +1,4 @@
-/**
- * test/phase2/flow.test.js
- *
- * End-to-end integration tests for the Phase 2 autonomous flow,
- * including stale quote protection, fallback, delivery tampering,
- * and PurchaseRecord audit trail verification.
- */
-
-"use strict";
+﻿"use strict";
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");

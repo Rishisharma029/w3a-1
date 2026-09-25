@@ -1,13 +1,4 @@
-/**
- * dashboard/public/js/components/sparkles.js
- *
- * Aceternity UI SparklesCore & SparklesPreview
- * ==============================================
- * High-performance, high-density particle canvas with animated twinkle,
- * drift physics, dual indigo/sky gradient laser lines, and radial edge mask.
- */
-
-(function () {
+﻿(function () {
   class SparklesCore {
     constructor(canvas, options = {}) {
       this.canvas = canvas;

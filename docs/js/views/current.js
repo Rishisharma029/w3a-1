@@ -1,45 +1,4 @@
-/**
- * dashboard/public/js/views/current.js
- *
- * Screen 3: Live Execution — The "Wow" Screen
- * ============================================
- * Redesigned around ONE core story:
- *   MARKETPLACE → AI PURCHASE → LIVE EXECUTION → RESULT
- *
- * TOP:
- *   AUTONOMOUS PURCHASE
- *   "Translate this PDF to Hindi. Quality > 0.9. Max $5."
- *   STATUS: ● RUNNING / ✓ PURCHASE COMPLETE
- *
- * CENTER:
- *   Clean vertical timeline:
- *   ✓ REQUEST RECEIVED
- *         ↓
- *   ✓ AI UNDERSTOOD INTENT
- *         ↓
- *   ✓ PROVIDERS DISCOVERED
- *         ↓
- *   ✓ ALPHA TRANSLATE SELECTED
- *         ↓
- *   HTTP 402 PAYMENT REQUIRED
- *         ↓
- *   ✓ PAYMENT-SIGNATURE CREATED
- *         ↓
- *   ✓ FACILITATOR VERIFIED
- *         ↓
- *   BLOCKCHAIN SETTLEMENT
- *         ↓
- *   ○ DELIVERY
- *         ↓
- *   ○ HASH VERIFICATION
- *
- *   Each step expands dynamically when active.
- *
- * RESULT:
- *   PURCHASE COMPLETE — $4.00 USDC with delivered payload & SHA-256 match.
- */
-
-const CurrentTransactionView = {
+﻿const CurrentTransactionView = {
   initialized: false,
   isExecuting: false,
   currentPrompt: "Translate this legal contract to English. Quality > 0.9. Max $5.",

@@ -1,19 +1,4 @@
-/**
- * dashboard/public/js/stream.js
- *
- * Real-Time Event Stream Consumer (SSE)
- * =====================================
- * Establishes a persistent Server-Sent Events (SSE) stream with the W3A-1 backend.
- * Replaces intermittent polling with sub-second event push directly to the dashboard.
- *
- * Emitted Events:
- *   INTENT_RECEIVED, PROVIDER_SEARCH, PROVIDER_SELECTED, PAYMENT_REQUIRED,
- *   PAYMENT_SIGNED, PAYMENT_VERIFIED, SETTLEMENT_SUBMITTED, SETTLEMENT_CONFIRMED,
- *   DELIVERY_RECEIVED, HASH_VERIFIED, OVERSPEND_BLOCKED, RETRY_DETECTED,
- *   AGENT_FROZEN, AGENT_UNFROZEN, BUDGET_FUNDED, DELIVERY_TAMPERED
- */
-
-const LiveEventStream = {
+﻿const LiveEventStream = {
   eventSource: null,
   reconnectAttempts: 0,
   maxReconnectDelay: 10000,

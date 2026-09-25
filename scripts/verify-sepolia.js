@@ -1,22 +1,4 @@
-/**
- * scripts/verify-sepolia.js
- *
- * Phase 4 — Sepolia Testnet Read-Only Verification
- * =================================================
- * Read-only script to verify deployed contract state on Sepolia.
- * NEVER commits secrets. NEVER sends transactions.
- * Only reads public contract state via ethers.js JsonRpcProvider.
- *
- * Usage:
- *   SEPOLIA_RPC_URL=<rpc_url> \
- *   ENFORCER_ADDRESS=<address> \
- *   TOKEN_ADDRESS=<address> \
- *   node scripts/verify-sepolia.js
- *
- * OR with .env file containing those variables.
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers } = require("ethers");
 const chalk = require("chalk");

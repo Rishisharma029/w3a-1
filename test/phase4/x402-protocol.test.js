@@ -1,25 +1,4 @@
-/**
- * test/phase4/x402-protocol.test.js
- *
- * Phase 4 — x402 Protocol Conformance Tests
- * ==========================================
- * Validates that our payment flow aligns with x402 protocol semantics:
- * - HTTP 402 Payment Required challenges
- * - Challenge field validation
- * - Payment payload structure
- * - Settlement finality
- * - Error response correctness
- *
- * NOTE: We are x402-COMPATIBLE (follow the same pattern) not x402-CONFORMANT
- * (not using the official x402 SDK). This distinction is documented in PHASE_4.md.
- *
- * API notes (actual behavior):
- *   GET /service?serviceId=<id>  — requires serviceId; returns 402 with { error, protocol, challenge }
- *   POST /deliver                — requires body.paymentPayload with reqId
- *   Challenge body fields:       challenge.reqId, challenge.amount, challenge.recipient, challenge.validBefore
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers } = require("hardhat");
 const axios = require("axios");

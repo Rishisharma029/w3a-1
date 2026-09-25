@@ -1,22 +1,4 @@
-/**
- * scripts/gas-report.js
- *
- * Phase 4 — Gas Cost Inspection Report
- * ======================================
- * Measures gas used for each critical contract operation:
- *   1. Token approval + fundBudget (owner funds escrow)
- *   2. authorizePayment (agent direct authorization)
- *   3. settleWithSignature (EIP-712 signed atomic settlement)
- *   4. settlePayment (settlement of pre-authorized payment)
- *   5. freezeAgent (owner emergency freeze)
- *   6. withdrawUnspent (owner reclaims tokens)
- *   7. setAuthorizedBudget (owner adjusts cap)
- *
- * Run with: node scripts/gas-report.js
- * OR:       hardhat run scripts/gas-report.js
- */
-
-"use strict";
+﻿"use strict";
 
 const { ethers } = require("hardhat");
 const chalk = require("chalk");
@@ -30,8 +12,6 @@ async function main() {
   console.log(chalk.bold.cyan("╚══════════════════════════════════════════════════════════════╝\n"));
 
   const [ownerSigner, agentSigner, providerSigner] = await ethers.getSigners();
-
-  // --- Deploy ---
   const TokenFactory = await ethers.getContractFactory("MockUSDC");
   const token = await TokenFactory.deploy();
   await token.waitForDeployment();
@@ -133,8 +113,6 @@ async function main() {
   tx = await enforcer.connect(ownerSigner).withdrawUnspent(1n * ONE_USDC);
   receipt = await tx.wait();
   record("withdrawUnspent($1 USDC)", receipt.gasUsed, "Owner reclaims unspent tokens from escrow");
-
-  // --- Summary ---
   console.log("\n" + chalk.cyan("─".repeat(72)));
   console.log(chalk.bold.white("  Summary"));
   console.log(chalk.cyan("─".repeat(72)));

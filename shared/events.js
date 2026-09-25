@@ -1,10 +1,4 @@
-/**
- * shared/events.js
- * Canonical audit event type constants shared by agent, provider, and tests.
- * Using string constants (not integers) keeps the audit log human-readable.
- */
-
-"use strict";
+﻿"use strict";
 
 const AuditEvent = Object.freeze({
   // Canonical unified stream events

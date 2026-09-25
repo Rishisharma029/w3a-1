@@ -1,28 +1,4 @@
-/**
- * provider/receipt-store.js
- *
- * In-memory idempotency store for the mock provider.
- *
- * Purpose
- * -------
- * Guarantees that a given reqId produces exactly one delivery, regardless
- * of how many times POST /deliver is called.  This is the PROVIDER-SIDE
- * double-charge protection layer — complementary to the contract-level
- * replay protection.
- *
- * In production this would be a database with a UNIQUE constraint on reqId.
- * For Phase 1 we use an in-memory Map.
- *
- * Security note
- * -------------
- * The store is keyed on reqId (bytes32 hex string).  An attacker cannot
- * "poison" an existing receipt because the reqId is already marked as used
- * in the contract — any second authorize() call with the same ID reverts.
- * The provider only writes to the store AFTER verifying authorization
- * on-chain, so the store is always consistent with contract state.
- */
-
-"use strict";
+﻿"use strict";
 
 class ReceiptStore {
   constructor() {

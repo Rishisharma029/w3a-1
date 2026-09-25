@@ -1,20 +1,4 @@
-/**
- * dashboard/public/js/views/providers.js
- *
- * Page 4: Provider Marketplace & Operational Autonomous Selection
- * ===============================================================
- * Features:
- *   - Operational PROVIDER MARKET showing live multi-constraint evaluation
- *   - Alpha, Beta, Gamma, Delta, Epsilon cards with Price, Quality, Latency
- *   - High-visibility AI SCORE (Weighted Frontier Metric)
- *   - Operational STATUS badge (SELECTED, CANDIDATE, REJECTED, STANDBY)
- *   - WHY? Autonomous AI Decision Rationale bullet points
- *   - Animated 4-stage selection state machine:
- *       Evaluating... -> Candidate -> Rejected -> Selected
- *   - Reactive Pub/Sub subscription to AppState
- */
-
-const ProvidersView = {
+﻿const ProvidersView = {
   initialized: false,
   isLoading: false,
   activeTab: "marketplace", // "marketplace" | "evaluation"
