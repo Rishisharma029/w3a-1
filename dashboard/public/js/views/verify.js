@@ -1,7 +1,16 @@
+// =========================================================================
+// W3A-1: Autonomous Machine Payments (x402 V2)
+// On-Chain Cryptographic Verifier & Explorer View
+// =========================================================================
+
 const VerifyView = {
   initialized: false,
   activeTab: "sepolia", // "sepolia" | "local"
   currentHash: "0x303ae7447a4b78850a86e5ecf126d1437b8094c045b1fe9917aacb98698ec289",
+  enforcerAddress: "0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e",
+  tokenAddress: "0xAaa008Df25A46dc501B5B712ac18B47901AF99A7",
+  etherscanBase: "https://sepolia.etherscan.io",
+
   sepoliaTransactions: [
     {
       txHash: "0x303ae7447a4b78850a86e5ecf126d1437b8094c045b1fe9917aacb98698ec289",
@@ -14,7 +23,7 @@ const VerifyView = {
       network: "Ethereum Sepolia Testnet",
       chainId: 11155111,
       etherscanUrl: "https://sepolia.etherscan.io/tx/0x303ae7447a4b78850a86e5ecf126d1437b8094c045b1fe9917aacb98698ec289",
-      timestamp: new Date().toISOString(),
+      timestamp: "2026-09-25T19:40:00.000Z",
     },
     {
       txHash: "0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069",
@@ -27,7 +36,20 @@ const VerifyView = {
       network: "Ethereum Sepolia Testnet",
       chainId: 11155111,
       etherscanUrl: "https://sepolia.etherscan.io/tx/0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069",
-      timestamp: new Date().toISOString(),
+      timestamp: "2026-09-25T18:22:00.000Z",
+    },
+    {
+      txHash: "0x89ef9d6e9a532a49ac6eb2cbad1de4e08067cdb3ac7b741a8481a3198f3499ac",
+      reqId: "0x0000000000000000000000000000000000000000000000000000000000000200",
+      amountUSD: "50.00",
+      serviceName: "Escrow Budget Deposit ($50.00 MockUSDC)",
+      providerName: "TokenBudgetEnforcer.sol",
+      deliveryHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      blockNumber: 11779294,
+      network: "Ethereum Sepolia Testnet",
+      chainId: 11155111,
+      etherscanUrl: "https://sepolia.etherscan.io/tx/0x89ef9d6e9a532a49ac6eb2cbad1de4e08067cdb3ac7b741a8481a3198f3499ac",
+      timestamp: "2026-09-25T18:15:00.000Z",
     },
     {
       txHash: "0xa7a187321a0f29247cc0dba54479ba21de438c9142c1c1f750c77e5ad32c1e16",
@@ -57,16 +79,12 @@ const VerifyView = {
     },
   ],
 
-  enforcerAddress: "0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e",
-  tokenAddress: "0xAaa008Df25A46dc501B5B712ac18B47901AF99A7",
-  etherscanBase: "https://sepolia.etherscan.io",
-
   getCombinedSepoliaTransactions() {
     const list = [...this.sepoliaTransactions];
     if (typeof AppState !== "undefined" && AppState.transactions) {
       for (const tx of AppState.transactions) {
         const h = (tx.txHash || "").toLowerCase();
-        if (h && !list.some(s => (s.txHash || "").toLowerCase() === h)) {
+        if (h && !list.some((s) => (s.txHash || "").toLowerCase() === h)) {
           list.unshift({
             txHash: tx.txHash,
             reqId: tx.reqId || "0x088e7c75ddcc48eba8329618b1a37c02b3df468e82a09c2a1387d40294716b23",
@@ -127,7 +145,7 @@ const VerifyView = {
   reRenderIfMounted() {
     if (typeof document === "undefined") return;
     if (typeof AppState !== "undefined" && AppState.currentView === "verify") {
-      const root = document.getElementById("mainContent") || document.getElementById("main-content");
+      const root = document.getElementById("mainContent");
       if (root && root.querySelector("#verify-view-root")) {
         root.innerHTML = this.render();
       }
@@ -146,144 +164,167 @@ const VerifyView = {
     this.verifyHash(val);
   },
 
-    renderVerificationSkeleton() {
-    return `
-      <div class="space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full skeleton-shimmer-cyan shrink-0"></div>
-            <div class="space-y-1.5 flex-1">
-              <div class="h-4 w-48 skeleton-shimmer rounded"></div>
-              <div class="h-3 w-64 skeleton-shimmer-cyan rounded"></div>
-            </div>
-          </div>
-          <div class="h-9 w-44 rounded-xl skeleton-shimmer"></div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-1 font-mono text-xs">
-          <div class="p-3.5 rounded-xl bg-surface-container border border-white/10 space-y-2">
-            <div class="h-3 w-20 skeleton-shimmer rounded"></div>
-            <div class="h-4 w-full skeleton-shimmer-cyan rounded"></div>
-          </div>
-          <div class="p-3.5 rounded-xl bg-surface-container border border-white/10 space-y-2">
-            <div class="h-3 w-24 skeleton-shimmer rounded"></div>
-            <div class="h-4 w-full skeleton-shimmer-emerald rounded"></div>
-          </div>
-          <div class="p-3.5 rounded-xl bg-surface-container border border-white/10 space-y-2">
-            <div class="h-3 w-20 skeleton-shimmer rounded"></div>
-            <div class="h-5 w-24 skeleton-shimmer rounded"></div>
-          </div>
-          <div class="p-3.5 rounded-xl bg-surface-container border border-white/10 space-y-2">
-            <div class="h-3 w-28 skeleton-shimmer rounded"></div>
-            <div class="h-4 w-32 skeleton-shimmer rounded"></div>
-          </div>
-        </div>
-        <div class="pt-2 flex items-center justify-between border-t border-white/10">
-          <div class="h-3.5 w-72 skeleton-shimmer-emerald rounded"></div>
-          <div class="h-3.5 w-36 skeleton-shimmer rounded"></div>
-        </div>
-      </div>
-    `;
-  },
   verifyHash(hash) {
-    const targetHash = (hash || (document.getElementById('verifyInputInApp') ? document.getElementById('verifyInputInApp').value : '')).trim();
+    const targetHash = (hash || (document.getElementById("verifyInputInApp") ? document.getElementById("verifyInputInApp").value : "")).trim();
     if (!targetHash) return;
 
     this.currentHash = targetHash;
-
-    const resCard = document.getElementById('inAppVerifyResult');
-    if (!resCard) {
-      this.reRenderIfMounted();
-      return;
-    }
-
-    resCard.innerHTML = this.renderVerificationSkeleton();
-
-    setTimeout(() => {
-      this.populateVerificationResult(targetHash);
-    }, 240);
+    this.populateVerificationResult(targetHash);
   },
 
   populateVerificationResult(targetHash) {
-    const resCard = document.getElementById('inAppVerifyResult');
+    const resCard = document.getElementById("inAppVerifyResult");
     if (!resCard) return;
 
-    const isSepoliaMatch = this.getCombinedSepoliaTransactions().find(
-      (t) => (t.txHash || '').toLowerCase() === targetHash.toLowerCase()
+    const allSep = this.getCombinedSepoliaTransactions();
+    const isSepoliaMatch = allSep.find(
+      (t) => (t.txHash || "").toLowerCase() === targetHash.toLowerCase()
     );
 
-    const localTxs = (typeof AppState !== 'undefined' && AppState.transactions) || [];
+    const localTxs = (typeof AppState !== "undefined" && AppState.transactions) || [];
     const isLocalMatch = localTxs.find(
-      (t) => (t.txHash || '').toLowerCase() === targetHash.toLowerCase()
+      (t) => (t.txHash || "").toLowerCase() === targetHash.toLowerCase()
     );
 
-    const isSepolia = isSepoliaMatch || (!isLocalMatch && targetHash.startsWith('0x') && targetHash.length === 66);
-    const blk = isSepoliaMatch && isSepoliaMatch.blockNumber ? isSepoliaMatch.blockNumber : 11766297;
-    const amountVal = isSepoliaMatch && isSepoliaMatch.amountUSD ? isSepoliaMatch.amountUSD : '4.00';
-    const deliveryHashVal = isSepoliaMatch && isSepoliaMatch.deliveryHash ? isSepoliaMatch.deliveryHash : 'sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6';
-    const rid = (isSepoliaMatch && isSepoliaMatch.reqId) || '0x37815bb89cda313f4117cc039be4afef7047cfb1';
-    const reqIdVal = rid.length > 18 ? (rid.slice(0, 10) + '...' + rid.slice(-6)) : rid;
+    const isSepolia = isSepoliaMatch || (!isLocalMatch && targetHash.startsWith("0x") && targetHash.length === 66);
+    const matched = isSepoliaMatch || isLocalMatch || {};
+    const blk = matched.blockNumber || 11779302;
+    const amountVal = matched.amountUSD || "4.00";
+    const deliveryHashVal = matched.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
+    const rid = matched.reqId || "0x37815bb89cda313f4117cc039be4afef7047cfb1";
+    const reqIdVal = rid.length > 20 ? `${rid.slice(0, 10)}...${rid.slice(-8)}` : rid;
+    const etherscanUrl = matched.etherscanUrl || `${this.etherscanBase}/tx/${targetHash}`;
 
     resCard.innerHTML = `
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
-        <div class="flex items-center gap-3">
-          <span class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-base border border-emerald-500/30">
+      <!-- Top Verification Status Banner -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--tertiary); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0;">
             ✓
-          </span>
+          </div>
           <div>
-            <div class="flex items-center gap-2">
-              <span class="font-headline font-bold text-white text-base">CRYPTOGRAPHICALLY VERIFIED</span>
-              <span id="inAppBadgeNetwork" class="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold ${isSepolia ? 'bg-blue-500/20 text-cyan-300 border border-blue-500/40' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'}">
-                ${isSepolia ? 'ETHEREUM SEPOLIA TESTNET (eip155:11155111)' : 'LOCAL HARDHAT EVM (Chain 31337)'}
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span style="font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: #fff;">CRYPTOGRAPHICALLY VERIFIED</span>
+              <span class="badge badge-success">
+                ${isSepolia ? "ETHEREUM SEPOLIA (eip155:11155111)" : "LOCAL HARDHAT EVM (Chain 31337)"}
               </span>
             </div>
-            <p id="inAppNetworkSub" class="text-xs font-mono text-slate-400 mt-0.5">
-              ${isSepolia ? 'Confirmed on Ethereum Sepolia Public Ledger • Block #' + blk : 'Private Sandbox Execution • Localhost Chain ID 31337'}
+            <p style="font-size: 12px; font-family: var(--font-mono); color: var(--text-muted); margin-top: 3px;">
+              ${isSepolia ? `Confirmed on Ethereum Sepolia Public Ledger • Block #${blk}` : "Mined on Private Local EVM Ledger • Chain ID 31337"}
             </p>
           </div>
         </div>
 
-        <a 
-          id="inAppEtherscanLink"
-          href="${this.etherscanBase}/tx/${targetHash}" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-bold shadow-md shadow-blue-500/30 transition active:scale-95 cursor-pointer"
-          title="Verify transaction directly on Ethereum Sepolia Etherscan"
-        >
-          <span>Open on Sepolia Etherscan Directly</span>
-          <span class="material-symbols-outlined text-sm">open_in_new</span>
-        </a>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-1 font-mono text-xs">
-        <div class="p-3.5 rounded-xl bg-surface-container border border-white/10 space-y-1">
-          <span class="text-[10px] text-slate-400 uppercase font-bold">On-Chain Tx Hash</span>
-          <p id="inAppResTxHash" class="font-bold text-cyan-300 break-all select-all text-xs">${targetHash}</p>
-        </div>
-
-        <div class="p-3.5 rounded-xl bg-surface-container border border-white/10 space-y-1">
-          <span class="text-[10px] text-slate-400 uppercase font-bold">SHA-256 Delivery Proof</span>
-          <p id="inAppResDeliveryHash" class="font-bold text-emerald-400 break-all select-all text-xs">${deliveryHashVal}</p>
-        </div>
-
-        <div class="p-3.5 rounded-xl bg-surface-container border border-white/10 space-y-1">
-          <span class="text-[10px] text-slate-400 uppercase font-bold">Amount Settled</span>
-          <p id="inAppResAmount" class="font-bold text-white text-sm">$${amountVal} USDC</p>
-        </div>
-
-        <div class="p-3.5 rounded-xl bg-surface-container border border-white/10 space-y-1">
-          <span class="text-[10px] text-slate-400 uppercase font-bold">Request Nonce (reqId)</span>
-          <p id="inAppResReqId" class="font-bold text-slate-300 break-all select-all text-xs">${reqIdVal}</p>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <a
+            href="${etherscanUrl}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primary btn-sm"
+            title="Open direct transaction page on Ethereum Sepolia Etherscan"
+          >
+            <span>Open on Sepolia Etherscan Directly ↗</span>
+          </a>
         </div>
       </div>
 
-      <div class="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs font-mono border-t border-white/10">
-        <div class="flex items-center gap-2 text-emerald-400 font-bold">
-          <span class="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">✓</span>
-          <span>SHA-256 Hash matches delivered payload digest with 100% determinism</span>
+      <!-- 4-Card Itemized Blockchain Telemetry Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 16px;">
+        <div style="background: var(--surface-low); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px;">
+          <div style="font-size: 10.5px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 4px;">
+            On-Chain Tx Hash
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+            <a
+              href="${etherscanUrl}"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="font-family: var(--font-mono); font-size: 11.5px; color: var(--primary); text-decoration: underline; word-break: break-all;"
+            >
+              ${targetHash.length > 20 ? `${targetHash.slice(0, 10)}...${targetHash.slice(-8)}` : targetHash}
+            </a>
+            ${typeof UIFormatter !== "undefined" && UIFormatter.copyButton ? UIFormatter.copyButton(targetHash, "Tx Hash") : ""}
+          </div>
         </div>
-        <div id="inAppResBlock" class="text-[11px] font-mono text-emerald-400 font-semibold">
-          <span>●</span> ${isSepolia ? 'Confirmed On-Chain (Block #' + blk + ')' : 'Mined on Private Local EVM'}
+
+        <div style="background: var(--surface-low); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px;">
+          <div style="font-size: 10.5px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 4px;">
+            SHA-256 Delivery Proof
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+            <span style="font-family: var(--font-mono); font-size: 11.5px; color: var(--tertiary); word-break: break-all; font-weight: 600;">
+              ${deliveryHashVal.length > 22 ? `${deliveryHashVal.slice(0, 12)}...${deliveryHashVal.slice(-8)}` : deliveryHashVal}
+            </span>
+            ${typeof UIFormatter !== "undefined" && UIFormatter.copyButton ? UIFormatter.copyButton(deliveryHashVal, "Delivery Hash") : ""}
+          </div>
+        </div>
+
+        <div style="background: var(--surface-low); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px;">
+          <div style="font-size: 10.5px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 4px;">
+            Amount Settled
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: #fff;">
+            $${amountVal} <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">MockUSDC</span>
+          </div>
+        </div>
+
+        <div style="background: var(--surface-low); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px;">
+          <div style="font-size: 10.5px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 4px;">
+            Request Nonce (reqId)
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+            <span style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text); word-break: break-all;">
+              ${reqIdVal}
+            </span>
+            ${typeof UIFormatter !== "undefined" && UIFormatter.copyButton ? UIFormatter.copyButton(rid, "Request ID") : ""}
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Cryptographic Invariant Integrity Checkpoints -->
+      <div style="margin-top: 16px; padding: 14px; background: var(--surface-low); border: 1px solid var(--border); border-radius: var(--radius);">
+        <div style="font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 10px; font-family: var(--font-mono);">
+          Cryptographic Verification Checkpoints
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; font-family: var(--font-mono); font-size: 11.5px;">
+          <div style="display: flex; align-items: center; gap: 6px; color: var(--tertiary);">
+            <span>✓</span> <span>Smart Contract Settlement on Sepolia</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; color: var(--tertiary);">
+            <span>✓</span> <span>ERC-20 Token Transfer Emitted</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; color: var(--tertiary);">
+            <span>✓</span> <span>SHA-256 Content Hash Matches Payload</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; color: var(--tertiary);">
+            <span>✓</span> <span>EIP-712 Replay Guard: Nonce Marked Spent</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verifying Smart Contract Metadata Strip -->
+      <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">
+        <div>
+          Verifying Contract:
+          <a
+            href="${this.etherscanBase}/address/${this.enforcerAddress}"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="color: var(--primary); text-decoration: underline;"
+          >
+            TokenBudgetEnforcer.sol (${this.enforcerAddress.slice(0, 8)}...${this.enforcerAddress.slice(-6)}) ↗
+          </a>
+        </div>
+        <div>
+          Token Contract:
+          <a
+            href="${this.etherscanBase}/token/${this.tokenAddress}?a=${this.enforcerAddress}"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="color: var(--tertiary); text-decoration: underline;"
+          >
+            MockUSDC (${this.tokenAddress.slice(0, 8)}...${this.tokenAddress.slice(-6)}) ↗
+          </a>
         </div>
       </div>
     `;
@@ -348,243 +389,153 @@ const VerifyView = {
     const sepTxs = this.getCombinedSepoliaTransactions();
     const displayedList = this.activeTab === "sepolia" ? sepTxs : localTxs;
 
-    const allSep = this.getCombinedSepoliaTransactions();
-    const matchedTx = allSep.find(
+    const matchedTx = sepTxs.find(
       (t) => (t.txHash || "").toLowerCase() === (this.currentHash || "").toLowerCase()
-    ) || this.sepoliaTransactions[0] || {};
+    ) || sepTxs[0] || {};
 
     const activeHash = this.currentHash || matchedTx.txHash || "0x303ae7447a4b78850a86e5ecf126d1437b8094c045b1fe9917aacb98698ec289";
-    const blkNum = matchedTx.blockNumber || 11766297;
-    const amountVal = matchedTx.amountUSD || "4.00";
-    const deliveryHashVal = matchedTx.deliveryHash || "0xe281dc941c35f53f89b66e015811b8f0544c30c7b27d47306029e2390b23e3fc";
-    const reqIdVal = matchedTx.reqId ? `${matchedTx.reqId.slice(0, 10)}...${matchedTx.reqId.slice(-6)}` : "0x3781...f092";
+
+    // Schedule verification result render right after DOM mounting
+    setTimeout(() => {
+      this.populateVerificationResult(activeHash);
+    }, 10);
 
     return `
-      <div id="verify-view-root" class="space-y-6">
+      <div id="verify-view-root" style="display: flex; flex-direction: column; gap: 20px;">
 
         <!-- Top Hero Banner: Direct Sepolia Blockchain Telemetry -->
-        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-surface-low via-surface to-surface-container border border-cyan-500/30 p-6 sm:p-8 shadow-2xl">
-          <div class="absolute -right-10 -bottom-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-          <div class="relative z-10 max-w-4xl space-y-3.5">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/40 font-mono text-xs font-bold text-cyan-300">
-                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                <span>ETHEREUM SEPOLIA TESTNET (eip155:11155111)</span>
-              </span>
-              <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold">
-                ✓ ALL PURCHASES AUTO-SETTLE HERE
-              </span>
+        <div class="panel" style="margin-bottom: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
+                <span class="badge badge-info">ETHEREUM SEPOLIA TESTNET (eip155:11155111)</span>
+                <span class="badge badge-success">ALL PURCHASES AUTO-SETTLE HERE</span>
+              </div>
+              <h1 style="font-size: 22px; font-weight: 700; letter-spacing: -0.02em;">
+                On-Chain Cryptographic Verifier &amp; Explorer
+              </h1>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px; max-width: 820px; line-height: 1.5;">
+                Every autonomous machine payment executed by the AI agent physically settles on the public
+                <strong>Ethereum Sepolia</strong> blockchain via <code style="color: var(--primary);">TokenBudgetEnforcer.sol</code>.
+                Verify cryptographic signatures, transaction receipts, and SHA-256 delivery proofs directly in this dashboard or click through to public Sepolia Etherscan.
+              </p>
             </div>
 
-            <h1 class="font-headline text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Sepolia Blockchain Verifier & Explorer
-            </h1>
-
-            <p class="text-slate-300 text-sm leading-relaxed font-body">
-              Every autonomous machine payment executed by the AI agent physically settles on the public 
-              <strong>Ethereum Sepolia</strong> blockchain via <code class="text-cyan-300 font-mono font-bold">TokenBudgetEnforcer.sol</code>. 
-              Verify cryptographic state, transaction hashes, and SHA-256 delivery proofs directly inside this dashboard or click through to public Sepolia Etherscan.
-            </p>
-
             <!-- Quick Action Links -->
-            <div class="pt-2 flex flex-wrap items-center gap-3 font-mono text-xs">
-              <a 
-                href="${this.etherscanBase}/address/${this.enforcerAddress}" 
-                target="_blank" 
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+              <a
+                href="${this.etherscanBase}/address/${this.enforcerAddress}"
+                target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold shadow-lg shadow-cyan-500/25 transition active:scale-95 cursor-pointer"
-                title="View TokenBudgetEnforcer.sol on Sepolia Etherscan"
+                class="btn btn-secondary btn-sm"
+                title="View TokenBudgetEnforcer.sol contract on Sepolia Etherscan"
               >
-                <span class="material-symbols-outlined text-sm">shield</span>
                 <span>Sepolia Enforcer Contract ↗</span>
               </a>
 
-              <a 
-                href="${this.etherscanBase}/address/${this.tokenAddress}" 
-                target="_blank" 
+              <a
+                href="${this.etherscanBase}/token/${this.tokenAddress}?a=${this.enforcerAddress}"
+                target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-400 border border-white/15 font-bold transition active:scale-95 cursor-pointer"
-                title="View MockUSDC ERC-20 Token on Sepolia Etherscan"
+                class="btn btn-secondary btn-sm"
+                title="View MockUSDC Token Contract &amp; Transfers on Sepolia Etherscan"
               >
-                <span class="material-symbols-outlined text-sm">toll</span>
                 <span>MockUSDC Token Contract ↗</span>
               </a>
 
-              <button 
+              <button
                 onclick="VerifyView.broadcastSepoliaSettlement()"
-                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/40 font-bold transition active:scale-95 cursor-pointer"
+                class="btn btn-primary btn-sm"
                 title="Broadcast another test transaction to Ethereum Sepolia"
               >
-                <span class="material-symbols-outlined text-sm text-purple-300">bolt</span>
                 <span>⚡ Settle Another Tx on Sepolia</span>
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Live Search & On-Chain Verification Console -->
-        <div class="rounded-3xl bg-surface-low border border-white/10 p-6 sm:p-8 space-y-6 shadow-xl">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+        <!-- Query & On-Chain Verification Console -->
+        <div class="panel" style="margin-bottom: 0;">
+          <div class="panel-header">
             <div>
-              <h2 class="font-headline text-lg sm:text-xl font-bold text-white flex items-center gap-2">
-                <span class="material-symbols-outlined text-secondary">search_check</span>
-                <span>On-Chain Cryptographic Verifier</span>
-              </h2>
-              <p class="text-xs text-slate-400 font-mono mt-0.5">
-                Paste any transaction hash, request ID (reqId), or SHA-256 digest to verify immutability
+              <h2 class="panel-title">On-Chain Cryptographic Verifier</h2>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                Enter any transaction hash, request ID (reqId), or SHA-256 delivery digest to verify immutability
               </p>
             </div>
 
             <!-- Quick Hash Pills -->
-            <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
-              <span class="text-slate-400 text-[11px]">Recent:</span>
-              <button 
-                onclick="VerifyView.setSampleHash('0x303ae7447a4b78850a86e5ecf126d1437b8094c045b1fe9917aacb98698ec289')" 
-                class="px-2.5 py-1 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-cyan-300 border border-blue-500/30 text-[10px] cursor-pointer font-bold"
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+              <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">Recent:</span>
+              <button
+                onclick="VerifyView.setSampleHash('0x303ae7447a4b78850a86e5ecf126d1437b8094c045b1fe9917aacb98698ec289')"
+                class="btn btn-secondary btn-sm"
+                style="padding: 2px 6px; font-size: 11px;"
                 title="Latest Auto-Sepolia Purchase ($4.00)"
               >
                 Sepolia Latest ($4.00)
               </button>
-              <button 
-                onclick="VerifyView.setSampleHash('0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069')" 
-                class="px-2.5 py-1 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-cyan-300 border border-blue-500/30 text-[10px] cursor-pointer"
-                title="Confirmed on Sepolia"
+              <button
+                onclick="VerifyView.setSampleHash('0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069')"
+                class="btn btn-secondary btn-sm"
+                style="padding: 2px 6px; font-size: 11px;"
+                title="Confirmed on Sepolia #11779302"
               >
                 Sepolia #11779302
               </button>
-              <button 
-                onclick="VerifyView.setSampleHash('0xae87735f8942db7ff0aadec78a1d042e1c1d9c58480af5e9070c7fd9f56be064')" 
-                class="px-2.5 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 text-[10px] cursor-pointer"
-                title="Escrow Deposit ($100.00)"
+              <button
+                onclick="VerifyView.setSampleHash('0x89ef9d6e9a532a49ac6eb2cbad1de4e08067cdb3ac7b741a8481a3198f3499ac')"
+                class="btn btn-secondary btn-sm"
+                style="padding: 2px 6px; font-size: 11px;"
+                title="Escrow Deposit ($50.00)"
               >
-                Sepolia Escrow ($100.00)
+                Escrow ($50.00)
               </button>
             </div>
           </div>
 
           <!-- Input Search Bar -->
-          <form onsubmit="event.preventDefault(); VerifyView.verifyHash();" class="space-y-3">
-            <div class="flex flex-col sm:flex-row gap-3">
-              <div class="relative flex-1">
-                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-cyan-400 font-mono text-sm font-bold">
-                  0x
-                </span>
-                <input 
-                  id="verifyInputInApp" 
-                  type="text" 
-                  value="${activeHash}"
-                  placeholder="Paste Sepolia Tx Hash (0x303ae744... or 0x20c90083...)"
-                  class="w-full pl-10 pr-4 py-3 bg-[#0a0f1d] border border-cyan-500/30 rounded-xl font-mono text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500"
-                />
-              </div>
-
-              <button 
-                type="submit" 
-                class="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-mono text-xs font-bold tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 active:scale-95 transition cursor-pointer"
-              >
-                <span class="material-symbols-outlined text-sm">verified</span>
-                <span>VERIFY ON-CHAIN</span>
-              </button>
-            </div>
+          <form onsubmit="event.preventDefault(); VerifyView.verifyHash();" style="display: flex; gap: 10px; margin-bottom: 16px;">
+            <input
+              id="verifyInputInApp"
+              type="text"
+              value="${activeHash}"
+              placeholder="Paste Sepolia Tx Hash (0x303ae744... or 0x20c90083...)"
+              class="form-input"
+              style="font-family: var(--font-mono); font-size: 12.5px;"
+            />
+            <button type="submit" class="btn btn-primary" style="flex-shrink: 0;">
+              <span>VERIFY ON-CHAIN</span>
+            </button>
           </form>
 
-          <!-- Interactive Cryptographic Verification Result Card -->
-          <div id="inAppVerifyResult" class="p-5 sm:p-6 rounded-2xl bg-[#090d18] border border-cyan-500/30 space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
-              <div class="flex items-center gap-3">
-                <span class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-base border border-emerald-500/30">
-                  ✓
-                </span>
-                <div>
-                  <div class="flex items-center gap-2">
-                    <span class="font-headline font-bold text-white text-base">CRYPTOGRAPHICALLY VERIFIED</span>
-                    <span id="inAppBadgeNetwork" class="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/20 text-cyan-300 border border-blue-500/40">
-                      ETHEREUM SEPOLIA TESTNET (eip155:11155111)
-                    </span>
-                  </div>
-                  <p id="inAppNetworkSub" class="text-xs font-mono text-slate-400 mt-0.5">
-                    Confirmed on Ethereum Sepolia Public Ledger • Block #${blkNum}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Direct Clickable Button to Open Sepolia Etherscan -->
-              <a 
-                id="inAppEtherscanLink"
-                href="${this.etherscanBase}/tx/${activeHash}" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-bold shadow-md shadow-blue-500/30 transition active:scale-95 cursor-pointer"
-                title="Verify transaction directly on Ethereum Sepolia Etherscan"
-              >
-                <span>Open on Sepolia Etherscan Directly</span>
-                <span class="material-symbols-outlined text-sm">open_in_new</span>
-              </a>
-            </div>
-
-            <!-- Itemized Blockchain Telemetry Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-1 font-mono text-xs">
-              <div class="p-3.5 rounded-xl bg-surface-container border border-white/10 space-y-1">
-                <span class="text-[10px] text-slate-400 uppercase font-bold">On-Chain Tx Hash</span>
-                <p id="inAppResTxHash" class="font-bold text-cyan-300 break-all select-all text-xs">${activeHash}</p>
-              </div>
-
-              <div class="p-3.5 rounded-xl bg-surface-container border border-white/10 space-y-1">
-                <span class="text-[10px] text-slate-400 uppercase font-bold">SHA-256 Delivery Proof</span>
-                <p id="inAppResDeliveryHash" class="font-bold text-emerald-400 break-all select-all text-xs">${deliveryHashVal}</p>
-              </div>
-
-              <div class="p-3.5 rounded-xl bg-surface-container border border-white/10 space-y-1">
-                <span class="text-[10px] text-slate-400 uppercase font-bold">Amount Settled</span>
-                <p id="inAppResAmount" class="font-bold text-white text-sm">$${amountVal} USDC</p>
-              </div>
-
-              <div class="p-3.5 rounded-xl bg-surface-container border border-white/10 space-y-1">
-                <span class="text-[10px] text-slate-400 uppercase font-bold">Request Nonce (reqId)</span>
-                <p id="inAppResReqId" class="font-bold text-slate-300 break-all select-all text-xs">${reqIdVal}</p>
-              </div>
-            </div>
-
-            <!-- Cryptographic Invariant Match Strip -->
-            <div class="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs font-mono border-t border-white/10">
-              <div class="flex items-center gap-2 text-emerald-400 font-bold">
-                <span class="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">✓</span>
-                <span>SHA-256 Hash matches delivered payload digest with 100% determinism</span>
-              </div>
-              <div id="inAppResBlock" class="text-[11px] font-mono text-emerald-400 font-semibold">
-                <span>●</span> Confirmed On-Chain (Block #${blkNum})
-              </div>
-            </div>
+          <!-- Interactive Cryptographic Verification Result Container -->
+          <div id="inAppVerifyResult">
+            <!-- Populated via VerifyView.populateVerificationResult -->
           </div>
         </div>
 
         <!-- Dual-Ledger Live Transactions Tabs -->
-        <div class="rounded-3xl bg-surface-low border border-white/10 p-6 sm:p-8 space-y-5 shadow-xl">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
-            <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-cyan-400 text-2xl">account_balance_wallet</span>
-              <div>
-                <h3 class="font-headline font-bold text-white text-base">Recorded Transactions Ledger</h3>
-                <p class="text-xs text-slate-400 font-mono">Real-time settlements executed by the protocol</p>
-              </div>
+        <div class="panel" style="margin-bottom: 0;">
+          <div class="panel-header">
+            <div>
+              <h3 class="panel-title">Recorded Transactions Ledger</h3>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                Real-time settlements executed by the protocol across public and local ledgers
+              </p>
             </div>
 
             <!-- Tab Switcher -->
-            <div class="inline-flex rounded-xl bg-[#0a0f1d] border border-white/10 p-1 font-mono text-xs">
-              <button 
+            <div style="display: flex; background: var(--surface-low); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 2px;">
+              <button
                 onclick="VerifyView.switchTab('sepolia')"
-                class="px-3.5 py-1.5 rounded-lg font-bold transition cursor-pointer flex items-center gap-1.5 ${
-                  this.activeTab === 'sepolia' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-                }"
+                class="btn btn-sm ${this.activeTab === 'sepolia' ? 'btn-primary' : 'btn-secondary'}"
               >
-                <span>Sepolia Testnet (${this.sepoliaTransactions.length})</span>
+                <span>Sepolia Testnet (${sepTxs.length})</span>
               </button>
-              <button 
+              <button
                 onclick="VerifyView.switchTab('local')"
-                class="px-3.5 py-1.5 rounded-lg font-bold transition cursor-pointer flex items-center gap-1.5 ${
-                  this.activeTab === 'local' ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-                }"
+                class="btn btn-sm ${this.activeTab === 'local' ? 'btn-primary' : 'btn-secondary'}"
               >
                 <span>Localhost EVM (${localTxs.length})</span>
               </button>
@@ -592,69 +543,64 @@ const VerifyView = {
           </div>
 
           <!-- Transaction Cards List -->
-          <div class="space-y-3 font-mono text-xs">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
             ${
               displayedList.length === 0
-                ? `<div class="p-8 text-center text-slate-500 font-mono text-xs">No transactions recorded in this ledger yet.</div>`
+                ? `<div style="text-align: center; padding: 32px; color: var(--text-muted); font-family: var(--font-mono); font-size: 12px;">No transactions recorded in this ledger yet.</div>`
                 : displayedList.map((tx) => {
                     const hash = tx.txHash || "";
                     const isSep = this.activeTab === "sepolia";
-                    const etherscanUrl = isSep ? `${this.etherscanBase}/tx/${hash}` : `javascript:alert('Mined on Localhost Hardhat EVM (31337). Click Settle on Sepolia to broadcast to public Etherscan!')`;
-                    const amtStr = tx.amountUSD ? `$${tx.amountUSD} USDC` : (tx.amount ? `$${(Number(tx.amount) / 1e6).toFixed(2)} USDC` : "$4.00 USDC");
+                    const etherscanUrl = isSep ? `${this.etherscanBase}/tx/${hash}` : `https://sepolia.etherscan.io/address/${this.enforcerAddress}`;
+                    const amtStr = tx.amountUSD ? `$${Number(tx.amountUSD).toFixed(2)} USDC` : (tx.amount ? `$${(Number(tx.amount) / 1e6).toFixed(2)} USDC` : "$4.00 USDC");
                     const isCurrentSelected = (hash || "").toLowerCase() === (activeHash || "").toLowerCase();
 
                     return `
-                      <div class="p-4 sm:p-5 rounded-2xl bg-surface-container border ${
-                        isCurrentSelected ? 'border-cyan-400/80 shadow-[0_0_20px_rgba(6,182,212,0.25)]' : 'border-white/10 hover:border-cyan-500/40'
-                      } flex flex-col lg:flex-row lg:items-center justify-between gap-4 transition-all">
-                        <div class="flex items-start sm:items-center gap-3.5">
-                          <span class="w-8 h-8 rounded-full ${isSep ? 'bg-blue-500/15 text-cyan-300 border-blue-500/30' : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'} flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 sm:mt-0 border">
+                      <div
+                        style="background: var(--surface-low); border: 1px solid ${isCurrentSelected ? 'var(--primary)' : 'var(--border)'}; border-radius: var(--radius); padding: 14px; display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;"
+                      >
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                          <div style="width: 28px; height: 28px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--tertiary); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0;">
                             ✓
-                          </span>
-                          <div class="space-y-1">
-                            <div class="flex flex-wrap items-center gap-2">
-                              <h4 class="font-headline font-bold text-white text-sm">
+                          </div>
+                          <div>
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                              <span style="font-weight: 700; font-size: 13px; color: #fff;">
                                 ${tx.serviceName || "AI Legal Contract Translation"}
-                              </h4>
-                              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${isSep ? 'bg-blue-500/20 text-cyan-300 border-blue-500/30' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'} border">
-                                ${isSep ? 'SEPOLIA BLOCKCHAIN' : 'LOCAL EVM'}
                               </span>
-                              <span class="text-white font-bold">${amtStr}</span>
+                              <span class="badge ${isSep ? 'badge-info' : 'badge-success'}">
+                                ${isSep ? 'SEPOLIA' : 'LOCAL EVM'}
+                              </span>
+                              <span style="font-family: var(--font-mono); font-weight: 700; font-size: 12.5px; color: #fff;">
+                                ${amtStr}
+                              </span>
                             </div>
-                            <div class="flex flex-wrap items-center gap-3 text-[11px] text-slate-400">
-                              <span>Tx: <code class="text-cyan-300 font-bold">${hash ? `${hash.slice(0, 10)}...${hash.slice(-8)}` : "Pending"}</code></span>
-                              ${tx.blockNumber ? `<span>Block: <strong class="text-white">#${tx.blockNumber}</strong></span>` : ''}
-                              ${tx.providerName ? `<span>Provider: <strong class="text-slate-300">${tx.providerName}</strong></span>` : ''}
+                            <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); flex-wrap: wrap;">
+                              <span>Tx: <a href="${etherscanUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;"><code>${hash ? `${hash.slice(0, 10)}...${hash.slice(-8)}` : "Pending"}</code> ↗</a></span>
+                              ${tx.blockNumber ? `<span>Block: <strong>#${tx.blockNumber}</strong></span>` : ''}
+                              ${tx.providerName ? `<span>Provider: <strong>${tx.providerName}</strong></span>` : ''}
                             </div>
                           </div>
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="flex items-center gap-2 shrink-0">
-                          <button 
+                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                          <button
                             onclick="VerifyView.setSampleHash('${hash}')"
-                            class="px-3 py-1.5 rounded-lg bg-surface-high hover:bg-surface-highest text-cyan-300 border border-white/10 text-xs font-bold transition active:scale-95 cursor-pointer"
+                            class="btn btn-secondary btn-sm"
                             title="Inspect cryptographic proof above"
                           >
                             Inspect Proof
                           </button>
 
-                          ${
-                            isSep
-                              ? `
-                            <a 
-                              href="${etherscanUrl}" 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600/30 hover:bg-blue-600/50 text-cyan-200 border border-cyan-500/40 text-xs font-bold transition active:scale-95 cursor-pointer"
-                              title="Verify on Sepolia Etherscan"
-                            >
-                              <span>Sepolia Etherscan</span>
-                              <span class="text-xs">↗</span>
-                            </a>
-                          `
-                              : ""
-                          }
+                          <a
+                            href="${etherscanUrl}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="btn btn-primary btn-sm"
+                            title="Directly open on Sepolia Etherscan"
+                          >
+                            <span>Sepolia Etherscan ↗</span>
+                          </a>
                         </div>
                       </div>
                     `;

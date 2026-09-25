@@ -201,12 +201,26 @@ const App = {
   },
   // Transaction Detail Drawer
   openTransactionDetail(reqId) {
-    let rawTx = AppState.transactions.find((t) => t.reqId === reqId || t.txHash === reqId);
-    if (!rawTx && AppState.x402Transactions) {
-      rawTx = AppState.x402Transactions.find((t) => t.reqId === reqId || t.txHash === reqId);
+    if (!reqId) {
+      this.toast("No transaction ID provided.", "warning");
+      return;
     }
+    const q = String(reqId).trim().toLowerCase();
+    const allTxs = [
+      ...(AppState.transactions || []),
+      ...(AppState.x402Transactions || []),
+      ...(typeof VerifyView !== "undefined" && VerifyView.sepoliaTransactions ? VerifyView.sepoliaTransactions : []),
+    ];
+    let rawTx = allTxs.find((t) =>
+      (t.reqId && String(t.reqId).toLowerCase() === q) ||
+      (t.requestId && String(t.requestId).toLowerCase() === q) ||
+      (t.txHash && String(t.txHash).toLowerCase() === q)
+    );
     if (!rawTx && AppState.alerts) {
-      const alert = AppState.alerts.find((a) => a.reqId === reqId || a.txHash === reqId);
+      const alert = AppState.alerts.find((a) =>
+        (a.reqId && String(a.reqId).toLowerCase() === q) ||
+        (a.txHash && String(a.txHash).toLowerCase() === q)
+      );
       if (alert) {
         rawTx = {
           reqId: alert.reqId,
@@ -932,30 +946,22 @@ ${JSON.stringify(
         btn.classList.remove("opacity-75", "cursor-wait");
       }
     }
+  },
+
   // Direct blockchain verification site / explorer navigation
   openBlockchainVerification(txHash, etherscanUrl) {
-    if (!txHash && !etherscanUrl) {
-      this.toast("No transaction hash found to verify.", "warning");
-      return;
-    }
-
-    if (etherscanUrl) {
+    if (etherscanUrl && String(etherscanUrl).startsWith("http")) {
       window.open(etherscanUrl, "_blank", "noopener,noreferrer");
       return;
     }
 
-    const isSepolia = (AppState.config && AppState.config.chainId === 11155111) ||
-                      (AppState.selectedNetwork === "sepolia") ||
-                      (AppState.transactions && AppState.transactions.some(t => t.txHash === txHash && (t.chainId === 11155111 || String(t.network || "").includes("Sepolia"))));
-
-    if (isSepolia && txHash && txHash.startsWith("0x") && txHash.length === 66) {
+    if (txHash && String(txHash).startsWith("0x") && txHash.length === 66) {
       window.open(`https://sepolia.etherscan.io/tx/${txHash}`, "_blank", "noopener,noreferrer");
       return;
     }
 
-    // Default to in-app cryptographic & on-chain verification console
-    this.openVerifier(txHash);
-    this.toast(`Opened on-chain verification console for ${txHash ? txHash.slice(0, 10) + '...' : 'transaction'}`, "info");
+    // Default to Sepolia Enforcer contract page showing all settlements and token transfers
+    window.open("https://sepolia.etherscan.io/address/0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e", "_blank", "noopener,noreferrer");
   },
 
   // Open Sepolia Blockchain Verifier directly inside Main Page (Zero New Tabs)

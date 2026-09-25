@@ -389,8 +389,11 @@ ${this.escapeHtml(deliveredText)}
               <span style="color: var(--text);">11. FINAL SETTLEMENT</span>
               <span class="badge badge-primary">${networkLabel}</span>
             </div>
-            <div style="color: var(--text-muted); font-size: 11.5px;">
-              Tx Hash: ${etherscanUrl && etherscanUrl.includes("sepolia.etherscan") ? `<a href="${etherscanUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--tertiary); text-decoration: underline;">${txHash} &UpperRightArrow;</a>` : `<code style="color: var(--tertiary);">${txHash}</code>`}
+            <div style="color: var(--text-muted); font-size: 11.5px; display: flex; align-items: center; gap: 8px;">
+              <span>Tx Hash:</span>
+              <a href="${etherscanUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;" title="View on Sepolia Etherscan">
+                <code>${txHash}</code> &UpperRightArrow;
+              </a>
             </div>
           </div>
 
