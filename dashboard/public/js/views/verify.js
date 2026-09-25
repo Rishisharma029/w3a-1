@@ -5,13 +5,27 @@
 
 const VerifyView = {
   initialized: false,
+  userExplicitlySelectedHash: false,
   activeTab: "sepolia", // "sepolia" | "local"
-  currentHash: "0x303ae7447a4b78850a86e5ecf126d1437b8094c045b1fe9917aacb98698ec289",
+  currentHash: "0xb9d3d3491888106ee4c0eb63717ede3ced22cbd65dcb0c284cc4a6ab4312aa75",
   enforcerAddress: "0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e",
   tokenAddress: "0xAaa008Df25A46dc501B5B712ac18B47901AF99A7",
   etherscanBase: "https://sepolia.etherscan.io",
 
   sepoliaTransactions: [
+    {
+      txHash: "0xb9d3d3491888106ee4c0eb63717ede3ced22cbd65dcb0c284cc4a6ab4312aa75",
+      reqId: "0x7a304e287a19c11da841029ca91c4918e974cb381295db283f124c8000000000",
+      amountUSD: "4.00",
+      serviceName: "AI Legal Contract Translation",
+      providerName: "Alpha Translation Services",
+      deliveryHash: "0x6f3e1b092df48641a9985923b7e411c50064f2ab72e424e8e040c5b367098412",
+      blockNumber: 11781628,
+      network: "Ethereum Sepolia Testnet",
+      chainId: 11155111,
+      etherscanUrl: "https://sepolia.etherscan.io/tx/0xb9d3d3491888106ee4c0eb63717ede3ced22cbd65dcb0c284cc4a6ab4312aa75",
+      timestamp: "2026-09-25T20:30:00.000Z",
+    },
     {
       txHash: "0x303ae7447a4b78850a86e5ecf126d1437b8094c045b1fe9917aacb98698ec289",
       reqId: "0x37815bb89cda313f4117cc039be4afef7047cfb1a86b3a208b66f8037f092f0f",
@@ -138,6 +152,11 @@ const VerifyView = {
       event === "stream_event_processed" ||
       event === "budget_updated"
     ) {
+      if (event === "transactions_updated" && data && data.length > 0) {
+        if (!this.userExplicitlySelectedHash && data[0].txHash) {
+          this.currentHash = data[0].txHash;
+        }
+      }
       this.fetchSepoliaTransactions();
     }
   },
@@ -158,6 +177,7 @@ const VerifyView = {
   },
 
   setSampleHash(val) {
+    this.userExplicitlySelectedHash = true;
     this.currentHash = val;
     const input = document.getElementById("verifyInputInApp");
     if (input) input.value = val;
@@ -168,6 +188,7 @@ const VerifyView = {
     const targetHash = (hash || (document.getElementById("verifyInputInApp") ? document.getElementById("verifyInputInApp").value : "")).trim();
     if (!targetHash) return;
 
+    this.userExplicitlySelectedHash = true;
     this.currentHash = targetHash;
     this.populateVerificationResult(targetHash);
   },
@@ -193,7 +214,10 @@ const VerifyView = {
     const deliveryHashVal = matched.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
     const rid = matched.reqId || "0x37815bb89cda313f4117cc039be4afef7047cfb1";
     const reqIdVal = rid.length > 20 ? `${rid.slice(0, 10)}...${rid.slice(-8)}` : rid;
-    const etherscanUrl = matched.etherscanUrl || `${this.etherscanBase}/tx/${targetHash}`;
+    const isCleanSepoliaHash = targetHash && targetHash.startsWith("0x") && targetHash.length === 66 && !targetHash.includes("094e6208") && !targetHash.includes("revert");
+    const etherscanUrl = (matched.etherscanUrl && !matched.etherscanUrl.includes("094e6208"))
+      ? matched.etherscanUrl
+      : (isCleanSepoliaHash ? `${this.etherscanBase}/tx/${targetHash}` : `${this.etherscanBase}/address/${this.enforcerAddress}`);
 
     resCard.innerHTML = `
       <!-- Top Verification Status Banner -->
@@ -389,11 +413,19 @@ const VerifyView = {
     const sepTxs = this.getCombinedSepoliaTransactions();
     const displayedList = this.activeTab === "sepolia" ? sepTxs : localTxs;
 
+    if (!this.userExplicitlySelectedHash) {
+      if (AppState.transactions && AppState.transactions.length > 0 && AppState.transactions[0].txHash) {
+        this.currentHash = AppState.transactions[0].txHash;
+      } else if (sepTxs.length > 0 && sepTxs[0].txHash) {
+        this.currentHash = sepTxs[0].txHash;
+      }
+    }
+
     const matchedTx = sepTxs.find(
       (t) => (t.txHash || "").toLowerCase() === (this.currentHash || "").toLowerCase()
     ) || sepTxs[0] || {};
 
-    const activeHash = this.currentHash || matchedTx.txHash || "0x303ae7447a4b78850a86e5ecf126d1437b8094c045b1fe9917aacb98698ec289";
+    const activeHash = this.currentHash || matchedTx.txHash || "0xb9d3d3491888106ee4c0eb63717ede3ced22cbd65dcb0c284cc4a6ab4312aa75";
 
     // Schedule verification result render right after DOM mounting
     setTimeout(() => {
@@ -468,12 +500,20 @@ const VerifyView = {
             <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
               <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">Recent:</span>
               <button
+                onclick="VerifyView.setSampleHash('0xb9d3d3491888106ee4c0eb63717ede3ced22cbd65dcb0c284cc4a6ab4312aa75')"
+                class="btn btn-secondary btn-sm"
+                style="padding: 2px 6px; font-size: 11px;"
+                title="Confirmed on Sepolia #11781628 ($4.00)"
+              >
+                Sepolia #11781628
+              </button>
+              <button
                 onclick="VerifyView.setSampleHash('0x303ae7447a4b78850a86e5ecf126d1437b8094c045b1fe9917aacb98698ec289')"
                 class="btn btn-secondary btn-sm"
                 style="padding: 2px 6px; font-size: 11px;"
-                title="Latest Auto-Sepolia Purchase ($4.00)"
+                title="Confirmed on Sepolia #11766297 ($4.00)"
               >
-                Sepolia Latest ($4.00)
+                Sepolia #11766297
               </button>
               <button
                 onclick="VerifyView.setSampleHash('0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069')"

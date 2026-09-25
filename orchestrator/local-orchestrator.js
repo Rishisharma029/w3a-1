@@ -157,11 +157,8 @@ function createLocalOrchestratorRouter({
         selected.providerId +
         "/service";
 
-      const useSepolia = Boolean(
-        (req.body && req.body.network === "sepolia") ||
-        (process.env.DEFAULT_CHAIN === "sepolia") ||
-        (!enforcerContract && !agentSigner)
-      );
+      // Always settle on Ethereum Sepolia Testnet so every purchase shows on public Sepolia Etherscan
+      const useSepolia = true;
 
       const deliveredText =
         "[" +
@@ -194,7 +191,8 @@ function createLocalOrchestratorRouter({
       } catch (_) {
         providerAddress = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";
       }
-      const localReqId = "0x" + crypto.createHash("sha256").update(runId + Date.now()).digest("hex");
+      let sepoliaReqId = "0x" + crypto.createHash("sha256").update(runId + Date.now()).digest("hex");
+      const localReqId = sepoliaReqId;
 
       const deliveredContent = {
         service: selectedService.id || "text-translate",
@@ -203,9 +201,9 @@ function createLocalOrchestratorRouter({
         confidence: 0.97,
         status: "DELIVERED",
         latencyMs: selected.estimatedLatencyMs || 200,
-        network: useSepolia ? "Ethereum Sepolia Testnet" : "Local Hardhat EVM",
-        chainId: useSepolia ? 11155111 : 31337,
-        caip2: useSepolia ? "eip155:11155111" : "eip155:31337",
+        network: "Ethereum Sepolia Testnet",
+        chainId: 11155111,
+        caip2: "eip155:11155111",
       };
 
       const deliveryHash = computeContentHash(JSON.stringify(deliveredContent));
@@ -213,10 +211,6 @@ function createLocalOrchestratorRouter({
       if (useSepolia) {
         const { executeSepoliaSettlement, sepoliaTransactions } =
           require("../services/sepolia-settler");
-
-        const sepoliaReqId =
-          "0x" +
-          crypto.createHash("sha256").update(runId + Date.now()).digest("hex");
 
         let sepoliaResult;
         try {

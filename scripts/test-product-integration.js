@@ -1,4 +1,4 @@
-﻿const axios = require('axios');
+const axios = require('axios');
 const chalk = require('chalk');
 
 const DASHBOARD_URL = 'http://localhost:14300';
@@ -106,7 +106,7 @@ async function run() {
   const overspendResp = await axios.post(`${DASHBOARD_URL}/api/orchestrate/ai-purchase`, {
     simulateOverspend: true,
     amountAtomic: '999999000000'
-  });
+  }, { validateStatus: () => true });
   if (overspendResp.data.success !== false && overspendResp.data.trace.status !== 'REJECTED') {
     throw new Error('Overspend was not rejected!');
   }

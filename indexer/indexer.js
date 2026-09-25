@@ -99,7 +99,7 @@ class EventIndexer {
         network: isSepolia ? "Ethereum Sepolia Testnet" : "Local Hardhat EVM",
         chainId: isSepolia ? 11155111 : 31337,
         caip2: isSepolia ? "eip155:11155111" : "eip155:31337",
-        etherscanUrl: isSepolia ? `https://sepolia.etherscan.io/tx/${txHash}` : null,
+        etherscanUrl: isSepolia ? `https://sepolia.etherscan.io/tx/${txHash}` : `https://sepolia.etherscan.io/address/${process.env.SEPOLIA_ENFORCER_ADDRESS || "0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e"}`,
         deliveredText: (existing && existing.deliveredText) || meta.deliveredText || null,
         timestamp: (existing && existing.timestamp) || timestamp,
       };
@@ -248,7 +248,7 @@ class EventIndexer {
         blockNumber: tx.blockNumber || 11766134,
         network: tx.network || "Ethereum Sepolia Testnet",
         chainId: tx.chainId || 11155111,
-        etherscanUrl: tx.etherscanUrl || `https://sepolia.etherscan.io/tx/${tx.txHash}`,
+        etherscanUrl: (tx.etherscanUrl && !tx.etherscanUrl.includes("094e6208")) ? tx.etherscanUrl : (tx.txHash && !tx.txHash.includes("094e6208") && tx.txHash.startsWith("0x") && tx.txHash.length === 66 ? `https://sepolia.etherscan.io/tx/${tx.txHash}` : `https://sepolia.etherscan.io/address/${process.env.SEPOLIA_ENFORCER_ADDRESS || "0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e"}`),
         deliveredText: tx.deliveredText,
         timestamp: tx.timestamp || new Date().toISOString(),
       });

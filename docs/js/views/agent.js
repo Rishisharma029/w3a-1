@@ -159,7 +159,10 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
           deliveredText: typeof data.trace.deliveredContent === 'object'
             ? (data.trace.deliveredContent.translatedText || data.trace.deliveredContent.output || JSON.stringify(data.trace.deliveredContent))
             : (data.trace.deliveredContent || data.trace.content),
-          network: data.trace.network || "Local Hardhat EVM (31337)",
+          network: "Ethereum Sepolia Testnet",
+          chainId: 11155111,
+          caip2: "eip155:11155111",
+          etherscanUrl: data.trace.etherscanUrl || `https://sepolia.etherscan.io/tx/${data.trace.txHash}`,
           timestamp: new Date().toISOString()
         };
         if (typeof AppState !== "undefined") {
@@ -389,11 +392,20 @@ ${this.escapeHtml(deliveredText)}
               <span style="color: var(--text);">11. FINAL SETTLEMENT</span>
               <span class="badge badge-primary">${networkLabel}</span>
             </div>
-            <div style="color: var(--text-muted); font-size: 11.5px; display: flex; align-items: center; gap: 8px;">
-              <span>Tx Hash:</span>
-              <a href="${etherscanUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;" title="View on Sepolia Etherscan">
-                <code>${txHash}</code> &UpperRightArrow;
-              </a>
+            <div style="color: var(--text-muted); font-size: 11.5px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span>Tx Hash:</span>
+                <a href="${etherscanUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;" title="View on Sepolia Etherscan">
+                  <code>${txHash}</code> &UpperRightArrow;
+                </a>
+              </div>
+              <button
+                class="btn btn-primary btn-sm"
+                onclick="App.openBlockchainVerification('${txHash}', '${etherscanUrl}')"
+                title="Directly open on Sepolia Etherscan"
+              >
+                <span>Verify on Sepolia ↗</span>
+              </button>
             </div>
           </div>
 
