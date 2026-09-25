@@ -115,11 +115,19 @@
   </div>
 
   <!-- Detail Drawer for Transactions -->
-  <div id="drawerBackdrop" class="drawer-backdrop hidden" onclick="App.closeDrawer()" style="display: none;"></div>
+  <div id="drawerBackdrop" class="drawer-backdrop" onclick="App.closeDrawer()" style="display: none; opacity: 0;"></div>
   <div id="detailDrawer" class="drawer" style="transform: translateX(100%);">
     <div class="drawer-header">
-      <h3 style="font-size: 15px; font-weight: 700;">Transaction Breakdown</h3>
-      <button class="btn btn-secondary btn-sm" onclick="App.closeDrawer()">&times;</button>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="badge">x402 V2 Audit</span>
+        <h3 id="drawerHeaderTitle" style="font-size: 15px; font-weight: 700; margin: 0;">Transaction Breakdown</h3>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button id="drawerVerifyBtn" class="btn btn-primary btn-sm">
+          <span>Verify ↗</span>
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="App.closeDrawer()" style="font-size: 16px; line-height: 1; padding: 4px 8px;">&times;</button>
+      </div>
     </div>
     <div id="detailDrawerContent" class="drawer-body">
       <!-- Injected via App.openTransactionDetail() -->

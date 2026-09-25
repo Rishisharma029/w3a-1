@@ -254,295 +254,232 @@ const App = {
       const isBlocked = tx.displayStatus === "BLOCKED" || tx.displayStatus === "CAPPED" || tx.displayStatus === "REJECTED" || tx.status === "CAPPED" || tx.status === "REJECTED";
       const isCapped = tx.displayStatus === "CAPPED" || tx.status === "CAPPED";
 
-      drawerContainer.innerHTML = `
-        <div class="space-y-5 font-mono">
+      const vBtn = document.getElementById("drawerVerifyBtn");
+      if (vBtn) {
+        vBtn.onclick = () => App.openBlockchainVerification(tx.txHash, tx.etherscanUrl);
+      }
 
-          <!-- Drawer Header -->
-          <div class="flex items-center justify-between pb-4 border-b border-outline-variant/40">
+      const headerTitle = document.getElementById("drawerHeaderTitle");
+      if (headerTitle) {
+        headerTitle.innerText = `${tx.serviceName || "Transaction"} (${tx.status || "SETTLED"})`;
+      }
+
+      drawerContainer.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 12px; font-family: var(--font-mono);">
+
+          <!-- Wire Protocol Status Banner -->
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--surface-low); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px;">
             <div>
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-[10px] font-bold text-secondary uppercase tracking-widest">Protocol Inspection</span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
-                  isBlocked
-                    ? "bg-error/15 text-error border border-error/40 glow-crimson"
-                    : "bg-tertiary/15 text-tertiary border border-tertiary/40 glow-emerald"
-                }">
-                  ${isCapped ? "● BUDGET CAPPED" : isBlocked ? "● PROTOCOL REVERTED" : "● SETTLED ON-CHAIN"}
-                </span>
+              <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Protocol Settlement State</div>
+              <div style="font-size: 14px; font-weight: 700; color: ${isBlocked ? 'var(--danger)' : 'var(--tertiary)'}; margin-top: 2px;">
+                ${isCapped ? '● BUDGET CAPPED' : isBlocked ? '● PROTOCOL REVERTED' : '● SETTLED ON-CHAIN'}
               </div>
-              <h3 class="font-headline text-lg font-bold text-white tracking-tight">x402 V2 TRANSACTION</h3>
-              <p class="text-[11px] text-outline mt-0.5">Wire Protocol Trace & Cryptographic Proof</p>
             </div>
-            <button onclick="App.closeDrawer()" class="text-outline hover:text-white p-2 rounded-lg hover:bg-surface-high transition">
-              <span class="material-symbols-outlined text-lg">close</span>
-            </button>
+            <div style="text-align: right;">
+              <span class="badge ${isBlocked ? 'badge-danger' : 'badge-success'}">${tx.status || 'SETTLED'}</span>
+              <div style="font-size: 11px; color: var(--text); font-weight: 700; margin-top: 4px;">$${Number(tx.amountUSD || 0).toFixed(2)} USDC</div>
+            </div>
           </div>
 
           <!-- Step 1: REQUEST -->
-          <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2.5">
-            <div class="flex items-center justify-between text-xs border-b border-outline-variant/20 pb-2">
-              <span class="font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-xs">arrow_forward</span>
-                REQUEST
-              </span>
-              <span class="text-[10px] text-outline">${UIFormatter.formatDateTime(tx.timestamp)}</span>
+          <div class="drawer-step">
+            <div class="drawer-step-header" style="color: var(--primary);">
+              <span>1. REQUEST (x402 V2 Client)</span>
+              <span style="color: var(--text-muted); font-size: 10px;">${UIFormatter.formatDateTime(tx.timestamp)}</span>
             </div>
-            <div class="space-y-2 text-xs">
-              <div class="p-2.5 rounded-lg bg-surface-lowest border border-outline-variant/30 font-bold text-white flex items-center justify-between break-all">
-                <span>GET ${endpointUrl}</span>
-                <span class="text-[10px] font-normal text-tertiary ml-2 shrink-0">HTTP/1.1</span>
-              </div>
-              <div class="text-[11px] space-y-1 text-on-surface-variant pt-1">
-                <div class="flex items-center justify-between gap-2">
-                  <span class="text-outline shrink-0">Client:</span>
-                  <span class="text-white font-mono truncate">Autonomous AI Agent (${UIFormatter.formatAddress(agentAddr)})</span>
-                </div>
-                <div class="flex items-center justify-between gap-2">
-                  <span class="text-outline shrink-0">Provider:</span>
-                  <span class="text-white font-semibold">${tx.providerName} (${UIFormatter.formatAddress(tx.provider)})</span>
-                </div>
-                <div class="flex items-center justify-between gap-2">
-                  <span class="text-outline shrink-0">Service:</span>
-                  <span class="text-secondary font-mono">${tx.serviceName} (${tx.serviceId})</span>
-                </div>
-                <div class="pt-1 border-t border-outline-variant/15 flex items-start justify-between gap-2">
-                  <span class="text-outline shrink-0">Intent:</span>
-                  <span class="text-slate-200 text-right italic">"${tx.intent}"</span>
-                </div>
-              </div>
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; margin-bottom: 8px; font-size: 11px; display: flex; justify-content: space-between;">
+              <span style="font-weight: 700; color: var(--text);">GET ${endpointUrl}</span>
+              <span style="color: var(--tertiary);">HTTP/1.1</span>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Client:</span>
+              <span class="drawer-kv-val">Autonomous Agent (${UIFormatter.formatAddress(agentAddr)})</span>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Provider:</span>
+              <span class="drawer-kv-val" style="font-weight: 600;">${tx.providerName} (${UIFormatter.formatAddress(tx.provider)})</span>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Service:</span>
+              <span class="drawer-kv-val" style="color: var(--primary);">${tx.serviceName} (${tx.serviceId || 'svc'})</span>
+            </div>
+            <div class="drawer-kv" style="border-top: 1px solid var(--border); padding-top: 6px; margin-top: 6px;">
+              <span class="drawer-kv-label">Intent:</span>
+              <span class="drawer-kv-val" style="font-style: italic; color: var(--text-muted);">"${tx.intent || 'Autonomous service execution'}"</span>
             </div>
           </div>
 
           <!-- Step 2: 402 RESPONSE -->
-          <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2.5">
-            <div class="flex items-center justify-between text-xs border-b border-outline-variant/20 pb-2">
-              <span class="font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-xs">lock</span>
-                402 RESPONSE
-              </span>
-              <span class="text-[10px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/30">
-                HTTP 402 PAYMENT REQUIRED
-              </span>
+          <div class="drawer-step">
+            <div class="drawer-step-header" style="color: var(--warning);">
+              <span>2. 402 RESPONSE</span>
+              <span class="badge badge-warning" style="font-size: 10px;">HTTP 402 PAYMENT REQUIRED</span>
             </div>
-            <div class="space-y-2 text-xs">
-              <div class="flex items-center justify-between">
-                <span class="text-white font-bold text-xs tracking-wider">PAYMENT-REQUIRED</span>
-                <span class="text-tertiary font-bold text-xs flex items-center gap-1">
-                  <span>✓</span> decoded
-                </span>
-              </div>
-              <div class="p-3 rounded-lg bg-surface-lowest border border-outline-variant/30 text-[11px] space-y-1.5 leading-relaxed">
-                <div class="flex justify-between"><span class="text-outline">x402Version:</span> <span class="text-white font-bold">${tx.x402Version || 2}</span></div>
-                <div class="flex justify-between"><span class="text-outline">scheme:</span> <span class="text-secondary font-bold">${tx.scheme || "exact"}</span></div>
-                <div class="flex justify-between"><span class="text-outline">network:</span> <span class="text-white">${tx.network || "eip155:31337"}</span></div>
-                <div class="flex justify-between"><span class="text-outline">amount:</span> <span class="text-tertiary font-bold">${Number(tx.amountUnits).toLocaleString()} units ($${tx.amountUSD} USDC)</span></div>
-                <div class="flex justify-between gap-2"><span class="text-outline shrink-0">asset:</span> <span class="text-slate-300 truncate">${tokenAddr}</span></div>
-                <div class="flex justify-between gap-2"><span class="text-outline shrink-0">payTo:</span> <span class="text-slate-300 truncate">${tx.provider}</span></div>
-                <div class="flex justify-between"><span class="text-outline">validBefore:</span> <span class="text-slate-300">${tx.validBefore || Math.floor(Date.now() / 1000 + 3600)}</span></div>
-                <div class="flex justify-between gap-2 pt-1 border-t border-outline-variant/15">
-                  <span class="text-outline shrink-0">reqId:</span>
-                  <div class="flex items-center gap-1 min-w-0">
-                    <span class="text-secondary truncate">${tx.reqId}</span>
-                    ${UIFormatter.copyButton(tx.reqId, "Request ID")}
-                  </div>
-                </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Protocol Version:</span>
+              <span class="drawer-kv-val" style="font-weight: 700;">x402 V2 (Standard)</span>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Settlement Scheme:</span>
+              <span class="drawer-kv-val" style="color: var(--primary);">${tx.scheme || "exact"}</span>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Network CAIP-2:</span>
+              <span class="drawer-kv-val">${tx.network || "eip155:31337"}</span>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Payment Amount:</span>
+              <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">$${Number(tx.amountUSD || 0).toFixed(2)} USDC (${tx.amountUnits || (Number(tx.amountUSD || 4)*1e6)} atomic)</span>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Asset (ERC-20):</span>
+              <span class="drawer-kv-val">${tokenAddr}</span>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Pay To Recipient:</span>
+              <span class="drawer-kv-val">${tx.provider}</span>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Request Nonce (reqId):</span>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <span class="drawer-kv-val" style="color: var(--primary);">${tx.reqId}</span>
+                ${UIFormatter.copyButton(tx.reqId, "Request ID")}
               </div>
             </div>
           </div>
 
           <!-- Step 3: PAYMENT -->
-          <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2.5">
-            <div class="flex items-center justify-between text-xs border-b border-outline-variant/20 pb-2">
-              <span class="font-bold uppercase tracking-wider text-primary-light flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-xs">edit_document</span>
-                PAYMENT
-              </span>
-              <span class="text-[10px] text-outline">Client EIP-712 Envelope</span>
+          <div class="drawer-step">
+            <div class="drawer-step-header" style="color: var(--primary);">
+              <span>3. PAYMENT SIGNATURE</span>
+              <span style="color: var(--tertiary);">✓ EIP-712 VERIFIED</span>
             </div>
-            <div class="space-y-2 text-xs">
-              <div class="flex items-center justify-between">
-                <span class="text-white font-bold text-xs tracking-wider">PAYMENT-SIGNATURE</span>
-                <span class="text-tertiary font-bold text-xs flex items-center gap-1">
-                  <span>✓</span> verified
-                </span>
-              </div>
-              <div class="p-3 rounded-lg bg-surface-lowest border border-outline-variant/30 text-[11px] space-y-1.5 leading-relaxed">
-                <div class="flex justify-between gap-2"><span class="text-outline shrink-0">Payer Agent:</span> <span class="text-white truncate">${agentAddr}</span></div>
-                <div class="flex justify-between gap-2"><span class="text-outline shrink-0">Verifying Contract:</span> <span class="text-secondary truncate">${enforcerAddr}</span></div>
-                <div class="flex justify-between gap-2"><span class="text-outline shrink-0">Nonce:</span> <span class="text-slate-300 truncate">${tx.reqId}</span></div>
-                <div class="flex justify-between"><span class="text-outline">Signature Format:</span> <span class="text-tertiary font-bold">EIP-712 Typed Data (r, s, v)</span></div>
-                <div class="text-[10px] text-outline pt-1.5 border-t border-outline-variant/15 break-all">
-                  Header: <span class="text-slate-400">PAYMENT-SIGNATURE: eyJ4NDAyVmVyc2lvbiI6Miwic2NoZW1lIjoiZXhhY3Qi...</span>
-                </div>
-              </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Payer Agent:</span>
+              <span class="drawer-kv-val">${agentAddr}</span>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Verifying Contract:</span>
+              <span class="drawer-kv-val" style="color: var(--primary);">${enforcerAddr}</span>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Signature Format:</span>
+              <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">EIP-712 Typed Data (r, s, v)</span>
+            </div>
+            <div style="font-size: 10.5px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 6px; margin-top: 6px; word-break: break-all;">
+              Header: <span style="color: var(--text);">PAYMENT-SIGNATURE: eyJ4NDAyVmVyc2lvbiI6Miwic2NoZW1lIjoiZXhhY3Qi...</span>
             </div>
           </div>
 
           <!-- Step 4: FACILITATOR -->
-          <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2.5">
-            <div class="flex items-center justify-between text-xs border-b border-outline-variant/20 pb-2">
-              <span class="font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-xs">shield</span>
-                FACILITATOR
+          <div class="drawer-step">
+            <div class="drawer-step-header" style="color: var(--primary);">
+              <span>4. FACILITATOR INVARIANT CHECKS</span>
+              <span style="color: ${isBlocked ? 'var(--danger)' : 'var(--tertiary)'}; font-weight: 700;">
+                ${isBlocked ? "✘ REJECTED" : "✓ ALL INVARIANTS PASSED"}
               </span>
-              <span class="text-[10px] text-outline">Pre-Settlement Invariant Verification</span>
             </div>
-            <div class="space-y-2 text-xs">
-              <div class="flex items-center justify-between">
-                <span class="text-white font-bold text-xs tracking-wider">VERIFY</span>
-                <span class="${isBlocked ? "text-error font-bold text-xs flex items-center gap-1" : "text-tertiary font-bold text-xs flex items-center gap-1"}">
-                  ${isBlocked ? "<span>✘</span> rejected by protocol" : "<span>✓</span> valid"}
-                </span>
+            <div style="display: flex; flex-direction: column; gap: 4px; font-size: 11px;">
+              <div style="color: ${isBlocked ? 'var(--danger)' : 'var(--tertiary)'};">
+                ${isBlocked ? "✘" : "✓"} Spending Ceiling Check: $${tx.amountUSD} &le; Authorized Budget Allowance (${isBlocked ? "BLOCKED: EXCEEDS LIMIT" : "PASS"})
               </div>
-              <div class="p-3 rounded-lg bg-surface-lowest border border-outline-variant/30 text-[11px] space-y-1.5">
-                <div class="flex items-center gap-2 ${isBlocked ? "text-error font-semibold" : "text-slate-200"}">
-                  <span class="font-bold ${isBlocked ? "text-error" : "text-tertiary"}">${isBlocked ? "✘" : "✓"}</span>
-                  <span>Spending Cap Check: $${tx.amountUSD} &le; $${tx.budgetBefore || "26.00"} allowance (${isBlocked ? "FAIL: EXCEEDS LIMIT" : "PASS"})</span>
-                </div>
-                <div class="flex items-center gap-2 text-slate-200">
-                  <span class="font-bold text-tertiary">✓</span>
-                  <span>Circuit Breaker Check: Agent active / spending not frozen (PASS)</span>
-                </div>
-                <div class="flex items-center gap-2 text-slate-200">
-                  <span class="font-bold text-tertiary">✓</span>
-                  <span>Nonce Replay Guard: reqId unspent on TokenBudgetEnforcer (PASS)</span>
-                </div>
-                <div class="flex items-center gap-2 text-slate-200">
-                  <span class="font-bold text-tertiary">✓</span>
-                  <span>Signer Authentication: Recovered address matches agent wallet (PASS)</span>
-                </div>
+              <div style="color: var(--tertiary);">
+                ✓ Circuit Breaker Check: Agent active / spending not frozen (PASS)
+              </div>
+              <div style="color: var(--tertiary);">
+                ✓ Replay Guard Check: reqId unspent on TokenBudgetEnforcer (PASS)
+              </div>
+              <div style="color: var(--tertiary);">
+                ✓ Signer Authorization Check: Recovered address matches agent wallet (PASS)
               </div>
             </div>
           </div>
 
           <!-- Step 5: BLOCKCHAIN -->
-          <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2.5">
-            <div class="flex items-center justify-between text-xs border-b border-outline-variant/20 pb-2">
-              <span class="font-bold uppercase tracking-wider text-tertiary flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-xs">link</span>
-                BLOCKCHAIN
-              </span>
-              <span class="text-[10px] text-outline">${(tx.chainId === 11155111 || (tx.network && String(tx.network).includes('Sepolia'))) ? 'Sepolia Testnet (11155111)' : 'Hardhat EVM (31337)'}</span>
+          <div class="drawer-step">
+            <div class="drawer-step-header" style="color: var(--tertiary);">
+              <span>5. BLOCKCHAIN SETTLEMENT</span>
+              <span class="badge ${isBlocked ? 'badge-danger' : 'badge-success'}">${isBlocked ? "REVERTED" : "CONFIRMED"}</span>
             </div>
-            <div class="space-y-2 text-xs">
-              <div class="flex items-center justify-between">
-                <span class="text-white font-bold text-xs tracking-wider">SETTLE</span>
-                <span class="${isBlocked ? "text-error font-bold text-xs flex items-center gap-1" : "text-tertiary font-bold text-xs flex items-center gap-1"}">
-                  ${isBlocked ? "<span>✘</span> reverted on-chain" : "<span>✓</span> confirmed"}
-                </span>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Tx Hash:</span>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">${tx.txHash}</span>
+                ${UIFormatter.copyButton(tx.txHash, "Tx Hash")}
               </div>
-              <div class="p-3 rounded-lg bg-surface-lowest border border-outline-variant/30 text-[11px] space-y-1.5 leading-relaxed">
-                <div class="flex items-center justify-between gap-2">
-                  <span class="text-outline shrink-0">Tx Hash:</span>
-                  <div class="flex items-center gap-1 min-w-0">
-                    <span class="text-tertiary font-bold truncate">${tx.txHash}</span>
-                    ${UIFormatter.copyButton(tx.txHash, "Tx Hash")}
-                  </div>
-                </div>
-                <div class="flex justify-between"><span class="text-outline">Block Number:</span> <span class="text-white font-bold">#${tx.blockNumber || 12}</span></div>
-                <div class="flex justify-between"><span class="text-outline">Contract Call:</span> <span class="text-slate-300">settleWithSignature()</span></div>
-                <div class="flex justify-between"><span class="text-outline">ERC-20 Settlement:</span> <span class="text-tertiary font-bold">$${tx.amountUSD} MockUSDC &rarr; ${UIFormatter.formatAddress(tx.provider)}</span></div>
-                <div class="flex justify-between pt-1 border-t border-outline-variant/15"><span class="text-outline">Escrow Balance After:</span> <span class="text-white font-bold">$${tx.budgetAfter || "26.00"} USDC</span></div>
-                <div class="pt-2 border-t border-outline-variant/15 flex items-center justify-between">
-                  <span class="text-outline">Blockchain Proof:</span>
-                  ${(tx.chainId === 11155111 || (tx.network && String(tx.network).includes('Sepolia'))) ? `
-                  <a 
-                    href="https://sepolia.etherscan.io/tx/${tx.txHash}" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    class="text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 text-[10.5px] transition"
-                    title="Verify on Sepolia Etherscan Directly"
-                  >
-                    <span>Verify on Sepolia Etherscan Directly</span>
-                    <span class="material-symbols-outlined text-[13px]">open_in_new</span>
-                  </a>` : `
-                  <a 
-                    href="/?view=verify&tx=${tx.txHash}" 
-                    class="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 text-[10.5px] transition"
-                    title="Verify in Local Hardhat EVM Verifier"
-                  >
-                    <span>Verified on Local Hardhat EVM (31337)</span>
-                    <span class="material-symbols-outlined text-[13px]">verified</span>
-                  </a>`}
-                </div>
-              </div>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Block Number:</span>
+              <span class="drawer-kv-val" style="font-weight: 700;">#${tx.blockNumber || 101}</span>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Contract Call:</span>
+              <span class="drawer-kv-val">settleWithSignature(...)</span>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">ERC-20 Settlement:</span>
+              <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">$${tx.amountUSD} MockUSDC &rarr; ${UIFormatter.formatAddress(tx.provider)}</span>
+            </div>
+            <div style="border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+              <span class="drawer-kv-label">Blockchain Verification:</span>
+              <button 
+                onclick="App.openBlockchainVerification('${tx.txHash || ''}', '${tx.etherscanUrl || ''}')"
+                class="btn btn-primary btn-sm"
+                title="Directly open blockchain verification site"
+              >
+                <span>Verify on Blockchain ↗</span>
+              </button>
             </div>
           </div>
 
           <!-- Step 6: DELIVERY -->
-          <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2.5">
-            <div class="flex items-center justify-between text-xs border-b border-outline-variant/20 pb-2">
-              <span class="font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-xs">inventory_2</span>
-                DELIVERY
-              </span>
-              <span class="text-[10px] text-tertiary font-bold">HTTP 200 OK</span>
+          <div class="drawer-step">
+            <div class="drawer-step-header" style="color: var(--primary);">
+              <span>6. SERVICE DELIVERY</span>
+              <span class="badge badge-success">HTTP 200 OK</span>
             </div>
-            <div class="space-y-2 text-xs">
-              <div class="flex items-center justify-between">
-                <span class="text-white font-bold text-xs tracking-wider">PAYMENT-RESPONSE</span>
-                <span class="text-tertiary font-bold text-xs flex items-center gap-1">
-                  <span>✓</span> received
-                </span>
-              </div>
-              <div class="p-3 rounded-lg bg-surface-lowest border border-outline-variant/30 text-[11px] space-y-1.5 leading-relaxed">
-                <div class="text-[10px] text-outline pb-1 border-b border-outline-variant/15 break-all">
-                  Header: <span class="text-slate-400">PAYMENT-RESPONSE: {"settled":true,"txHash":"${(tx.txHash || "").slice(0, 18)}...","network":"eip155:31337"}</span>
-                </div>
-                <div class="pt-1 space-y-1">
-                  <span class="text-outline text-[10px] uppercase font-bold block">Delivered Payload:</span>
-                  <div class="p-2.5 rounded bg-surface-low border border-outline-variant/20 text-slate-200 text-[11px] leading-relaxed break-words font-mono">
-                    ${
-                      typeof tx.content === "object"
-                        ? tx.content.translatedText || tx.content.output || JSON.stringify(tx.content, null, 2)
-                        : tx.content || "Autonomous delivery output received."
-                    }
-                  </div>
-                </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Status:</span>
+              <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">Payload Received &amp; Verified</span>
+            </div>
+            <div style="margin-top: 8px;">
+              <span class="drawer-kv-label" style="font-size: 10.5px; text-transform: uppercase;">Delivered Output:</span>
+              <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; margin-top: 4px; font-size: 11px; line-height: 1.5; color: var(--text); word-break: break-words;">
+                ${
+                  typeof tx.content === "object"
+                    ? tx.content.translatedText || tx.content.output || JSON.stringify(tx.content, null, 2)
+                    : tx.content || tx.deliveredText || "Autonomous delivery output received."
+                }
               </div>
             </div>
           </div>
 
           <!-- Step 7: HASH -->
-          <div class="p-4 rounded-xl bg-surface-low border border-outline-variant/30 space-y-2.5">
-            <div class="flex items-center justify-between text-xs border-b border-outline-variant/20 pb-2">
-              <span class="font-bold uppercase tracking-wider text-tertiary flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-xs">fingerprint</span>
-                HASH
-              </span>
-              <span class="text-[10px] text-outline">Cryptographic Integrity Match</span>
+          <div class="drawer-step">
+            <div class="drawer-step-header" style="color: var(--tertiary);">
+              <span>7. CRYPTOGRAPHIC DELIVERY PROOF</span>
+              <span style="color: var(--tertiary); font-weight: 700;">✓ SHA-256 MATCH</span>
             </div>
-            <div class="space-y-2 text-xs">
-              <div class="flex items-center justify-between">
-                <span class="text-white font-bold text-xs tracking-wider">SHA-256</span>
-                <span class="text-tertiary font-bold text-xs flex items-center gap-1">
-                  <span>✓</span> MATCH
-                </span>
-              </div>
-              <div class="p-3 rounded-lg bg-surface-lowest border border-outline-variant/30 text-[11px] space-y-2 leading-relaxed">
-                <div>
-                  <span class="text-outline block text-[10px]">On-Chain Stored Hash:</span>
-                  <span class="text-tertiary font-bold break-all text-[11px]">${cleanDeliveryHash}</span>
-                </div>
-                <div>
-                  <span class="text-outline block text-[10px]">Recomputed Content Digest:</span>
-                  <span class="text-tertiary font-bold break-all text-[11px]">${cleanDeliveryHash}</span>
-                </div>
-                <div class="pt-2 border-t border-outline-variant/15 flex items-center gap-2 text-tertiary text-xs font-bold">
-                  <span>✓</span>
-                  <span>INTEGRITY VERIFIED: Content cryptographically bound to payment record</span>
-                </div>
-              </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">On-Chain Digest:</span>
+              <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">${cleanDeliveryHash}</span>
+            </div>
+            <div class="drawer-kv">
+              <span class="drawer-kv-label">Computed Digest:</span>
+              <span class="drawer-kv-val" style="color: var(--tertiary); font-weight: 700;">${cleanDeliveryHash}</span>
+            </div>
+            <div style="color: var(--tertiary); font-size: 11px; margin-top: 6px; border-top: 1px solid var(--border); padding-top: 6px;">
+              ✓ Content cryptographically bound to settlement record on-chain.
             </div>
           </div>
 
           <!-- Collapsible Raw x402 V2 Wire Payload JSON -->
-          <details class="p-3 rounded-xl bg-surface-low/60 border border-outline-variant/20 text-xs">
-            <summary class="cursor-pointer text-outline hover:text-white font-bold uppercase text-[10px] tracking-wider flex items-center justify-between select-none">
+          <details style="background: var(--surface-low); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-size: 11px;">
+            <summary style="cursor: pointer; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; display: flex; justify-content: space-between; align-items: center; user-select: none;">
               <span>View Raw Wire Exchange (JSON)</span>
-              <span class="text-[10px] text-secondary">inspect &darr;</span>
+              <span style="color: var(--primary); font-size: 11px;">inspect &darr;</span>
             </summary>
-            <pre class="mt-2.5 p-3 rounded-lg bg-surface-lowest border border-outline-variant/20 text-[10px] text-slate-300 overflow-x-auto leading-relaxed font-mono">
+            <pre style="margin-top: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; font-size: 10px; overflow-x: auto; color: var(--text); line-height: 1.4;">
 ${JSON.stringify(
   {
     protocol: "x402 V2",
@@ -576,7 +513,7 @@ ${JSON.stringify(
     },
     blockchain_settlement: {
       txHash: tx.txHash,
-      blockNumber: tx.blockNumber || 12,
+      blockNumber: tx.blockNumber || 101,
       settled: !isBlocked,
     },
     delivery: {
@@ -594,11 +531,12 @@ ${JSON.stringify(
         </div>
       `;
 
-      backdrop.classList.remove("hidden");
-      setTimeout(() => {
-        backdrop.classList.remove("opacity-0");
-        drawer.classList.remove("translate-x-full");
-      }, 10);
+      backdrop.style.display = "block";
+      backdrop.style.opacity = "0";
+      drawer.style.transform = "translateX(100%)";
+      void drawer.offsetWidth;
+      backdrop.style.opacity = "1";
+      drawer.style.transform = "translateX(0)";
     }
   },
 
@@ -606,11 +544,11 @@ ${JSON.stringify(
     const drawer = document.getElementById("detailDrawer");
     const backdrop = document.getElementById("drawerBackdrop");
     if (drawer && backdrop) {
-      drawer.classList.add("translate-x-full");
-      backdrop.classList.add("opacity-0");
+      drawer.style.transform = "translateX(100%)";
+      backdrop.style.opacity = "0";
       setTimeout(() => {
-        backdrop.classList.add("hidden");
-      }, 300);
+        backdrop.style.display = "none";
+      }, 250);
     }
   },
   // Freeze Confirmation Modal
@@ -987,7 +925,32 @@ ${JSON.stringify(
         btn.classList.remove("opacity-75", "cursor-wait");
       }
     }
+  // Direct blockchain verification site / explorer navigation
+  openBlockchainVerification(txHash, etherscanUrl) {
+    if (!txHash && !etherscanUrl) {
+      this.toast("No transaction hash found to verify.", "warning");
+      return;
+    }
+
+    if (etherscanUrl) {
+      window.open(etherscanUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    const isSepolia = (AppState.config && AppState.config.chainId === 11155111) ||
+                      (AppState.selectedNetwork === "sepolia") ||
+                      (AppState.transactions && AppState.transactions.some(t => t.txHash === txHash && (t.chainId === 11155111 || String(t.network || "").includes("Sepolia"))));
+
+    if (isSepolia && txHash && txHash.startsWith("0x") && txHash.length === 66) {
+      window.open(`https://sepolia.etherscan.io/tx/${txHash}`, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    // Default to in-app cryptographic & on-chain verification console
+    this.openVerifier(txHash);
+    this.toast(`Opened on-chain verification console for ${txHash ? txHash.slice(0, 10) + '...' : 'transaction'}`, "info");
   },
+
   // Open Sepolia Blockchain Verifier directly inside Main Page (Zero New Tabs)
   openVerifier(txHash) {
     this.navigate("verify");

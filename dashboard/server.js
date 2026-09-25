@@ -62,6 +62,7 @@ function createDashboardServer({
     facilitator,
     indexer,
     marketplaceUrl,
+    invalidateQueryCache,
   }));
 
   // Gateway: Forward /x402 and /registry requests to Marketplace
@@ -246,7 +247,8 @@ function createDashboardServer({
           if (!map.has(key)) {
             map.set(key, record);
           } else {
-            map.set(key, { ...record, ...map.get(key) });
+            const prev = map.get(key);
+            map.set(key, { ...prev, ...record });
           }
         }
       }

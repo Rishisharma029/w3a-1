@@ -252,11 +252,26 @@ const OverviewView = {
                               ${t.status || 'SETTLED'}
                             </span>
                           </td>
-                          <td><code>${txShort}</code></td>
+                          <td>
+                            <a
+                              href="javascript:void(0)"
+                              onclick="event.stopPropagation(); App.openBlockchainVerification('${t.txHash || ''}', '${t.etherscanUrl || ''}')"
+                              title="Directly open blockchain verification site"
+                              style="color: var(--primary); text-decoration: underline; text-underline-offset: 2px; font-family: var(--font-mono); font-size: 11.5px; display: inline-flex; align-items: center; gap: 4px;"
+                            >
+                              <code>${txShort}</code>
+                              <span style="font-size: 10px;">↗</span>
+                            </a>
+                          </td>
                           <td style="text-align: right;">
-                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); App.openTransactionDetail('${t.reqId || t.txHash}')">
-                              Inspect
-                            </button>
+                            <div style="display: inline-flex; gap: 6px; align-items: center; justify-content: flex-end;">
+                              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); App.openTransactionDetail('${t.reqId || t.txHash}')" title="Inspect full cryptographic x402 V2 trace">
+                                Inspect
+                              </button>
+                              <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); App.openBlockchainVerification('${t.txHash || ''}', '${t.etherscanUrl || ''}')" title="Directly open blockchain verification site">
+                                <span>Verify ↗</span>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       `;

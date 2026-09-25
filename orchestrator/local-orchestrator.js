@@ -18,6 +18,7 @@ function createLocalOrchestratorRouter({
   facilitator,
   indexer,
   marketplaceUrl = "http://localhost:14210",
+  invalidateQueryCache,
 } = {}) {
   const router = express.Router();
   const history = [];
@@ -179,6 +180,14 @@ function createLocalOrchestratorRouter({
       let chainIdNum;
       let caip2Str;
       let etherscanUrlStr = null;
+      const providerAddress = selected.providerAddress || (
+        selected.providerId === "gamma-translate" ? "0x9965507D1a55bcC2695C58ba16FB37d819B0A4df" :
+        selected.providerId === "beta-translate" ? "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65" :
+        selected.providerId === "delta-compute" ? "0x90F79bf6EB2c4f870365E785982E1f101E93b906" :
+        selected.providerId === "epsilon-vision" ? "0x976EA74026E726554dB657fA54763abd0C3a0aa9" :
+        "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+      );
+      const localReqId = "0x" + crypto.createHash("sha256").update(runId + Date.now()).digest("hex");
 
       const deliveredContent = {
         service: selectedService.id || "text-translate",
@@ -206,9 +215,7 @@ function createLocalOrchestratorRouter({
         try {
           sepoliaResult = await executeSepoliaSettlement({
             reqId: sepoliaReqId,
-            providerAddress:
-              selected.providerAddress ||
-              "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            providerAddress,
             providerName: selected.name,
             amountAtomic: amountAtomic.toString(),
             serviceName:
@@ -239,11 +246,7 @@ function createLocalOrchestratorRouter({
         etherscanUrlStr = sepoliaResult.etherscanUrl || `https://sepolia.etherscan.io/tx/${txHash}`;
       } else {
         // Fast local EVM on-chain settlement (< 50ms)
-        const localReqId =
-          "0x" +
-          crypto.createHash("sha256").update(runId + Date.now()).digest("hex");
         const validBefore = Math.floor(Date.now() / 1000) + 3600;
-        const providerAddress = selected.providerAddress || "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";
         const deliveryBytes32 = deliveryHash.startsWith("0x")
           ? deliveryHash
           : ("0x" + crypto.createHash("sha256").update(deliveryHash).digest("hex"));
@@ -317,17 +320,17 @@ function createLocalOrchestratorRouter({
       if (indexer && typeof indexer.recordTransaction === "function") {
         try {
           indexer.recordTransaction({
-            reqId: runId,
+            reqId: (typeof localReqId !== "undefined" && localReqId) ? localReqId : runId,
+            clientRunId: runId,
             txHash,
             blockNumber,
             deliveryHash,
             amount: amountAtomic.toString(),
             amountUSD: (Number(amountAtomic) / 1e6).toFixed(2),
-            provider:
-              selected.providerAddress ||
-              "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            provider: providerAddress || selected.providerAddress || "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
             providerName: selected.name,
             serviceName: selectedService.name || "Microservice Execution",
+            serviceId: selectedService.id || "text-translate",
             deliveredText,
             etherscanUrl: etherscanUrlStr,
             network: networkName,
@@ -337,6 +340,21 @@ function createLocalOrchestratorRouter({
           });
         } catch (_) {}
       }
+
+      if (typeof invalidateQueryCache === "function") {
+        invalidateQueryCache("transactions");
+        invalidateQueryCache("budget");
+      }
+
+      globalEventBus.emitEvent(AuditEvent.SETTLEMENT_CONFIRMED, {
+        reqId: (typeof localReqId !== "undefined" && localReqId) ? localReqId : runId,
+        providerId: providerAddress || selected.providerAddress || "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+        amountAtomic: amountAtomic.toString(),
+        amountUSD: (Number(amountAtomic) / 1e6).toFixed(2),
+        deliveryHash,
+        txHash,
+        network: caip2Str || "eip155:31337",
+      });
 
       return res.json({
         success: true,

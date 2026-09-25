@@ -14,6 +14,7 @@ class EventIndexer {
     this.transactions   = [];
     this.securityAlerts = [];
     this.x402Transactions = [];
+    this.txMeta         = new Map();
     this._saveTimer     = null;
   }
 
@@ -61,13 +62,24 @@ class EventIndexer {
     this.events.push(entry);
 
     if (name === "PaymentSettled") {
+      const existingIdx = this.transactions.findIndex(t => (t.txHash && t.txHash.toLowerCase() === txHash.toLowerCase()) || (t.reqId && t.reqId.toLowerCase() === String(args.reqId || "").toLowerCase()));
+      const existing = existingIdx >= 0 ? this.transactions[existingIdx] : null;
+      const meta = (this.txMeta && (this.txMeta.get(txHash.toLowerCase()) || this.txMeta.get(String(args.reqId || "").toLowerCase()))) || {};
+
       const pAddr = String(args.provider || "").toLowerCase();
-      const pName = pAddr.includes("3c44") ? "Alpha Translation Services"
-                  : pAddr.includes("90f7") ? "Delta Compute Engine"
-                  : pAddr.includes("15d3") ? "Beta Translate (Budget)"
-                  : pAddr.includes("9965") ? "Gamma Premium Translation"
-                  : pAddr.includes("976e") ? "Epsilon Vision AI"
-                  : "Alpha Translation Services";
+      const pName = (existing && existing.providerName) || meta.providerName || (
+                    pAddr.includes("3c44") ? "Alpha Translation Labs"
+                  : pAddr.includes("90f7") ? "Delta Distributed Compute"
+                  : pAddr.includes("15d3") ? "Beta FastTranslate Engine"
+                  : pAddr.includes("9965") ? "Gamma Enterprise Localization"
+                  : pAddr.includes("976e") ? "Epsilon Vision & OCR Systems"
+                  : pAddr.includes("14dc") ? "Zeta Foundation Models"
+                  : pAddr.includes("2361") ? "Eta Synthesis & Summarization"
+                  : pAddr.includes("a0ee") ? "Theta Voice & Speech AI"
+                  : "Alpha Translation Labs");
+
+      const sName = (existing && existing.serviceName) || meta.serviceName || (pAddr.includes("9965") ? "Text Translation (Premium)" : "Microservice Execution");
+      const sId = (existing && existing.serviceId) || meta.serviceId || "service-exec";
       const amtAtomic = args.amount.toString();
       const amtUSD = (Number(amtAtomic) / 1e6).toFixed(2);
       const isSepolia = Boolean(this.contract && (this.contract.target || "").toLowerCase() === (process.env.SEPOLIA_ENFORCER_ADDRESS || "0xf9f296e97062f49ad3d13af96729f7c35a7ea75e").toLowerCase());
@@ -76,8 +88,8 @@ class EventIndexer {
         reqId: args.reqId,
         provider: args.provider,
         providerName: pName,
-        serviceName: "Neural Text Translation",
-        serviceId: "text-translate",
+        serviceName: sName,
+        serviceId: sId,
         amount: amtAtomic,
         amountUSD: amtUSD,
         deliveryHash: args.deliveryHash,
@@ -88,10 +100,10 @@ class EventIndexer {
         chainId: isSepolia ? 11155111 : 31337,
         caip2: isSepolia ? "eip155:11155111" : "eip155:31337",
         etherscanUrl: isSepolia ? `https://sepolia.etherscan.io/tx/${txHash}` : null,
-        timestamp,
+        deliveredText: (existing && existing.deliveredText) || meta.deliveredText || null,
+        timestamp: (existing && existing.timestamp) || timestamp,
       };
 
-      const existingIdx = this.transactions.findIndex(t => (t.txHash && t.txHash.toLowerCase() === txHash.toLowerCase()) || (t.reqId && t.reqId.toLowerCase() === args.reqId.toLowerCase()));
       if (existingIdx >= 0) {
         this.transactions[existingIdx] = { ...this.transactions[existingIdx], ...txRecord };
       } else {
@@ -208,7 +220,17 @@ class EventIndexer {
 
   recordTransaction(tx) {
     if (!tx) return;
-    const existing = this.transactions.find((t) => t.reqId === tx.reqId || (t.txHash && t.txHash === tx.txHash));
+    if (this.txMeta) {
+      if (tx.reqId) this.txMeta.set(String(tx.reqId).toLowerCase(), tx);
+      if (tx.txHash) this.txMeta.set(String(tx.txHash).toLowerCase(), tx);
+      if (tx.clientRunId) this.txMeta.set(String(tx.clientRunId).toLowerCase(), tx);
+    }
+    const reqKey = String(tx.reqId || "").toLowerCase();
+    const txKey = String(tx.txHash || "").toLowerCase();
+    const existing = this.transactions.find((t) => 
+      (reqKey && t.reqId && String(t.reqId).toLowerCase() === reqKey) || 
+      (txKey && t.txHash && String(t.txHash).toLowerCase() === txKey)
+    );
     if (existing) {
       Object.assign(existing, tx);
     } else {
@@ -217,6 +239,7 @@ class EventIndexer {
         provider: tx.provider,
         providerName: tx.providerName,
         serviceName: tx.serviceName,
+        serviceId: tx.serviceId,
         amount: (tx.amount || tx.amountAtomic || "4000000").toString(),
         amountUSD: tx.amountUSD || "4.00",
         deliveryHash: tx.deliveryHash,

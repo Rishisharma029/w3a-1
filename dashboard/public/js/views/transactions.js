@@ -226,11 +226,26 @@ const TransactionsView = {
                                 ${t.status || 'SETTLED'}
                               </span>
                             </td>
-                            <td><code>${txShort}</code></td>
+                            <td>
+                              <a
+                                href="javascript:void(0)"
+                                onclick="event.stopPropagation(); App.openBlockchainVerification('${t.txHash || ''}', '${t.etherscanUrl || ''}')"
+                                title="Directly open blockchain verification site"
+                                style="color: var(--primary); text-decoration: underline; text-underline-offset: 2px; font-family: var(--font-mono); font-size: 11.5px; display: inline-flex; align-items: center; gap: 4px;"
+                              >
+                                <code>${txShort}</code>
+                                <span style="font-size: 10px;">↗</span>
+                              </a>
+                            </td>
                             <td style="text-align: right;">
-                              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); App.openTransactionDetail('${t.reqId || t.txHash}')">
-                                Inspect
-                              </button>
+                              <div style="display: inline-flex; gap: 6px; align-items: center; justify-content: flex-end;">
+                                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); App.openTransactionDetail('${t.reqId || t.txHash}')" title="Inspect full cryptographic x402 V2 trace">
+                                  Inspect
+                                </button>
+                                <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); App.openBlockchainVerification('${t.txHash || ''}', '${t.etherscanUrl || ''}')" title="Directly open blockchain verification site">
+                                  <span>Verify ↗</span>
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         `;
@@ -249,6 +264,7 @@ const TransactionsView = {
                   const isSuccess = t.isSettled || t.status === "SETTLED";
                   const isAlert = t.isBlocked || t.status === "CAPPED" || t.status === "BLOCKED" || t.status === "REJECTED";
                   const timeStr = t.timestamp ? new Date(t.timestamp).toLocaleTimeString() : '-';
+                  const txShort = t.txHash && t.txHash.length > 12 ? `${t.txHash.slice(0, 8)}...` : (t.txHash || '-');
 
                   return `
                     <div class="panel" style="margin: 0; padding: 16px; cursor: pointer;" onclick="App.openTransactionDetail('${t.reqId || t.txHash}')">
@@ -265,6 +281,16 @@ const TransactionsView = {
                       <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border);">
                         <span>Amount: <strong>$${Number(t.amountUSD || 0).toFixed(2)} USDC</strong></span>
                         <span style="color: var(--text-muted);">${timeStr}</span>
+                      </div>
+
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border);">
+                        <a href="javascript:void(0)" onclick="event.stopPropagation(); App.openBlockchainVerification('${t.txHash || ''}', '${t.etherscanUrl || ''}')" title="Directly open blockchain verification site" style="color: var(--primary); font-family: var(--font-mono); font-size: 11px; text-decoration: underline;">
+                          <code>${txShort} ↗</code>
+                        </a>
+                        <div style="display: flex; gap: 6px;">
+                          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); App.openTransactionDetail('${t.reqId || t.txHash}')">Inspect</button>
+                          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); App.openBlockchainVerification('${t.txHash || ''}', '${t.etherscanUrl || ''}')">Verify ↗</button>
+                        </div>
                       </div>
                     </div>
                   `;
