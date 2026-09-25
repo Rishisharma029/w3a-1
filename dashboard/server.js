@@ -24,6 +24,10 @@ function createDashboardServer({
   const { globalEventBus } = require("../shared/event-bus");
   const { AuditEvent } = require("../shared/events");
 
+  // Local orchestration endpoint: keeps the purchase flow in-process and self-contained.
+  const { createLocalOrchestratorRouter } = require("../orchestrator/local-orchestrator");
+  app.use(createLocalOrchestratorRouter({ enforcerContract, agentSigner, indexer, marketplaceUrl }));
+
   // Gateway: Forward /x402 and /registry requests to Marketplace
   // Allows the public tunnel to serve both Dashboard and Marketplace on one URL
   const axios = require("axios");
