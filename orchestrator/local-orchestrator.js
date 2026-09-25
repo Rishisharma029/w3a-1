@@ -180,13 +180,20 @@ function createLocalOrchestratorRouter({
       let chainIdNum;
       let caip2Str;
       let etherscanUrlStr = null;
-      const providerAddress = selected.providerAddress || (
-        selected.providerId === "gamma-translate" ? "0x9965507D1a55bcC2695C58ba16FB37d819B0A4df" :
+      const rawAddr = selected.providerAddress || (
+        selected.providerId === "gamma-translate" ? "0x9965507d1a55bcc2695c58ba16fb37d819b0a4df" :
         selected.providerId === "beta-translate" ? "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65" :
         selected.providerId === "delta-compute" ? "0x90F79bf6EB2c4f870365E785982E1f101E93b906" :
         selected.providerId === "epsilon-vision" ? "0x976EA74026E726554dB657fA54763abd0C3a0aa9" :
         "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
       );
+      const { ethers } = require("ethers");
+      let providerAddress = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";
+      try {
+        providerAddress = ethers.getAddress(rawAddr.toLowerCase());
+      } catch (_) {
+        providerAddress = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";
+      }
       const localReqId = "0x" + crypto.createHash("sha256").update(runId + Date.now()).digest("hex");
 
       const deliveredContent = {

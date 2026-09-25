@@ -1616,11 +1616,15 @@ const PROVIDER_ADDRESSES = {
 };
 
 const crypto = require("crypto");
+const { ethers } = require("ethers");
 for (const p of PROVIDERS) {
-  if (!p.providerAddress) {
-    p.providerAddress = PROVIDER_ADDRESSES[p.providerId] || (
-      "0x" + crypto.createHash("sha256").update(p.providerId).digest("hex").slice(0, 40)
-    );
+  const rawAddr = p.providerAddress || PROVIDER_ADDRESSES[p.providerId] || (
+    "0x" + crypto.createHash("sha256").update(p.providerId).digest("hex").slice(0, 40)
+  );
+  try {
+    p.providerAddress = ethers.getAddress(rawAddr.toLowerCase());
+  } catch (_) {
+    p.providerAddress = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";
   }
 }
 

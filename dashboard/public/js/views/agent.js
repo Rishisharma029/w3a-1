@@ -217,8 +217,8 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
       `;
     }
 
-    const txHash = trace.txHash || "0xfefb3725ca1a870d8d1d41ee370ac686becb5f28f39aa790ce6eeb6827f47069";
-    const deliveryHash = trace.deliveryHash || "sha256:0b0a8801d04423854580bfcb3e3b3cbb60767705fe0506eb3c31b34380ec52b6";
+    const txHash = trace.txHash || null;
+    const deliveryHash = trace.deliveryHash || null;
     const deliveredText = typeof trace.deliveredContent === 'object'
       ? (trace.deliveredContent.translatedText || trace.deliveredContent.output || JSON.stringify(trace.deliveredContent, null, 2))
       : (trace.deliveredContent || trace.content || "Service output delivered.");
@@ -228,7 +228,7 @@ Note: SHA-256 verifies content integrity. It does not establish semantic correct
     const isSimulated = Boolean(trace.simulated || trace.isFallback || !trace.txHash);
     const networkLabel = isSimulated ? `${network} (Historical Reference)` : network;
     const etherscanUrl = trace.etherscanUrl || `https://sepolia.etherscan.io/tx/${txHash}`;
-    const reqId = data.runId || trace.reqId || "0x088e7c75ddcc48eba8329618b1a37c02b3df468e82a09c2a1387d40294716b23";
+    const reqId = data.runId || trace.reqId || null;
 
     return `
       <div class="card" style="margin-top: 16px;">

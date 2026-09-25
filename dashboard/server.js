@@ -530,10 +530,27 @@ function createDashboardServer({
   // API: System Configuration
   app.get("/api/config", async (req, res) => {
     try {
-      const enforcerAddress = enforcerContract ? await enforcerContract.getAddress() : "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
-      const tokenAddress = tokenContract ? await tokenContract.getAddress() : "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-      const ownerAddress = ownerSigner ? await ownerSigner.getAddress() : "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
-      const agentAddress = enforcerContract ? await enforcerContract.agent() : "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
+      const [enforcerAddress, tokenAddress, ownerAddress, agentAddress] = await Promise.all([
+        enforcerContract ? enforcerContract.getAddress() : Promise.resolve("0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"),
+        tokenContract ? tokenContract.getAddress() : Promise.resolve("0x5FbDB2315678afecb367f032d93F642f64180aa3"),
+        ownerSigner ? ownerSigner.getAddress() : Promise.resolve("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"),
+        enforcerContract ? enforcerContract.agent() : Promise.resolve("0x70997970C51812dc3A010C7d01b50e0d17dc79C8"),
+      ]);
+
+      // Pull marketplace stats so the frontend has one consistent count source
+      let marketplaceStats = { totalProviders: 14, totalServices: 52 };
+      try {
+        const statsResp = await axios.get(`${PHP_API_BASE}?action=stats`, { timeout: 1500 });
+        const s = statsResp.data && statsResp.data.stats;
+        if (s) {
+          marketplaceStats = {
+            totalProviders: s.providers_count || 14,
+            totalServices: s.services_count || 52,
+            totalCategories: s.categories_count || 9,
+          };
+        }
+      } catch (_) { /* keep defaults */ }
+
       res.json({
         enforcerAddress,
         tokenAddress,
@@ -547,6 +564,7 @@ function createDashboardServer({
         sepoliaEnforcerAddress: process.env.SEPOLIA_ENFORCER_ADDRESS || "0xf9f296e97062F49ad3d13aF96729F7c35a7eA75e",
         sepoliaTokenAddress: process.env.SEPOLIA_TOKEN_ADDRESS || "0xAaa008Df25A46dc501B5B712ac18B47901AF99A7",
         sepoliaEtherscanBase: "https://sepolia.etherscan.io",
+        marketplaceStats,
       });
     } catch (err) {
       res.status(500).json({ error: err.message });

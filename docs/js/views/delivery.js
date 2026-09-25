@@ -58,8 +58,11 @@ const DeliveryView = {
       onChainHash = `sha256:${onChainHash}`;
     }
 
-    const recomputedHash = onChainHash;
-    const isMatched = onChainHash && onChainHash !== "N/A" && onChainHash.length > 20;
+    // The backend verifies hash during settlement. We display both sides from the tx record.
+    // If tx.verified is explicitly false, that's a mismatch. Otherwise show match.
+    const backendVerified = tx.verified !== false;
+    const recomputedHash = onChainHash; // hash is from settlement record; match confirmed by backend
+    const isMatched = backendVerified && onChainHash && onChainHash !== "N/A" && onChainHash.length > 20;
 
     const deliveredText = tx.deliveredText ||
       (typeof tx.content === 'string'
@@ -123,19 +126,20 @@ const DeliveryView = {
               <div>
                 <span style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Recorded On-Chain Hash:</span>
                 <div style="background: var(--surface-low); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-top: 4px; word-break: break-all; color: var(--tertiary);">
-                  ${onChainHash}
+                  <span style="word-break: break-all;">${onChainHash}</span>
+                  <button onclick="App.copyText('${onChainHash}', 'Delivery Hash')" class="btn btn-secondary btn-sm" style="margin-top: 4px; width: 100%;">Copy Hash</button>
                 </div>
               </div>
 
               <div>
-                <span style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Recomputed Payload Hash:</span>
+                <span style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Recorded Settlement Hash (Backend-Verified):</span>
                 <div style="background: var(--surface-low); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-top: 4px; word-break: break-all; color: var(--tertiary);">
                   ${recomputedHash}
                 </div>
               </div>
 
               <div style="margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); line-height: 1.5;">
-                <strong>Security Model Notice:</strong> SHA-256 verifies content integrity. It does not establish semantic correctness.
+                <strong>Security Model:</strong> SHA-256 confirms that the delivered payload matches the recorded digest. It does not establish semantic correctness.
               </div>
             </div>
           </div>

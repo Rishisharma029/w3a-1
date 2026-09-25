@@ -264,6 +264,14 @@ const App = {
         headerTitle.innerText = `${tx.serviceName || "Transaction"} (${tx.status || "SETTLED"})`;
       }
 
+      const deliveryText = (
+        typeof tx.content === "object"
+          ? (tx.content.translatedText || tx.content.output || JSON.stringify(tx.content, null, 2))
+          : (tx.content || tx.deliveredText || "Autonomous delivery output received.")
+      );
+      // escape for safe injection into innerHTML template
+      const safeDeliveryText = String(deliveryText).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
       drawerContainer.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 12px; font-family: var(--font-mono);">
 
@@ -445,11 +453,7 @@ const App = {
             <div style="margin-top: 8px;">
               <span class="drawer-kv-label" style="font-size: 10.5px; text-transform: uppercase;">Delivered Output:</span>
               <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; margin-top: 4px; font-size: 11px; line-height: 1.5; color: var(--text); word-break: break-words;">
-                ${
-                  typeof tx.content === "object"
-                    ? tx.content.translatedText || tx.content.output || JSON.stringify(tx.content, null, 2)
-                    : tx.content || tx.deliveredText || "Autonomous delivery output received."
-                }
+              ${safeDeliveryText}
               </div>
             </div>
           </div>
@@ -706,6 +710,9 @@ ${JSON.stringify(
       }
     }
   },
+
+  // Alias so index.html's onclick="App.confirmFund()" works
+  confirmFund() { return this.confirmFundAction(); },
 
   async confirmFreezeAction() {
     const targetFreeze = !AppState.budget.isFrozen;
